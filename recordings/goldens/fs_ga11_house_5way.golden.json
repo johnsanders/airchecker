@@ -11,7 +11,7 @@
             "templateId": "fullscreen_results",
             "singletons": {
               "race_heading": "GA-11 U.S. HOUSE (R)",
-              "pct_in": "90% IN"
+              "pct_in": "90%"
             },
             "candidates": [
               {
@@ -57,11 +57,45 @@
     {
       "frameSha256": "0e2ee497e6f49b95d80dcb48bf87ff63467de9af3a6dd2bd41a22be7874c55ae",
       "model": "claude-sonnet-4-6",
-      "promptHash": "f871bc269fad3a918e07e3af96ebbc060b0641c5b596df21054afadc3bfb1a7f",
+      "promptHash": "201c48f6b0fb5ec1dfed0ab43d4826b705b077eaf63808565e9f76504a2e3416",
       "response": {
-        "calledCandidateNames": [
-          "John Cowan",
-          "Robert Adkerson"
+        "pctIn": "90%",
+        "candidates": [
+          {
+            "name": "John Cowan",
+            "party": "R",
+            "votes": "34,141",
+            "pct": "42.6%",
+            "called": "called"
+          },
+          {
+            "name": "Robert Adkerson",
+            "party": "R",
+            "votes": "17,399",
+            "pct": "21.7%",
+            "called": "called"
+          },
+          {
+            "name": "Tricia Pridemore",
+            "party": "R",
+            "votes": "15,194",
+            "pct": "19.0%",
+            "called": ""
+          },
+          {
+            "name": "John Hobbs",
+            "party": "R",
+            "votes": "5,081",
+            "pct": "6.3%",
+            "called": ""
+          },
+          {
+            "name": "Chris Mora",
+            "party": "R",
+            "votes": "4,118",
+            "pct": "5.1%",
+            "called": ""
+          }
         ]
       }
     }
@@ -112,7 +146,7 @@
       ],
       "extractedFields": {
         "race_heading": "GA-11 U.S. HOUSE (R)",
-        "pct_in": "90% IN"
+        "pct_in": "90%"
       },
       "observedAt": 0,
       "pctIn": 90,

@@ -162,81 +162,91 @@ const toPct = (raw: string | undefined): number => {
   return cleaned.length === 0 || Number.isNaN(value) ? 0 : value;
 };
 
-// Second pass — fixes ONLY calledFor. On the full frame the model reads the gold
-// ✓ glyph ~60% of the time; on the upscaled captureRegion crop it reads 30/30.
-// So when a detected template has a captureRegion, re-read just the call from the
-// crop and override pass-1's calledFor. Every other field is already 30/30 on
-// pass 1, so this pass deliberately touches nothing else.
-const RECALL_TOOL = 'report_call';
+// Second pass — re-read the small-text fields from an UPSCALED crop. On the full
+// 1920-wide frame, pass 1 nails the template/race/party/% but MISREADS small ticker
+// digits (vote totals: 459,609→459,009, measured) and the tiny gold ✓ glyph (~60%).
+// Cropping the captureRegion and upscaling ~3× makes both legible: Sonnet reads the
+// full candidate list (names, votes, pct, called) 4/4 exact on the crop. So for any
+// detected template WITH a captureRegion, this pass re-reads the candidates + pct_in
+// from the crop and overrides pass 1's — pass 1 stays authoritative only for the
+// template id and raceKey binding.
+const RECROP_TOOL = 'report_crop';
 
-const recallTool: LlmTool = {
-  description: 'Report which candidates, if any, have been called/declared winners (have a check mark).',
+const recropTool: LlmTool = {
+  description: 'Read every candidate and the reporting percentage from a zoomed-in election graphic crop.',
   inputSchema: {
     additionalProperties: false,
     properties: {
-      calledCandidateNames: {
-        description:
-          'Exact names of EVERY candidate with a yellow/gold check mark. Empty array if none. Top-two races can have two.',
-        items: { type: 'string' },
+      candidates: {
+        items: {
+          additionalProperties: false,
+          properties: {
+            called: {
+              description: 'Exactly "called" if a yellow/gold check mark (✓) is next to this candidate; else "".',
+              type: 'string',
+            },
+            name: { description: 'Candidate personal name ONLY — never the party letter.', type: 'string' },
+            party: { description: 'Party letter from the color chip (D, R, L, I, G…).', type: 'string' },
+            pct: { type: 'string' },
+            votes: { description: 'Vote total exactly as printed (read every digit carefully).', type: 'string' },
+          },
+          required: ['name', 'party', 'votes', 'pct', 'called'],
+          type: 'object',
+        },
         type: 'array',
       },
+      pctIn: { description: 'The "X% IN" reporting figure as printed.', type: 'string' },
     },
-    required: ['calledCandidateNames'],
+    required: ['candidates', 'pctIn'],
     type: 'object',
   },
-  name: RECALL_TOOL,
+  name: RECROP_TOOL,
 };
 
-const recallBodySchema = z.object({ calledCandidateNames: z.array(z.string()) });
+const recropCandidateSchema = z.object({
+  called: z.string(),
+  name: z.string(),
+  party: z.string(),
+  pct: z.string(),
+  votes: z.string(),
+});
+const recropBodySchema = z.object({
+  candidates: z.array(recropCandidateSchema),
+  pctIn: z.string(),
+});
+type RecropRead = z.infer<typeof recropBodySchema>;
 
-const recallPrompt = (raceHeading: string): string =>
+const recropPrompt = (raceHeading: string): string =>
   [
     `This is a zoomed-in crop of one on-air election result graphic (${raceHeading}).`,
-    'A candidate is "called" if a small yellow/gold check mark (✓) sits next to their name, party chip, or percentage. ZERO, ONE, OR MORE candidates may be called — top-two races (primaries/runoffs) commonly show TWO check marks.',
-    'Look carefully at EVERY candidate. Report the exact name of each candidate that has a check mark (empty array if none). Report via the report_call tool.',
+    'Read EVERY candidate exactly as printed: personal name (NOT the party letter), party letter from the color chip, vote total (read each digit carefully — these are small), and percentage.',
+    'A candidate is "called" if a small yellow/gold check mark (✓) sits next to their name, chip, or percentage — zero, one, or more may be called (top-two races commonly show two). Set "called" to "called" for each that has the mark, else "".',
+    'Also read the "X% IN" reporting figure. Report via the report_crop tool.',
   ].join('\n');
 
-const DEFAULT_RECALL_VOTES = 1;
-
-// Single crop read of the calls. The `extra.vote` field varies the prompt-hash per
-// vote so each is recorded/replayed as a distinct golden entry (the API ignores it).
-const detectCallOnce = async (
+// One crop read. `extra.vote` varies the prompt-hash per vote so each is recorded/
+// replayed as a distinct golden entry (the API ignores it). Votes are UNIONed for
+// the call set (a ✓ seen by any vote counts); for the numeric fields the first
+// read wins (they agree — measured 4/4 — and a single Sonnet read is reliable).
+const recropReadOnce = async (
   cropPng: Buffer,
   raceHeading: string,
   vote: number,
   deps: ExtractFrameDeps,
-): Promise<string[]> => {
+): Promise<RecropRead> => {
   const response = await deps.client.call({
     extra: { vote },
     frameHash: createHash('sha256').update(cropPng).digest('hex'),
     image: { base64: cropPng.toString('base64'), mediaType: 'image/png' },
     model: deps.recallModel ?? deps.model ?? DEFAULT_RECALL_MODEL,
-    prompt: recallPrompt(raceHeading),
-    tool: recallTool,
-    toolChoice: RECALL_TOOL,
+    prompt: recropPrompt(raceHeading),
+    tool: recropTool,
+    toolChoice: RECROP_TOOL,
   });
-  return recallBodySchema
-    .parse(response.body)
-    .calledCandidateNames.map((name) => name.trim())
-    .filter((name) => name.length > 0);
+  return recropBodySchema.parse(response.body);
 };
 
-// Vote N times and UNION the results: a candidate is called if ANY vote sees its ✓.
-// Statistically sound because recall errors are pure misses, never false calls —
-// so union drives the per-candidate miss rate toward (single-miss-rate)^N.
-const detectCallsInCrop = async (
-  cropPng: Buffer,
-  raceHeading: string,
-  votes: number,
-  deps: ExtractFrameDeps,
-): Promise<string[]> => {
-  const reads = await Promise.all(
-    Array.from({ length: votes }, (_unused, index) =>
-      detectCallOnce(cropPng, raceHeading, index, deps),
-    ),
-  );
-  return Array.from(new Set(reads.flat()));
-};
+const DEFAULT_RECALL_VOTES = 1;
 
 export type ExtractFrameDeps = {
   client: LlmClient;
@@ -328,33 +338,62 @@ export const extractFrame = async (
     })
     .filter((observation): observation is RaceObservation => observation !== null);
 
-  // Re-call pass is on by default (it's the production-correct behavior). Isolated
+  // Re-crop pass is on by default (it's the production-correct behavior). Isolated
   // unit tests that use a single-response fake client pass recallPass: false.
   if (deps.recallPass === false) return observations;
   const recrop = deps.recropRegion ?? cropAndUpscaleRegion;
+  const votes = deps.recallVotes ?? DEFAULT_RECALL_VOTES;
 
-  // Re-call pass: only for templates with a captureRegion. Overrides calledFor
-  // from the upscaled crop, matching the re-read name to a pass-1 candidate.
+  // For each detected template with a captureRegion, re-read its candidates + pct_in
+  // from the upscaled crop and override pass 1 (the crop reads small digits + the ✓
+  // reliably where the full frame doesn't). Pass 1 keeps the template id + raceKey.
   return Promise.all(
-    observations.map(async (observation) => {
+    observations.map(async (observation): Promise<RaceObservation> => {
       const spec = findTemplate(observation.templateId ?? '');
       if (spec?.captureRegion === undefined) return observation;
       const cropPng = await recrop(framePng, spec.captureRegion);
-      const calledNames = await detectCallsInCrop(
-        cropPng,
-        observation.extractedFields?.race_heading ?? observation.raceKey,
-        deps.recallVotes ?? DEFAULT_RECALL_VOTES,
-        deps,
+      const heading = observation.extractedFields?.race_heading ?? observation.raceKey;
+      const reads = await Promise.all(
+        Array.from({ length: votes }, (_unused, index) =>
+          recropReadOnce(cropPng, heading, index, deps),
+        ),
       );
-      // Map each re-read name to a pass-1 candidate key; the recall pass is
-      // authoritative for the call set, so it replaces (not merges) calledFor.
-      const calledFor = calledNames
-        .map((calledName) =>
-          observation.candidates.find((candidate) => namesMatch(candidate.name, calledName)),
+      const primary = reads[0]!; // numeric fields: first read (they agree)
+
+      // Union the called set across votes (a ✓ seen by any vote counts), matched by
+      // name so it lines up with the rebuilt candidate list.
+      const calledNames = new Set(
+        reads.flatMap((read) =>
+          read.candidates.filter((c) => c.called === 'called').map((c) => stripPartyPrefix(c.name, c.party)),
+        ),
+      );
+
+      const recordFor = (c: z.infer<typeof recropCandidateSchema>): Record<string, string> => ({
+        called: c.called,
+        name: stripPartyPrefix(c.name, c.party),
+        party: c.party,
+        pct: c.pct,
+        votes: c.votes,
+      });
+      const candidates: CandidateState[] = primary.candidates.map((c) => ({
+        key: spec.bind.candidateKeyFrom(recordFor(c)),
+        name: stripPartyPrefix(c.name, c.party),
+        party: c.party,
+        pct: toPct(c.pct),
+        votes: toInt(c.votes),
+      }));
+      const calledFor = primary.candidates
+        .filter((c) =>
+          Array.from(calledNames).some((called) => namesMatch(stripPartyPrefix(c.name, c.party), called)),
         )
-        .filter((candidate): candidate is CandidateState => candidate !== undefined)
-        .map((candidate) => candidate.key);
-      return { ...observation, calledFor };
+        .map((c) => spec.bind.candidateKeyFrom(recordFor(c)));
+
+      return {
+        ...observation,
+        calledFor,
+        candidates,
+        pctIn: toPct(primary.pctIn),
+      };
     }),
   );
 };

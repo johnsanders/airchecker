@@ -43,11 +43,31 @@
     {
       "frameSha256": "8cad84b211c2a1754108e734deffbda08e3b122451fb308d2163496a7d9e35d2",
       "model": "claude-sonnet-4-6",
-      "promptHash": "f871bc269fad3a918e07e3af96ebbc060b0641c5b596df21054afadc3bfb1a7f",
+      "promptHash": "201c48f6b0fb5ec1dfed0ab43d4826b705b077eaf63808565e9f76504a2e3416",
       "response": {
-        "calledCandidateNames": [
-          "John Cowan",
-          "Robert Adkerson"
+        "pctIn": "90%",
+        "candidates": [
+          {
+            "name": "John Cowan",
+            "party": "R",
+            "votes": "34,141",
+            "pct": "42.6%",
+            "called": "called"
+          },
+          {
+            "name": "Robert Adkerson",
+            "party": "R",
+            "votes": "17,399",
+            "pct": "21.7%",
+            "called": "called"
+          },
+          {
+            "name": "Tricia Pridemore",
+            "party": "R",
+            "votes": "15,194",
+            "pct": "19.0%",
+            "called": ""
+          }
         ]
       }
     }

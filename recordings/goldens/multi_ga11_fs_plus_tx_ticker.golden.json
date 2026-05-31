@@ -64,23 +64,57 @@
       }
     },
     {
-      "frameSha256": "accd3d959d7ef12d9d2305225560ce2e46b5208544176fa1cd0cf59ab26f95c5",
+      "frameSha256": "d11d3602f5caff564b4d42840301fb17ac2c04b49118d65d1c0b7f1931152198",
       "model": "claude-sonnet-4-6",
-      "promptHash": "f871bc269fad3a918e07e3af96ebbc060b0641c5b596df21054afadc3bfb1a7f",
+      "promptHash": "d9abe77bd9cc51ef5273d155dfd9aab69211e35f41fd138d71cb14125f5587ab",
       "response": {
-        "calledCandidateNames": [
-          "John Cowan",
-          "Robert Adkerson"
+        "pctIn": "95%",
+        "candidates": [
+          {
+            "name": "KEN PAXTON",
+            "party": "R",
+            "votes": "885,949",
+            "pct": "63.8%",
+            "called": "called"
+          },
+          {
+            "name": "JOHN CORNYN",
+            "party": "R",
+            "votes": "501,725",
+            "pct": "36.2%",
+            "called": ""
+          }
         ]
       }
     },
     {
-      "frameSha256": "d11d3602f5caff564b4d42840301fb17ac2c04b49118d65d1c0b7f1931152198",
+      "frameSha256": "accd3d959d7ef12d9d2305225560ce2e46b5208544176fa1cd0cf59ab26f95c5",
       "model": "claude-sonnet-4-6",
-      "promptHash": "4e9ab0689eb83955e4ec04fbd5d5b75b2c6d9afc1cf8bf47de7570ff44da741a",
+      "promptHash": "201c48f6b0fb5ec1dfed0ab43d4826b705b077eaf63808565e9f76504a2e3416",
       "response": {
-        "calledCandidateNames": [
-          "KEN PAXTON"
+        "pctIn": "90%",
+        "candidates": [
+          {
+            "name": "John Cowan",
+            "party": "R",
+            "votes": "34,141",
+            "pct": "42.6%",
+            "called": "called"
+          },
+          {
+            "name": "Robert Adkerson",
+            "party": "R",
+            "votes": "17,399",
+            "pct": "21.7%",
+            "called": "called"
+          },
+          {
+            "name": "Tricia Pridemore",
+            "party": "R",
+            "votes": "15,194",
+            "pct": "19.0%",
+            "called": ""
+          }
         ]
       }
     }
@@ -128,19 +162,19 @@
     },
     {
       "calledFor": [
-        "Ken Paxton"
+        "KEN PAXTON"
       ],
       "candidates": [
         {
-          "key": "Ken Paxton",
-          "name": "Ken Paxton",
+          "key": "KEN PAXTON",
+          "name": "KEN PAXTON",
           "party": "R",
           "pct": 63.8,
           "votes": 885949
         },
         {
-          "key": "John Cornyn",
-          "name": "John Cornyn",
+          "key": "JOHN CORNYN",
+          "name": "JOHN CORNYN",
           "party": "R",
           "pct": 36.2,
           "votes": 501725

@@ -77,98 +77,89 @@ describe('extractFrame', () => {
     expect(observations[0]!.calledFor).toEqual([]);
   });
 
-  it('re-call pass overrides calledFor from the upscaled crop', async () => {
-    // Pass 1 misses the check mark (called: ''); the recall pass reads the crop
-    // and names Paxton — the final calledFor should be corrected to his key.
-    const client: LlmClient = {
-      call: async (request) => {
-        if (request.tool?.name === 'report_call')
-          return { body: { calledCandidateNames: ['Ken Paxton'] }, model: 'claude-haiku-4-5' };
-        return {
-          body: {
-            templates: [
-              {
-                candidates: [
-                  { called: '', name: 'Ken Paxton', party: 'R', pct: '63.8', votes: '885,949' },
-                  { called: '', name: 'John Cornyn', party: 'R', pct: '36.2', votes: '501,725' },
-                ],
-                singletons: { pct_in: '95', race_heading: 'TX U.S. SENATE (R)' },
-                templateId: 'ticker_v1',
-              },
+  // Two-call fake: pass-1 'report_templates' returns `pass1`; pass-2 'report_crop'
+  // returns `crop`. Lets each test script both reads independently.
+  const twoPassClient = (pass1: unknown, crop: unknown): LlmClient => ({
+    call: async (request) => ({
+      body: request.tool?.name === 'report_crop' ? crop : pass1,
+      model: 'claude-haiku-4-5',
+    }),
+  });
+  const RECROP_DEPS = { recallPass: true as const, recropRegion: async () => Buffer.from('fake-crop') };
+
+  it('re-crop pass overrides votes/pct/call from the upscaled crop', async () => {
+    // Pass 1 misreads Cornyn's votes (459,009) and misses Paxton's ✓; the crop read
+    // corrects the digits AND the call.
+    const client = twoPassClient(
+      {
+        templates: [
+          {
+            candidates: [
+              { called: '', name: 'Ken Paxton', party: 'R', pct: '64.1', votes: '819,681' },
+              { called: '', name: 'John Cornyn', party: 'R', pct: '35.9', votes: '459,009' },
             ],
+            singletons: { pct_in: '94', race_heading: 'TX U.S. SENATE (R)' },
+            templateId: 'ticker_v1',
           },
-          model: 'claude-haiku-4-5',
-        };
+        ],
       },
-    };
-    const observations = await extractFrame(FRAME, 0, {
-      client,
-      recallPass: true,
-      recropRegion: async () => Buffer.from('fake-crop'),
-    });
-    expect(observations[0]!.calledFor).toEqual(['Ken Paxton']);
+      {
+        candidates: [
+          { called: 'called', name: 'Ken Paxton', party: 'R', pct: '64.1', votes: '819,681' },
+          { called: '', name: 'John Cornyn', party: 'R', pct: '35.9', votes: '459,609' },
+        ],
+        pctIn: '94',
+      },
+    );
+    const observations = await extractFrame(FRAME, 0, { client, ...RECROP_DEPS });
+    const o = observations[0]!;
+    expect(o.calledFor).toEqual(['Ken Paxton']);
+    const cornyn = o.candidates.find((c) => c.name === 'John Cornyn')!;
+    expect(cornyn.votes).toBe(459609); // crop digit wins over pass-1's 459,009
   });
 
-  it('re-call pass captures TWO winners in a top-two race', async () => {
-    // GA-11 top-two: both Cowan and Adkerson have check marks. Pass 1 sees only
-    // Cowan; the recall pass must surface both.
-    const client: LlmClient = {
-      call: async (request) => {
-        if (request.tool?.name === 'report_call')
-          return {
-            body: { calledCandidateNames: ['John Cowan', 'Robert Adkerson'] },
-            model: 'claude-haiku-4-5',
-          };
-        return {
-          body: {
-            templates: [
-              {
-                candidates: [
-                  { called: 'called', name: 'John Cowan', party: 'R', pct: '42.6', votes: '34,141' },
-                  { called: '', name: 'Robert Adkerson', party: 'R', pct: '21.7', votes: '17,399' },
-                  { called: '', name: 'Tricia Pridemore', party: 'R', pct: '19.0', votes: '15,194' },
-                ],
-                singletons: { pct_in: '90', race_heading: 'GA-11 U.S. HOUSE (R)' },
-                templateId: 'fullscreen_results',
-              },
+  it('re-crop pass captures TWO winners in a top-two race', async () => {
+    const client = twoPassClient(
+      {
+        templates: [
+          {
+            candidates: [
+              { called: 'called', name: 'John Cowan', party: 'R', pct: '42.6', votes: '34,141' },
+              { called: '', name: 'Robert Adkerson', party: 'R', pct: '21.7', votes: '17,399' },
             ],
+            singletons: { pct_in: '90', race_heading: 'GA-11 U.S. HOUSE (R)' },
+            templateId: 'fullscreen_results',
           },
-          model: 'claude-haiku-4-5',
-        };
+        ],
       },
-    };
-    const observations = await extractFrame(FRAME, 0, {
-      client,
-      recallPass: true,
-      recropRegion: async () => Buffer.from('fake-crop'),
-    });
+      {
+        candidates: [
+          { called: 'called', name: 'John Cowan', party: 'R', pct: '42.6', votes: '34,141' },
+          { called: 'called', name: 'Robert Adkerson', party: 'R', pct: '21.7', votes: '17,399' },
+          { called: '', name: 'Tricia Pridemore', party: 'R', pct: '19.0', votes: '15,194' },
+        ],
+        pctIn: '90',
+      },
+    );
+    const observations = await extractFrame(FRAME, 0, { client, ...RECROP_DEPS });
     expect(observations[0]!.calledFor).toEqual(['John Cowan', 'Robert Adkerson']);
+    expect(observations[0]!.candidates).toHaveLength(3); // crop's full list wins
   });
 
-  it('re-call pass clears a pass-1 false-positive call when the crop sees no check mark', async () => {
-    const client: LlmClient = {
-      call: async (request) => {
-        if (request.tool?.name === 'report_call')
-          return { body: { calledCandidateNames: [] }, model: 'claude-haiku-4-5' };
-        return {
-          body: {
-            templates: [
-              {
-                candidates: [{ called: 'called', name: 'Jane Smith', party: 'D', pct: '50.0', votes: '100' }],
-                singletons: { pct_in: '0', race_heading: 'X' },
-                templateId: 'ticker_v1',
-              },
-            ],
+  it('re-crop pass clears a pass-1 false-positive call when the crop sees no ✓', async () => {
+    const client = twoPassClient(
+      {
+        templates: [
+          {
+            candidates: [{ called: 'called', name: 'Jane Smith', party: 'D', pct: '50.0', votes: '100' }],
+            singletons: { pct_in: '0', race_heading: 'X' },
+            templateId: 'ticker_v1',
           },
-          model: 'claude-haiku-4-5',
-        };
+        ],
       },
-    };
-    const observations = await extractFrame(FRAME, 0, {
-      client,
-      recallPass: true,
-      recropRegion: async () => Buffer.from('fake-crop'),
-    });
+      { candidates: [{ called: '', name: 'Jane Smith', party: 'D', pct: '50.0', votes: '100' }], pctIn: '0' },
+    );
+    const observations = await extractFrame(FRAME, 0, { client, ...RECROP_DEPS });
     expect(observations[0]!.calledFor).toEqual([]);
   });
 });
