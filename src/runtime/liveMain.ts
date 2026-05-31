@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import makeRecorder from '../replay/recorder.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import type { CaptureMode } from '../sources/air/captureScheduler.js';
+import { makeProviderSource } from '../sources/provider/providerSource.js';
 import makeComposition from './composition.js';
 
 // Capture cadence is env-configurable:
@@ -40,8 +41,32 @@ const liveMain = async (): Promise<void> => {
 		onSkip: () => console.warn('[live] capture skipped — previous still in flight'),
 	});
 
+	// DDHQ provider source: poll once per minute (skip-if-busy via its own scheduler).
+	// Only started if credentials are present, so the air/cadence scaffold still runs
+	// without DDHQ configured.
+	let providerScheduler: ReturnType<typeof makeCaptureScheduler> | undefined;
+	if (process.env.DDHQ_CLIENT_ID !== undefined) {
+		const provider = makeProviderSource((observations) =>
+			observations.forEach(composition.store.record),
+		);
+		providerScheduler = makeCaptureScheduler({
+			captureOnce: provider.poller.pollOnce,
+			intervalMs: provider.intervalMs,
+			mode: 'interval',
+			onError: (error) => console.error('[provider] poll error', error),
+			onSkip: () => console.warn('[provider] poll skipped — previous still in flight'),
+		});
+		providerScheduler.start();
+		console.log(
+			`[provider] DDHQ polling every ${provider.intervalMs}ms across ${provider.queries.length} quer${provider.queries.length === 1 ? 'y' : 'ies'}.`,
+		);
+	} else {
+		console.log('[provider] DDHQ not configured (no DDHQ_CLIENT_ID) — skipping.');
+	}
+
 	const shutdown = (): void => {
 		scheduler.stop();
+		providerScheduler?.stop();
 		recorder.close();
 		process.exit(0);
 	};
