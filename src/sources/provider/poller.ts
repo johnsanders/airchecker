@@ -14,12 +14,14 @@ import { ddhqResponseSchema } from './ddhqSchema.js';
 export type ProviderPollerConfig = {
   auth: DdhqAuth;
   baseUrl: string;
+  // Read FRESH each tick — queries are runtime state edited via the web UI, so a
+  // getter (not a static array) lets edits take effect on the next poll with no
+  // restart. Each string becomes /api/v4/races?<query>, e.g. 'race_ids=123,456'.
+  getQueries: () => string[];
   http: HttpJson;
   now?: () => number; // observedAt clock; default Date.now
   onError?: (query: string, error: unknown) => void;
   onObservations: (observations: RaceObservation[]) => void;
-  // e.g. 'race_ids=123,456' or 'state=TX&office_id=3' — each becomes /api/v4/races?<query>
-  queries: string[];
 };
 
 export type ProviderPoller = {
@@ -62,7 +64,7 @@ export const makeProviderPoller = (config: ProviderPollerConfig): ProviderPoller
     // Queries run independently — one failing query is reported and skipped, the
     // rest still land. (parallel: DDHQ tolerates it and a tick is once/minute.)
     await Promise.all(
-      config.queries.map(async (query) => {
+      config.getQueries().map(async (query) => {
         try {
           await runQuery(query);
         } catch (error) {

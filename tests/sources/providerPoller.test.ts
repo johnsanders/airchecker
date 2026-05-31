@@ -47,7 +47,7 @@ describe('makeProviderPoller', () => {
       baseUrl,
       http,
       onObservations: (obs) => observed.push(...obs),
-      queries: ['race_ids=1'],
+      getQueries: () => ['race_ids=1'],
     });
     await poller.pollOnce();
     expect(observed.length).toBe((sample.data as unknown[]).length);
@@ -66,7 +66,7 @@ describe('makeProviderPoller', () => {
       baseUrl,
       http,
       onObservations: (obs) => observed.push(...obs),
-      queries: ['race_ids=1', 'state=TX'],
+      getQueries: () => ['race_ids=1', 'state=TX'],
     });
     await poller.pollOnce();
     expect(gets).toContain(`${baseUrl}/api/v4/races?race_ids=1`);
@@ -87,7 +87,7 @@ describe('makeProviderPoller', () => {
       baseUrl,
       http,
       onObservations: (obs) => observed.push(...obs),
-      queries: ['race_ids=1'],
+      getQueries: () => ['race_ids=1'],
     });
     await poller.pollOnce();
     expect(observed).toHaveLength(2);
@@ -107,7 +107,7 @@ describe('makeProviderPoller', () => {
       http,
       onError: (query) => errors.push(query),
       onObservations: (obs) => observed.push(...obs),
-      queries: ['good=1', 'bad=1'],
+      getQueries: () => ['good=1', 'bad=1'],
     });
     await poller.pollOnce();
     expect(observed).toHaveLength(1); // the good query still landed
@@ -140,7 +140,7 @@ describe('makeProviderPoller', () => {
       baseUrl,
       http,
       onObservations: (obs) => observed.push(...obs),
-      queries: ['race_ids=1'],
+      getQueries: () => ['race_ids=1'],
     });
     await poller.pollOnce();
     expect(invalidated).toBe(true);

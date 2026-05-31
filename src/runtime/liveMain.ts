@@ -1,15 +1,19 @@
 import { randomUUID } from 'node:crypto';
 
+import type { Anomaly, RaceObservation } from '../reconcile/reconcile.js';
 import makeRecorder from '../replay/recorder.js';
+import { makeAirSource } from '../sources/air/airSource.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import type { CaptureMode } from '../sources/air/captureScheduler.js';
 import { makeProviderSource } from '../sources/provider/providerSource.js';
+import type { QueryStore } from '../sources/provider/queryStore.js';
 import { makeVendorSource } from '../sources/vendor/vendorSource.js';
+import { makeWebServer } from '../web/server.js';
 import makeComposition from './composition.js';
 
-// Capture cadence is env-configurable:
-//   CAPTURE_MODE=interval|manual   (default interval)
-//   CAPTURE_INTERVAL_MS=<n>        (default 5000; interval mode only)
+//   CAPTURE_MODE=interval|manual     air cadence (default interval)
+//   CAPTURE_INTERVAL_MS=<n>          default 5000; interval mode only
+//   WEB_PORT=<n>                     web view port (default 8787)
 const readCaptureMode = (): CaptureMode =>
 	process.env.CAPTURE_MODE === 'manual' ? 'manual' : 'interval';
 const readIntervalMs = (): number => {
@@ -17,39 +21,49 @@ const readIntervalMs = (): number => {
 	return Number.isFinite(raw) && raw > 0 ? raw : 5000;
 };
 
+const RECENT_ALERTS_MAX = 200;
+
 const liveMain = async (): Promise<void> => {
 	const sessionId = `live-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`;
 	const recorder = makeRecorder({ baseDir: 'recordings', sessionId });
-	const composition = makeComposition({
-		onRecord: recorder.recordObservation,
-	});
+	const composition = makeComposition({ onRecord: recorder.recordObservation });
 
-	// One capture = grab a frame, run extractFrame, push observations to the store.
-	// BLOCKED: the screenshot grab (DirecTV window) + extractFrame wiring land here
-	// once the capture mechanism is chosen. Until then this is a no-op stand-in so
-	// the cadence is exercisable end-to-end.
-	const captureOnce = async (): Promise<void> => {
-		console.log(`[live] capture tick @ ${new Date().toISOString()} (no capturer wired yet)`);
+	// Rolling buffer of recent anomalies for the web view. Reconciliation runs after
+	// each new batch of observations lands, over the races those observations touched.
+	const recentAlerts: Anomaly[] = [];
+	const reconcileTouched = (observations: RaceObservation[]): void => {
+		const now = Date.now();
+		const touched = new Set(observations.map((o) => o.raceKey));
+		touched.forEach((raceKey) => {
+			composition.reconcileRace(raceKey, now).forEach((anomaly) => recentAlerts.push(anomaly));
+		});
+		while (recentAlerts.length > RECENT_ALERTS_MAX) recentAlerts.shift();
+	};
+	const ingest = (observations: RaceObservation[]): void => {
+		observations.forEach(composition.store.record);
+		reconcileTouched(observations);
 	};
 
+	// Air source: real browser capture → extractFrame → store. Driven by the cadence
+	// scheduler (interval or manual web button).
+	const airSource = makeAirSource({ onObservations: ingest, recorder });
 	const mode = readCaptureMode();
 	const intervalMs = readIntervalMs();
-	const scheduler = makeCaptureScheduler({
-		captureOnce,
+	const airScheduler = makeCaptureScheduler({
+		captureOnce: airSource.captureOnce,
 		intervalMs,
 		mode,
-		onError: (error) => console.error('[live] capture error', error),
-		onSkip: () => console.warn('[live] capture skipped — previous still in flight'),
+		onError: (error) => console.error('[air] capture error', error),
+		onSkip: () => console.warn('[air] capture skipped — previous still in flight'),
 	});
 
-	// DDHQ provider source: poll once per minute (skip-if-busy via its own scheduler).
-	// Only started if credentials are present, so the air/cadence scaffold still runs
-	// without DDHQ configured.
+	// DDHQ provider source — queries are runtime state (queryStore), set via the web
+	// view; nothing polls until queries are added. Started only when creds are present.
 	let providerScheduler: ReturnType<typeof makeCaptureScheduler> | undefined;
+	let queryStore: QueryStore | undefined;
 	if (process.env.DDHQ_CLIENT_ID !== undefined) {
-		const provider = makeProviderSource((observations) =>
-			observations.forEach(composition.store.record),
-		);
+		const provider = makeProviderSource(ingest);
+		queryStore = provider.queryStore;
 		providerScheduler = makeCaptureScheduler({
 			captureOnce: provider.poller.pollOnce,
 			intervalMs: provider.intervalMs,
@@ -58,19 +72,15 @@ const liveMain = async (): Promise<void> => {
 			onSkip: () => console.warn('[provider] poll skipped — previous still in flight'),
 		});
 		providerScheduler.start();
-		console.log(
-			`[provider] DDHQ polling every ${provider.intervalMs}ms across ${provider.queries.length} quer${provider.queries.length === 1 ? 'y' : 'ies'}.`,
-		);
+		console.log(`[provider] DDHQ polling every ${provider.intervalMs}ms (queries set via web view).`);
 	} else {
 		console.log('[provider] DDHQ not configured (no DDHQ_CLIENT_ID) — skipping.');
 	}
 
-	// Chameleon vendor source: poll the fixed playlist URL once per minute (VPN-only).
+	// Chameleon vendor source — fixed playlist URL, once per minute (VPN-only).
 	let vendorScheduler: ReturnType<typeof makeCaptureScheduler> | undefined;
 	if (process.env.CHAMELEON_URL !== undefined) {
-		const vendor = makeVendorSource((observations) =>
-			observations.forEach(composition.store.record),
-		);
+		const vendor = makeVendorSource(ingest);
 		vendorScheduler = makeCaptureScheduler({
 			captureOnce: vendor.poller.pollOnce,
 			intervalMs: vendor.intervalMs,
@@ -84,21 +94,36 @@ const liveMain = async (): Promise<void> => {
 		console.log('[vendor] Chameleon not configured (no CHAMELEON_URL) — skipping.');
 	}
 
+	// Web view: state per source, recent alerts, last frame, manual capture button,
+	// editable DDHQ queries.
+	const web = makeWebServer({
+		getLastFrame: airSource.getLastFrame,
+		getRecentAlerts: () => recentAlerts,
+		store: composition.store,
+		triggerCapture: airScheduler.triggerCapture,
+		...(queryStore === undefined ? {} : { queryStore }),
+	});
+	const webPort = Number(process.env.WEB_PORT) || 8787;
+
+	let shuttingDown = false;
 	const shutdown = (): void => {
-		scheduler.stop();
+		if (shuttingDown) return;
+		shuttingDown = true;
+		airScheduler.stop();
 		providerScheduler?.stop();
 		vendorScheduler?.stop();
+		void airSource.close();
+		void web.close();
 		recorder.close();
 		process.exit(0);
 	};
 	process.on('SIGINT', shutdown);
 	process.on('SIGTERM', shutdown);
 
-	scheduler.start();
-	// scheduler.triggerCapture() is the manual entry point — the Fastify web button
-	// will call it once the web view exists; in manual mode it's the only trigger.
+	airScheduler.start();
+	await web.listen({ port: webPort });
 	console.log(
-		`[live] session ${sessionId} ready; mode=${mode}${mode === 'interval' ? ` every ${intervalMs}ms` : ' (manual trigger only)'}; ${composition.store.getRaceKeys().length} races tracked.`,
+		`[live] session ${sessionId} ready · air mode=${mode}${mode === 'interval' ? ` every ${intervalMs}ms` : ' (manual)'} · web http://localhost:${webPort}`,
 	);
 };
 

@@ -3,14 +3,15 @@ import { makeFetchHttp } from '../http.js';
 import { makeDdhqAuth } from './auth.js';
 import { makeProviderPoller } from './poller.js';
 import type { ProviderPoller } from './poller.js';
+import { makeQueryStore } from './queryStore.js';
+import type { QueryStore } from './queryStore.js';
 
-// Assembles the live DDHQ provider source from env. Credentials are read from
-// process.env HERE and handed straight to the auth module — they never get logged
-// or returned. Config:
+// Assembles the live DDHQ provider source. Credentials are read from process.env
+// HERE and handed straight to the auth module — never logged or returned. Query
+// strings are NOT from env: they're runtime state in queryStore, edited via the
+// web UI, starting empty (nothing polls until queries are added).
 //   DDHQ_BASE_URL      (default https://resultsapi.decisiondeskhq.com)
 //   DDHQ_CLIENT_ID / DDHQ_CLIENT_SECRET / DDHQ_GRANT_TYPE  (required)
-//   DDHQ_QUERIES       JSON array of /api/v4/races query strings, e.g.
-//                      ["race_ids=1,2,3","state=TX&office_id=3"]  (UI-driven later)
 //   DDHQ_POLL_INTERVAL_MS  (default 60000 — once per minute)
 
 const DEFAULT_BASE_URL = 'https://resultsapi.decisiondeskhq.com';
@@ -19,16 +20,7 @@ const DEFAULT_POLL_INTERVAL_MS = 60_000;
 export type ProviderSource = {
   intervalMs: number;
   poller: ProviderPoller;
-  queries: string[];
-};
-
-const readQueries = (): string[] => {
-  const raw = process.env.DDHQ_QUERIES;
-  if (raw === undefined || raw.trim().length === 0) return [];
-  const parsed: unknown = JSON.parse(raw);
-  if (!Array.isArray(parsed) || !parsed.every((item) => typeof item === 'string'))
-    throw new Error('DDHQ_QUERIES must be a JSON array of strings');
-  return parsed;
+  queryStore: QueryStore; // exposed so the web server can get/set the query list
 };
 
 export const makeProviderSource = (
@@ -42,24 +34,20 @@ export const makeProviderSource = (
 
   const baseUrl = process.env.DDHQ_BASE_URL ?? DEFAULT_BASE_URL;
   const http = makeFetchHttp();
-  const auth = makeDdhqAuth({
-    baseUrl,
-    credentials: { clientId, clientSecret, grantType },
-    http,
-  });
+  const auth = makeDdhqAuth({ baseUrl, credentials: { clientId, clientSecret, grantType }, http });
   const intervalRaw = Number(process.env.DDHQ_POLL_INTERVAL_MS);
   const intervalMs =
     Number.isFinite(intervalRaw) && intervalRaw > 0 ? intervalRaw : DEFAULT_POLL_INTERVAL_MS;
-  const queries = readQueries();
 
+  const queryStore = makeQueryStore();
   const poller = makeProviderPoller({
     auth,
     baseUrl,
+    getQueries: queryStore.get,
     http,
     onError: (query, error) => console.error(`[provider] query failed: ${query}`, error),
     onObservations,
-    queries,
   });
 
-  return { intervalMs, poller, queries };
+  return { intervalMs, poller, queryStore };
 };
