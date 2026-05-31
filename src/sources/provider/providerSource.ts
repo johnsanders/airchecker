@@ -9,7 +9,8 @@ import type { QueryStore } from './queryStore.js';
 // Assembles the live DDHQ provider source. Credentials are read from process.env
 // HERE and handed straight to the auth module — never logged or returned. Query
 // strings are NOT from env: they're runtime state in queryStore, edited via the
-// web UI, starting empty (nothing polls until queries are added).
+// web UI. The caller may inject a persistent queryStore (settings-backed) so edits
+// survive restarts; the default is in-memory and starts empty.
 //   DDHQ_BASE_URL      (default https://resultsapi.decisiondeskhq.com)
 //   DDHQ_CLIENT_ID / DDHQ_CLIENT_SECRET / DDHQ_GRANT_TYPE  (required)
 //   DDHQ_POLL_INTERVAL_MS  (default 60000 — once per minute)
@@ -25,6 +26,7 @@ export type ProviderSource = {
 
 export const makeProviderSource = (
   onObservations: (observations: RaceObservation[]) => void,
+  queryStore: QueryStore = makeQueryStore(),
 ): ProviderSource => {
   const clientId = process.env.DDHQ_CLIENT_ID;
   const clientSecret = process.env.DDHQ_CLIENT_SECRET;
@@ -39,7 +41,6 @@ export const makeProviderSource = (
   const intervalMs =
     Number.isFinite(intervalRaw) && intervalRaw > 0 ? intervalRaw : DEFAULT_POLL_INTERVAL_MS;
 
-  const queryStore = makeQueryStore();
   const poller = makeProviderPoller({
     auth,
     baseUrl,

@@ -6,8 +6,10 @@ import { makeAirSource } from '../sources/air/airSource.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import type { CaptureMode } from '../sources/air/captureScheduler.js';
 import { makeProviderSource } from '../sources/provider/providerSource.js';
+import { makeQueryStore } from '../sources/provider/queryStore.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
 import { makeVendorSource } from '../sources/vendor/vendorSource.js';
+import { makeSettingsStore } from '../settings/settingsStore.js';
 import { makeWebServer } from '../web/server.js';
 import makeComposition from './composition.js';
 
@@ -27,6 +29,9 @@ const liveMain = async (): Promise<void> => {
 	const sessionId = `live-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`;
 	const recorder = makeRecorder({ baseDir: 'recordings', sessionId });
 	const composition = makeComposition({ onRecord: recorder.recordObservation });
+
+	// Persistent config (survives restarts), separate from the session-scoped recorder DB.
+	const settings = makeSettingsStore('recordings/settings.sqlite');
 
 	// Rolling buffer of recent anomalies for the web view. Reconciliation runs after
 	// each new batch of observations lands, over the races those observations touched.
@@ -62,7 +67,17 @@ const liveMain = async (): Promise<void> => {
 	let providerScheduler: ReturnType<typeof makeCaptureScheduler> | undefined;
 	let queryStore: QueryStore | undefined;
 	if (process.env.DDHQ_CLIENT_ID !== undefined) {
-		const provider = makeProviderSource(ingest);
+		// In-memory store seeded from the persisted list; writes-through to settings so
+		// UI edits survive restarts. get() stays in-memory (no per-tick disk read).
+		const memory = makeQueryStore(settings.getQueries());
+		const persistentQueryStore: QueryStore = {
+			get: memory.get,
+			set: (next) => {
+				memory.set(next);
+				settings.setQueries(memory.get());
+			},
+		};
+		const provider = makeProviderSource(ingest, persistentQueryStore);
 		queryStore = provider.queryStore;
 		providerScheduler = makeCaptureScheduler({
 			captureOnce: provider.poller.pollOnce,
@@ -116,6 +131,7 @@ const liveMain = async (): Promise<void> => {
 		void airSource.close();
 		void web.close();
 		recorder.close();
+		settings.close();
 		process.exit(0);
 	};
 	process.on('SIGINT', shutdown);
