@@ -111,7 +111,7 @@ Deterministic code does all polling, all DB queries, all reconciliation math, al
 
 **Why two passes (measured, not assumed).** On the full 1920-wide frame all bulk fields read 30/30, but the small gold ✓ glyph read only ~37–60% (`race_heading` also dropped ~25% until its schema field was made required). Cropping+upscaling makes the ✓ large; **Sonnet single-shot on that crop = 20/20**. Measure reliability with `npm run verify` / `npm run measure-call` against a golden's ground truth — never trust count-only checks. **Resolution floor:** ticker vote totals legible at 1920-wide, mush at 1280 — do NOT downscale frames below ~1920 (the API's ~1.15MP auto-shrink, ≈1432×806, was tested and reads fine).
 
-Opus 4.7/4.8 is not used. Prompt caching is enabled on the stable portion (the registry menu / tool schema, identical every frame). Goldens record every call of both passes, so `npm run capture-golden` freezes a frame and the replay test re-runs the full two-pass flow deterministically with **no API key**.
+Opus 4.7/4.8 is not used. **Prompt caching is NOT used** — measured, the stable prefix (tools + menu) is ~1,200 tokens, below Haiku 4.5's 4,096-token cache floor, and the per-frame image (~1,560 tokens, most of the cost) is unique and uncacheable. The cost lever is capture cadence (don't extract every frame), not caching. Goldens record every call of both passes, so `npm run capture-golden` freezes a frame and the replay test re-runs the full two-pass flow deterministically with **no API key**.
 
 ### Replay harness (the test backbone)
 

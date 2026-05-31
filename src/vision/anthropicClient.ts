@@ -2,9 +2,14 @@ import Anthropic from '@anthropic-ai/sdk';
 
 import type { LlmClient } from './llmClient.js';
 
-// The real Messages-API client. Builds an image + text user turn, forces the
-// reporting tool, and caches the (stable) tool definition. Live mode only — an
-// ANTHROPIC_API_KEY must be present (the SDK reads it from the environment).
+// The real Messages-API client. Builds an image + text user turn and forces the
+// reporting tool. Live mode only — an ANTHROPIC_API_KEY must be present (the SDK
+// reads it from the environment).
+//
+// No prompt caching: measured, the stable prefix (tools + menu) is ~1,200 tokens —
+// below Haiku 4.5's 4,096-token cache minimum, so cache_control would be a silent
+// no-op — and the per-frame image (~1,560 tokens, the bulk of the cost) is unique
+// every frame and uncacheable. The cost lever here is capture cadence, not caching.
 export type AnthropicLlmClientOptions = {
   apiKey?: string;
   maxTokens?: number;
@@ -31,7 +36,6 @@ export const makeAnthropicLlmClient = (options: AnthropicLlmClientOptions = {}):
       if (request.tool !== undefined) {
         params.tools = [
           {
-            cache_control: { type: 'ephemeral' },
             description: request.tool.description,
             input_schema: request.tool.inputSchema as Anthropic.Tool.InputSchema,
             name: request.tool.name,
