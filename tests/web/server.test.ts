@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { Anomaly, RaceObservation } from '../../src/reconcile/reconcile.js';
 import makeStore from '../../src/store/store.js';
+import { makeMatchStore } from '../../src/sources/air/matchStore.js';
 import { makeQueryStore } from '../../src/sources/provider/queryStore.js';
 import { makeWebServer } from '../../src/web/server.js';
 import type { FastifyInstance } from 'fastify';
@@ -209,5 +210,23 @@ describe('web server', () => {
       payload: { mode: 'manual', intervalMs: 2000 },
     });
     expect(res.json()).toEqual({ intervalMs: 2000, mode: 'manual' });
+  });
+
+  it('gets and sets the air tab match', async () => {
+    const matchStore = makeMatchStore('directv');
+    app = makeWebServer({ getRecentAlerts: () => [], matchStore, store: makeStore() });
+
+    expect((await app.inject({ method: 'GET', url: '/api/air-match' })).json()).toEqual({
+      match: 'directv',
+    });
+    const res = await app.inject({ method: 'POST', url: '/api/air-match', payload: { match: 'actus' } });
+    expect(res.json()).toEqual({ match: 'actus' });
+    expect(matchStore.get()).toBe('actus');
+  });
+
+  it('rejects an empty air match', async () => {
+    app = makeWebServer({ getRecentAlerts: () => [], matchStore: makeMatchStore(), store: makeStore() });
+    const res = await app.inject({ method: 'POST', url: '/api/air-match', payload: { match: '  ' } });
+    expect(res.statusCode).toBe(400);
   });
 });

@@ -6,6 +6,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
+import { sourceLabel } from '../api.js';
 import type { RaceSummary, SourceName } from '../api.js';
 import { ago } from '../usePolling.js';
 
@@ -44,7 +45,7 @@ const RaceList: React.FC<Props> = (props) => {
                 <Chip
                   key={s}
                   size="small"
-                  label={s}
+                  label={sourceLabel(s)}
                   variant={race.present[s] ? 'filled' : 'outlined'}
                   color={race.present[s] ? 'primary' : 'default'}
                   sx={{ height: 18, fontSize: 10, opacity: race.present[s] ? 1 : 0.4 }}

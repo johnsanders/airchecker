@@ -3,6 +3,11 @@
 
 export type SourceName = 'DDHQ' | 'Ross' | 'air';
 
+// Display label for a source. The internal discriminant stays 'air' (it's the
+// on-air source in the reconciler/store/types); the UI shows 'Actus' per request.
+export const sourceLabel = (source: SourceName): string =>
+  source === 'air' ? 'Actus' : source;
+
 export interface Candidate {
   key: string;
   name: string;
@@ -103,4 +108,12 @@ export const api = {
   getQueries: () => getJson<{ queries: string[] }>('/api/queries'),
   setQueries: (queries: string[]) => postJson<{ queries: string[] }>('/api/queries', { queries }),
   setCadence: (next: Partial<Cadence>) => postJson<Cadence>('/api/cadence', next),
+  getAirMatch: () => getJson<{ match: string | null }>('/api/air-match'),
+  setAirMatch: (match: string) => postJson<{ match: string }>('/api/air-match', { match }),
 };
+
+// Preset tabs the capture button can target (label → URL substring).
+export const AIR_PRESETS: { label: string; match: string }[] = [
+  { label: 'DirecTV', match: 'directv' },
+  { label: 'Actus', match: 'actus' },
+];

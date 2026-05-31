@@ -7,7 +7,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import { api } from '../api.js';
+import { AIR_PRESETS, api } from '../api.js';
 import type { Cadence, Observation } from '../api.js';
 import { ago } from '../usePolling.js';
 
@@ -25,6 +25,16 @@ const CapturePanel: React.FC<Props> = (props) => {
   const [seconds, setSeconds] = React.useState(
     props.cadence ? Math.round(props.cadence.intervalMs / 1000) : 5,
   );
+  // Which tab the capturer targets (URL substring), loaded from the server.
+  const [airMatch, setAirMatch] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    void api.getAirMatch().then((r) => setAirMatch(r.match));
+  }, []);
+  const pickPreset = (match: string): void => {
+    setAirMatch(match);
+    void api.setAirMatch(match);
+  };
+
   // Cache-bust the frame image per timestamp so it refreshes on each capture.
   const frameSrc = props.lastFrame ? `/api/last-frame?ts=${props.lastFrame.ts}` : undefined;
 
@@ -83,6 +93,24 @@ const CapturePanel: React.FC<Props> = (props) => {
         <Typography variant="caption" color="text.secondary">
           {msg}
         </Typography>
+      </Stack>
+
+      <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+        <Typography variant="caption" color="text.secondary">
+          source tab:
+        </Typography>
+        <ToggleButtonGroup size="small" exclusive value={airMatch}>
+          {AIR_PRESETS.map((preset) => (
+            <ToggleButton key={preset.match} value={preset.match} onClick={() => pickPreset(preset.match)}>
+              {preset.label}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+        {airMatch !== null && !AIR_PRESETS.some((p) => p.match === airMatch) && (
+          <Typography variant="caption" color="text.secondary">
+            ({airMatch})
+          </Typography>
+        )}
       </Stack>
 
       {frameSrc ? (

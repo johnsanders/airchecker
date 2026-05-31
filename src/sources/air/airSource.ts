@@ -7,6 +7,8 @@ import { makeAnthropicLlmClient } from '../../vision/anthropicClient.js';
 import type { LlmClient } from '../../vision/llmClient.js';
 import { makeBrowserCapturer } from './browserCapturer.js';
 import type { BrowserCapturer } from './browserCapturer.js';
+import { makeMatchStore } from './matchStore.js';
+import type { MatchStore } from './matchStore.js';
 
 // The air source: grab a frame of the on-air broadcast, run extractFrame, hand the
 // resulting observations on, and record the frame for replay / the web view. One
@@ -17,6 +19,7 @@ import type { BrowserCapturer } from './browserCapturer.js';
 export type AirSourceConfig = {
   capturer?: BrowserCapturer; // injectable for tests; default attaches via CDP
   llmClient?: LlmClient; // injectable; default real Anthropic client
+  matchStore?: MatchStore; // which tab to grab; UI-switchable. Default seeded below.
   onObservations: (observations: RaceObservation[]) => void;
   recorder?: Recorder; // records each frame (content-addressed) for replay/web view
 };
@@ -34,14 +37,16 @@ export type AirSource = {
   captureOnce: () => Promise<void>;
   close: () => Promise<void>;
   getLastFrame: () => LastFrame | undefined;
+  matchStore: MatchStore; // exposed so the web server can get/set the captured tab
 };
 
 export const makeAirSource = (config: AirSourceConfig): AirSource => {
+  const matchStore = config.matchStore ?? makeMatchStore(process.env.AIR_URL_MATCH ?? 'directv');
   const capturer =
     config.capturer ??
     makeBrowserCapturer({
       browserURL: process.env.AIR_BROWSER_URL ?? 'http://localhost:9222',
-      urlMatch: process.env.AIR_URL_MATCH ?? 'directv',
+      urlMatch: matchStore.get,
     });
   const llmClient = config.llmClient ?? makeAnthropicLlmClient();
   let lastFrame: LastFrame | undefined;
@@ -58,5 +63,6 @@ export const makeAirSource = (config: AirSourceConfig): AirSource => {
     },
     close: () => capturer.close(),
     getLastFrame: () => lastFrame,
+    matchStore,
   };
 };

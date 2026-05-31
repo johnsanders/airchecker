@@ -9,6 +9,7 @@ import type { FastifyInstance } from 'fastify';
 import type { Anomaly, RaceObservation, SourceName } from '../reconcile/reconcile.js';
 import { normalizeName } from '../reconcile/reconcile.js';
 import type { CadenceConfig, CaptureResult } from '../sources/air/captureScheduler.js';
+import type { MatchStore } from '../sources/air/matchStore.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
 import type { Store } from '../store/store.js';
 
@@ -27,6 +28,7 @@ export type WebServerConfig = {
   getCadence?: () => CadenceConfig;
   getLastFrame?: () => LastFrameView | undefined;
   getRecentAlerts: () => Anomaly[];
+  matchStore?: MatchStore; // air tab URL-match get/set; omitted if air isn't wired
   queryStore?: QueryStore; // DDHQ queries get/set; omitted if DDHQ isn't configured
   reconcileRace?: (raceKey: string, now: number) => Anomaly[];
   setCadence?: (next: Partial<CadenceConfig>) => void;
@@ -186,6 +188,18 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
       return reply.code(400).send({ error: 'queries must be an array of strings' });
     config.queryStore.set(raw);
     return { queries: config.queryStore.get() };
+  });
+
+  // Which browser tab the air capturer grabs (URL substring), switchable live.
+  app.get('/api/air-match', () => ({ match: config.matchStore?.get() ?? null }));
+
+  app.post<{ Body: { match?: unknown } }>('/api/air-match', (req, reply) => {
+    if (config.matchStore === undefined)
+      return reply.code(503).send({ error: 'air capture not wired' });
+    if (typeof req.body.match !== 'string' || req.body.match.trim().length === 0)
+      return reply.code(400).send({ error: 'match must be a non-empty string' });
+    config.matchStore.set(req.body.match);
+    return { match: config.matchStore.get() };
   });
 
   // --- Static SPA ----------------------------------------------------------

@@ -82,7 +82,7 @@ const App: React.FC = () => {
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
-            <Section title="Air capture">
+            <Section title="Actus capture">
               <CapturePanel cadence={state?.cadence ?? null} lastFrame={state?.lastFrame ?? null} />
             </Section>
           </Grid>

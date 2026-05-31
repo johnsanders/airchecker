@@ -4,6 +4,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
+import { sourceLabel } from '../api.js';
 import type { SourceStat } from '../api.js';
 import { ago } from '../usePolling.js';
 
@@ -21,7 +22,7 @@ const SourceHealth: React.FC<Props> = (props) => (
     {props.sources.map((s) => (
       <Paper key={s.source} sx={{ p: 1.5, flex: '1 1 160px', minWidth: 160 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography sx={{ fontWeight: 600 }}>{s.source}</Typography>
+          <Typography sx={{ fontWeight: 600 }}>{sourceLabel(s.source)}</Typography>
           <Chip
             size="small"
             label={isHealthy(s) ? 'live' : s.observations > 0 ? 'stale' : 'idle'}

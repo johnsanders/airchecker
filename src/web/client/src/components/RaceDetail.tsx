@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 
 import { api } from '../api.js';
+import { sourceLabel } from '../api.js';
 import type { RaceCell, RaceDetailResponse, SourceName } from '../api.js';
 import { usePolling } from '../usePolling.js';
 
@@ -48,7 +49,7 @@ const RaceDetail: React.FC<Props> = (props) => {
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
         {data.sources.map((s) => (
           <Box key={s.source} sx={{ fontSize: 12, color: s.present ? 'text.primary' : 'text.secondary' }}>
-            <b>{s.source}</b>: {s.present ? `${s.pctIn ?? '—'}% in` : 'no data'}
+            <b>{sourceLabel(s.source)}</b>: {s.present ? `${s.pctIn ?? '—'}% in` : 'no data'}
           </Box>
         ))}
       </Box>
@@ -59,7 +60,7 @@ const RaceDetail: React.FC<Props> = (props) => {
             <TableCell>Candidate</TableCell>
             {SOURCES.map((s) => (
               <TableCell key={s} align="right">
-                {s}
+                {sourceLabel(s)}
               </TableCell>
             ))}
           </TableRow>

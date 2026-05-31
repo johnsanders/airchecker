@@ -97,6 +97,7 @@ const liveMain = async (): Promise<void> => {
 		getCadence: airScheduler.getConfig,
 		getLastFrame: airSource.getLastFrame,
 		getRecentAlerts: () => recentAlerts,
+		matchStore: airSource.matchStore,
 		reconcileRace: composition.reconcileRace,
 		setCadence: airScheduler.reconfigure,
 		store: composition.store,

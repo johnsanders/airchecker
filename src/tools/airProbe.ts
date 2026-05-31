@@ -10,9 +10,10 @@ import { makeBrowserCapturer } from '../sources/air/browserCapturer.js';
 //   npm run air:probe        (Chrome must be running via npm run chrome:debug)
 
 const run = async (): Promise<void> => {
+  const match = process.env.AIR_URL_MATCH ?? 'directv';
   const capturer = makeBrowserCapturer({
     browserURL: process.env.AIR_BROWSER_URL ?? 'http://localhost:9222',
-    urlMatch: process.env.AIR_URL_MATCH ?? 'directv',
+    urlMatch: () => match,
   });
 
   let png: Buffer;
