@@ -66,6 +66,7 @@ const liveMain = async (): Promise<void> => {
 		queryStore = provider.queryStore;
 		providerScheduler = makeCaptureScheduler({
 			captureOnce: provider.poller.pollOnce,
+			immediate: true,
 			intervalMs: provider.intervalMs,
 			mode: 'interval',
 			onError: (error) => console.error('[provider] poll error', error),
@@ -77,22 +78,18 @@ const liveMain = async (): Promise<void> => {
 		console.log('[provider] DDHQ not configured (no DDHQ_CLIENT_ID) — skipping.');
 	}
 
-	// Chameleon vendor source — fixed playlist URL, once per minute (VPN-only).
-	let vendorScheduler: ReturnType<typeof makeCaptureScheduler> | undefined;
-	if (process.env.CHAMELEON_URL !== undefined) {
-		const vendor = makeVendorSource(ingest);
-		vendorScheduler = makeCaptureScheduler({
-			captureOnce: vendor.poller.pollOnce,
-			intervalMs: vendor.intervalMs,
-			mode: 'interval',
-			onError: (error) => console.error('[vendor] poll error', error),
-			onSkip: () => console.warn('[vendor] poll skipped — previous still in flight'),
-		});
-		vendorScheduler.start();
-		console.log(`[vendor] Chameleon polling every ${vendor.intervalMs}ms.`);
-	} else {
-		console.log('[vendor] Chameleon not configured (no CHAMELEON_URL) — skipping.');
-	}
+	// Chameleon vendor source — fixed playlist URL, always on, once per minute (VPN-only).
+	const vendor = makeVendorSource(ingest);
+	const vendorScheduler = makeCaptureScheduler({
+		captureOnce: vendor.poller.pollOnce,
+		immediate: true,
+		intervalMs: vendor.intervalMs,
+		mode: 'interval',
+		onError: (error) => console.error('[vendor] poll error', error),
+		onSkip: () => console.warn('[vendor] poll skipped — previous still in flight'),
+	});
+	vendorScheduler.start();
+	console.log(`[vendor] Chameleon polling every ${vendor.intervalMs}ms.`);
 
 	// Web view: state per source, recent alerts, last frame, manual capture button,
 	// editable DDHQ queries.
@@ -114,7 +111,7 @@ const liveMain = async (): Promise<void> => {
 		shuttingDown = true;
 		airScheduler.stop();
 		providerScheduler?.stop();
-		vendorScheduler?.stop();
+		vendorScheduler.stop();
 		void airSource.close();
 		void web.close();
 		recorder.close();

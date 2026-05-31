@@ -3,11 +3,11 @@ import { makeFetchHttp } from '../http.js';
 import { makeVendorPoller } from './poller.js';
 import type { VendorPoller } from './poller.js';
 
-// Assembles the live Chameleon vendor source from env.
-//   CHAMELEON_URL          the playlist endpoint (required; VPN-only)
-//   CHAMELEON_POLL_INTERVAL_MS  (default 60000 — once per minute)
-
-const DEFAULT_POLL_INTERVAL_MS = 60_000;
+// Assembles the live Chameleon vendor source. The playlist endpoint is the fixed,
+// known network Chameleon blade — hardcoded, polled once a minute (VPN-only).
+const CHAMELEON_URL =
+  'http://txdaldc1nnr001.nexstar.tv/chameleon/blade/election/playlist/128/DDHQ-MAIN/?format=json&pretty=yes&dynFieldDefaultAttr=false';
+const POLL_INTERVAL_MS = 60_000;
 
 export type VendorSource = {
   intervalMs: number;
@@ -18,14 +18,6 @@ export type VendorSource = {
 export const makeVendorSource = (
   onObservations: (observations: RaceObservation[]) => void,
 ): VendorSource => {
-  const url = process.env.CHAMELEON_URL;
-  if (url === undefined || url.trim().length === 0)
-    throw new Error('CHAMELEON_URL must be set');
-
-  const intervalRaw = Number(process.env.CHAMELEON_POLL_INTERVAL_MS);
-  const intervalMs =
-    Number.isFinite(intervalRaw) && intervalRaw > 0 ? intervalRaw : DEFAULT_POLL_INTERVAL_MS;
-
-  const poller = makeVendorPoller({ http: makeFetchHttp(), onObservations, url });
-  return { intervalMs, poller, url };
+  const poller = makeVendorPoller({ http: makeFetchHttp(), onObservations, url: CHAMELEON_URL });
+  return { intervalMs: POLL_INTERVAL_MS, poller, url: CHAMELEON_URL };
 };

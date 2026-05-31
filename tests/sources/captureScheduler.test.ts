@@ -67,6 +67,35 @@ describe('captureScheduler — interval mode', () => {
     scheduler.stop();
   });
 
+  it('immediate:true fires one capture on start without waiting an interval', async () => {
+    const capture = makeCapture(10);
+    const scheduler = makeCaptureScheduler({
+      captureOnce: capture.captureOnce,
+      immediate: true,
+      intervalMs: 5000,
+      mode: 'interval',
+    });
+    scheduler.start();
+    await vi.advanceTimersByTimeAsync(20); // well before the 5000ms first tick
+    expect(capture.calls()).toBe(1); // already fired
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(capture.calls()).toBe(2); // then the normal interval tick
+    scheduler.stop();
+  });
+
+  it('without immediate, start() waits a full interval before the first tick', async () => {
+    const capture = makeCapture(10);
+    const scheduler = makeCaptureScheduler({
+      captureOnce: capture.captureOnce,
+      intervalMs: 5000,
+      mode: 'interval',
+    });
+    scheduler.start();
+    await vi.advanceTimersByTimeAsync(20);
+    expect(capture.calls()).toBe(0); // nothing yet
+    scheduler.stop();
+  });
+
   it('stop() halts further ticks', async () => {
     const capture = makeCapture(10);
     const scheduler = makeCaptureScheduler({

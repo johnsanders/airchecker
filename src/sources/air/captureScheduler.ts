@@ -11,6 +11,10 @@ export type CaptureMode = 'interval' | 'manual';
 
 export type CaptureSchedulerConfig = {
   captureOnce: () => Promise<void>;
+  // Fire one capture immediately on start() (interval mode) instead of waiting a
+  // full interval — so a freshly-booted monitor shows data right away, not after
+  // up to `intervalMs`. Default false (preserves the wait-one-interval behavior).
+  immediate?: boolean;
   intervalMs?: number; // interval mode only; default 5000
   mode: CaptureMode;
   onError?: (error: unknown) => void;
@@ -94,8 +98,11 @@ export const makeCaptureScheduler = (config: CaptureSchedulerConfig): CaptureSch
       syncTimer();
     },
     start: () => {
+      const wasRunning = running;
       running = true;
       syncTimer();
+      // Kick off one capture now (not after a full interval) on the first start.
+      if (config.immediate === true && mode === 'interval' && !wasRunning) void runOnce();
     },
     stop: () => {
       running = false;
