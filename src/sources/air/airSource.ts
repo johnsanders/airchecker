@@ -12,9 +12,8 @@ import type { MatchStore } from './matchStore.js';
 
 // The air source: grab a frame of the on-air broadcast, run extractFrame, hand the
 // resulting observations on, and record the frame for replay / the web view. One
-// captureOnce() is what the scheduler (interval or manual button) drives.
-//   AIR_BROWSER_URL   CDP endpoint of the debug Chrome (default http://localhost:9222)
-//   AIR_URL_MATCH     substring the target tab URL must contain (default 'directv')
+// captureOnce() is what the scheduler (interval or manual button) drives. The tab
+// to capture starts on 'actus' and is switched live from the web UI — no env.
 
 export type AirSourceConfig = {
   capturer?: BrowserCapturer; // injectable for tests; default attaches via CDP
@@ -41,13 +40,9 @@ export type AirSource = {
 };
 
 export const makeAirSource = (config: AirSourceConfig): AirSource => {
-  const matchStore = config.matchStore ?? makeMatchStore(process.env.AIR_URL_MATCH ?? 'directv');
-  const capturer =
-    config.capturer ??
-    makeBrowserCapturer({
-      browserURL: process.env.AIR_BROWSER_URL ?? 'http://localhost:9222',
-      urlMatch: matchStore.get,
-    });
+  // Starts on the Actus playback tab; switch it live from the web UI (no env).
+  const matchStore = config.matchStore ?? makeMatchStore('actus');
+  const capturer = config.capturer ?? makeBrowserCapturer({ urlMatch: matchStore.get });
   const llmClient = config.llmClient ?? makeAnthropicLlmClient();
   let lastFrame: LastFrame | undefined;
 

@@ -7,7 +7,7 @@ export type MatchStore = {
   set: (match: string) => void;
 };
 
-export const makeMatchStore = (initial = 'directv'): MatchStore => {
+export const makeMatchStore = (initial = 'actus'): MatchStore => {
   let match = initial;
   return {
     get: () => match,
