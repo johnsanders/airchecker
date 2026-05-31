@@ -21,11 +21,19 @@ export type AirSourceConfig = {
   recorder?: Recorder; // records each frame (content-addressed) for replay/web view
 };
 
+// The last frame plus what the VLM read from it — the web view's frame panel shows
+// the PNG (via /api/last-frame) alongside these observations ("what it read").
+export type LastFrame = {
+  hash: string;
+  observations: RaceObservation[];
+  png: Buffer;
+  ts: number;
+};
+
 export type AirSource = {
   captureOnce: () => Promise<void>;
   close: () => Promise<void>;
-  // Last captured frame (PNG) + its hash, for the web view's "last frame" panel.
-  getLastFrame: () => { hash: string; png: Buffer; ts: number } | undefined;
+  getLastFrame: () => LastFrame | undefined;
 };
 
 export const makeAirSource = (config: AirSourceConfig): AirSource => {
@@ -36,16 +44,16 @@ export const makeAirSource = (config: AirSourceConfig): AirSource => {
       urlMatch: process.env.AIR_URL_MATCH ?? 'directv',
     });
   const llmClient = config.llmClient ?? makeAnthropicLlmClient();
-  let lastFrame: { hash: string; png: Buffer; ts: number } | undefined;
+  let lastFrame: LastFrame | undefined;
 
   return {
     captureOnce: async () => {
       const png = await capturer.captureOnce();
       const ts = Date.now();
       const hash = createHash('sha256').update(png).digest('hex');
-      lastFrame = { hash, png, ts };
       config.recorder?.recordFrame({ png, ts });
       const observations = await extractFrame(png, ts, { client: llmClient });
+      lastFrame = { hash, observations, png, ts };
       config.onObservations(observations);
     },
     close: () => capturer.close(),

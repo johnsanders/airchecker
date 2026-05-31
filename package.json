@@ -18,7 +18,9 @@
 		"measure-call": "node --env-file-if-exists=.env --import tsx src/tools/measureCall.ts",
 		"chrome:debug": "'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --remote-debugging-port=9222 --user-data-dir=$HOME/.nn-airchecker-chrome --window-size=960,540 --window-position=0,0 https://stream.directv.com/player",
 		"air:probe": "node --env-file-if-exists=.env --import tsx src/tools/airProbe.ts",
-		"live": "node --env-file-if-exists=.env --import tsx src/runtime/liveMain.ts"
+		"live": "node --env-file-if-exists=.env --import tsx src/runtime/liveMain.ts",
+		"web:build": "cd src/web/client && npm install && npm run build",
+		"web:dev": "cd src/web/client && npm run dev"
 	},
 	"devDependencies": {
 		"@eslint-react/eslint-plugin": "^5.8.5",
@@ -36,6 +38,7 @@
 	},
 	"dependencies": {
 		"@anthropic-ai/sdk": "^0.100.1",
+		"@fastify/static": "^9.1.3",
 		"better-sqlite3": "^12.10.0",
 		"fastify": "^5.8.5",
 		"puppeteer-core": "^25.1.0",

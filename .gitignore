@@ -14,3 +14,9 @@ recordings/*
 
 # Claude Code machine-local runtime state
 .claude/
+
+# Web client build artifacts
+src/web/client/node_modules
+src/web/client/dist
+src/web/client/tsconfig.tsbuildinfo
+*.tsbuildinfo

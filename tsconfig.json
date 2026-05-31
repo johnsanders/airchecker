@@ -16,5 +16,6 @@
 		"forceConsistentCasingInFileNames": true,
 		"verbatimModuleSyntax": true
 	},
-	"include": ["src/**/*", "tests/**/*"]
+	"include": ["src/**/*", "tests/**/*"],
+	"exclude": ["src/web/client"]
 }

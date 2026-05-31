@@ -93,20 +93,82 @@ describe('captureScheduler — manual mode', () => {
 
     const ran = scheduler.triggerCapture();
     await vi.advanceTimersByTimeAsync(10);
-    expect(await ran).toBe(true);
+    expect(await ran).toEqual({ status: 'ran' });
     expect(capture.calls()).toBe(1);
   });
 
-  it('triggerCapture returns false when a capture is already in flight', async () => {
+  it('triggerCapture reports skipped when a capture is already in flight', async () => {
     const capture = makeCapture(1000);
     const scheduler = makeCaptureScheduler({ captureOnce: capture.captureOnce, mode: 'manual' });
 
     const first = scheduler.triggerCapture(); // starts, busy for 1000ms
-    const second = scheduler.triggerCapture(); // immediately → busy → false
-    expect(await second).toBe(false);
+    const second = scheduler.triggerCapture(); // immediately → busy → skipped
+    expect(await second).toEqual({ status: 'skipped' });
     await vi.advanceTimersByTimeAsync(1000);
-    expect(await first).toBe(true);
+    expect(await first).toEqual({ status: 'ran' });
     expect(capture.calls()).toBe(1);
+  });
+});
+
+describe('captureScheduler — runtime reconfigure', () => {
+  it('reflects the initial cadence in getConfig', () => {
+    const capture = makeCapture(10);
+    const scheduler = makeCaptureScheduler({
+      captureOnce: capture.captureOnce,
+      intervalMs: 5000,
+      mode: 'interval',
+    });
+    expect(scheduler.getConfig()).toEqual({ intervalMs: 5000, mode: 'interval' });
+  });
+
+  it('changing the interval while running restarts the timer at the new rate', async () => {
+    const capture = makeCapture(10);
+    const scheduler = makeCaptureScheduler({
+      captureOnce: capture.captureOnce,
+      intervalMs: 5000,
+      mode: 'interval',
+    });
+    scheduler.start();
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(capture.calls()).toBe(1);
+    scheduler.reconfigure({ intervalMs: 1000 });
+    expect(scheduler.getConfig().intervalMs).toBe(1000);
+    await vi.advanceTimersByTimeAsync(3000); // 3 ticks at the new 1s rate
+    expect(capture.calls()).toBe(4);
+    scheduler.stop();
+  });
+
+  it('switching interval→manual stops ticking; manual→interval resumes', async () => {
+    const capture = makeCapture(10);
+    const scheduler = makeCaptureScheduler({
+      captureOnce: capture.captureOnce,
+      intervalMs: 1000,
+      mode: 'interval',
+    });
+    scheduler.start();
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(capture.calls()).toBe(2);
+
+    scheduler.reconfigure({ mode: 'manual' }); // stop auto-ticking
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(capture.calls()).toBe(2); // no new ticks
+    expect(scheduler.getConfig().mode).toBe('manual');
+
+    scheduler.reconfigure({ mode: 'interval' }); // resume
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(capture.calls()).toBe(4);
+    scheduler.stop();
+  });
+
+  it('ignores a non-positive interval', () => {
+    const capture = makeCapture(10);
+    const scheduler = makeCaptureScheduler({
+      captureOnce: capture.captureOnce,
+      intervalMs: 5000,
+      mode: 'interval',
+    });
+    scheduler.reconfigure({ intervalMs: 0 });
+    expect(scheduler.getConfig().intervalMs).toBe(5000);
   });
 });
 
@@ -123,10 +185,12 @@ describe('captureScheduler — errors', () => {
       mode: 'manual',
       onError: (error) => errors.push(error),
     });
-    expect(await scheduler.triggerCapture()).toBe(true); // ran, threw, recovered
+    const first = await scheduler.triggerCapture(); // ran, threw, recovered
+    expect(first.status).toBe('error');
+    expect(first).toMatchObject({ message: 'boom' });
     expect(errors).toHaveLength(1);
     expect(scheduler.isBusy()).toBe(false);
-    expect(await scheduler.triggerCapture()).toBe(true); // not stuck busy
+    expect(await scheduler.triggerCapture()).toEqual({ status: 'ran' }); // not stuck busy
     expect(calls).toBe(2);
   });
 });

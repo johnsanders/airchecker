@@ -97,8 +97,11 @@ const liveMain = async (): Promise<void> => {
 	// Web view: state per source, recent alerts, last frame, manual capture button,
 	// editable DDHQ queries.
 	const web = makeWebServer({
+		getCadence: airScheduler.getConfig,
 		getLastFrame: airSource.getLastFrame,
 		getRecentAlerts: () => recentAlerts,
+		reconcileRace: composition.reconcileRace,
+		setCadence: airScheduler.reconfigure,
 		store: composition.store,
 		triggerCapture: airScheduler.triggerCapture,
 		...(queryStore === undefined ? {} : { queryStore }),

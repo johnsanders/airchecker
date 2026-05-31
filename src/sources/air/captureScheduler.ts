@@ -17,11 +17,28 @@ export type CaptureSchedulerConfig = {
   onSkip?: () => void; // called when a fire is dropped because a capture is in flight
 };
 
+export type CadenceConfig = {
+  intervalMs: number;
+  mode: CaptureMode;
+};
+
+// 'ran' = captured cleanly; 'skipped' = a capture was already in flight;
+// 'error' = the capture itself threw (carries the message). The manual web button
+// needs this distinction — reporting "captured" on a failed grab is misleading.
+export type CaptureResult =
+  | { status: 'ran' }
+  | { status: 'skipped' }
+  | { message: string; status: 'error' };
+
 export type CaptureScheduler = {
+  getConfig: () => CadenceConfig;
   isBusy: () => boolean;
-  // Manual / web-button / keypress entry. Works in BOTH modes. Resolves true if a
-  // capture ran, false if it was skipped (already busy).
-  triggerCapture: () => Promise<boolean>;
+  // Change mode and/or interval at runtime (the web cadence control). If currently
+  // running, the timer is restarted under the new settings. Partial — only the
+  // provided fields change.
+  reconfigure: (next: Partial<CadenceConfig>) => void;
+  // Manual / web-button entry. Works in BOTH modes; reports the true outcome.
+  triggerCapture: () => Promise<CaptureResult>;
   start: () => void; // begins interval ticking in interval mode; no-op in manual mode
   stop: () => void; // clears the interval; triggerCapture still works after stop()
 };
@@ -30,43 +47,60 @@ const DEFAULT_INTERVAL_MS = 5000;
 
 export const makeCaptureScheduler = (config: CaptureSchedulerConfig): CaptureScheduler => {
   let busy = false;
+  let running = false; // whether start() is in effect (vs stopped)
   let timer: ReturnType<typeof setInterval> | undefined;
+  let mode: CaptureMode = config.mode;
+  let intervalMs = config.intervalMs ?? DEFAULT_INTERVAL_MS;
 
-  const runOnce = async (): Promise<boolean> => {
+  const runOnce = async (): Promise<CaptureResult> => {
     if (busy) {
       config.onSkip?.();
-      return false;
+      return { status: 'skipped' };
     }
     busy = true;
     try {
       await config.captureOnce();
+      return { status: 'ran' };
     } catch (error) {
       config.onError?.(error);
+      return { message: error instanceof Error ? error.message : String(error), status: 'error' };
     } finally {
       busy = false;
     }
-    return true;
   };
 
-  const start = (): void => {
-    if (config.mode !== 'interval' || timer !== undefined) return;
-    const intervalMs = config.intervalMs ?? DEFAULT_INTERVAL_MS;
-    timer = setInterval(() => {
-      void runOnce();
-    }, intervalMs);
-  };
-
-  const stop = (): void => {
+  const clearTimer = (): void => {
     if (timer !== undefined) {
       clearInterval(timer);
       timer = undefined;
     }
   };
 
+  // Bring the timer in line with the current mode + running state.
+  const syncTimer = (): void => {
+    clearTimer();
+    if (running && mode === 'interval')
+      timer = setInterval(() => {
+        void runOnce();
+      }, intervalMs);
+  };
+
   return {
+    getConfig: () => ({ intervalMs, mode }),
     isBusy: () => busy,
-    start,
-    stop,
+    reconfigure: (next) => {
+      if (next.mode !== undefined) mode = next.mode;
+      if (next.intervalMs !== undefined && next.intervalMs > 0) intervalMs = next.intervalMs;
+      syncTimer();
+    },
+    start: () => {
+      running = true;
+      syncTimer();
+    },
+    stop: () => {
+      running = false;
+      clearTimer();
+    },
     triggerCapture: runOnce,
   };
 };
