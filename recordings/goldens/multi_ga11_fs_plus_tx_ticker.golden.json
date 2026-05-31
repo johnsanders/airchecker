@@ -1,0 +1,162 @@
+{
+  "frame": "multi_ga11_fs_plus_tx_ticker.png",
+  "goldens": [
+    {
+      "frameSha256": "a03bf57da67c0a8d3dbb4de9ccf3008d98d29f95b8e093e4e427073f5108c60e",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "8774d9f8bbc0fcd260a24da71f7f1408107184e73c8fea91da61be9be6c573bd",
+      "response": {
+        "templates": [
+          {
+            "templateId": "fullscreen_results",
+            "singletons": {
+              "race_heading": "GA-11 U.S. HOUSE (R)",
+              "pct_in": "90% IN"
+            },
+            "candidates": [
+              {
+                "name": "JOHN COWAN",
+                "party": "R",
+                "pct": "42.6%",
+                "votes": "34,141",
+                "called": "called"
+              },
+              {
+                "name": "ROBERT ADKERSON",
+                "party": "R",
+                "pct": "21.7%",
+                "votes": "17,399",
+                "called": "called"
+              },
+              {
+                "name": "TRICIA PRIDEMORE",
+                "party": "R",
+                "pct": "19.0%",
+                "votes": "15,194",
+                "called": ""
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "TX U.S. SENATE (R)",
+              "pct_in": "95% IN"
+            },
+            "candidates": [
+              {
+                "name": "KEN PAXTON",
+                "party": "R",
+                "pct": "63.8%",
+                "votes": "885,949",
+                "called": "called"
+              },
+              {
+                "name": "JOHN CORNYN",
+                "party": "R",
+                "pct": "36.2%",
+                "votes": "501,725",
+                "called": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "d11d3602f5caff564b4d42840301fb17ac2c04b49118d65d1c0b7f1931152198",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "4e9ab0689eb83955e4ec04fbd5d5b75b2c6d9afc1cf8bf47de7570ff44da741a",
+      "response": {
+        "calledCandidateNames": [
+          "KEN PAXTON"
+        ]
+      }
+    },
+    {
+      "frameSha256": "accd3d959d7ef12d9d2305225560ce2e46b5208544176fa1cd0cf59ab26f95c5",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "f871bc269fad3a918e07e3af96ebbc060b0641c5b596df21054afadc3bfb1a7f",
+      "response": {
+        "calledCandidateNames": [
+          "John Cowan",
+          "Robert Adkerson"
+        ]
+      }
+    }
+  ],
+  "name": "multi_ga11_fs_plus_tx_ticker",
+  "observations": [
+    {
+      "calledFor": [
+        "JOHN COWAN",
+        "ROBERT ADKERSON"
+      ],
+      "candidates": [
+        {
+          "key": "JOHN COWAN",
+          "name": "JOHN COWAN",
+          "party": "R",
+          "pct": 42.6,
+          "votes": 34141
+        },
+        {
+          "key": "ROBERT ADKERSON",
+          "name": "ROBERT ADKERSON",
+          "party": "R",
+          "pct": 21.7,
+          "votes": 17399
+        },
+        {
+          "key": "TRICIA PRIDEMORE",
+          "name": "TRICIA PRIDEMORE",
+          "party": "R",
+          "pct": 19,
+          "votes": 15194
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "GA-11 U.S. HOUSE (R)",
+        "pct_in": "90% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 90,
+      "raceKey": "GA-11 U.S. HOUSE (R)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results"
+    },
+    {
+      "calledFor": [
+        "KEN PAXTON"
+      ],
+      "candidates": [
+        {
+          "key": "KEN PAXTON",
+          "name": "KEN PAXTON",
+          "party": "R",
+          "pct": 63.8,
+          "votes": 885949
+        },
+        {
+          "key": "JOHN CORNYN",
+          "name": "JOHN CORNYN",
+          "party": "R",
+          "pct": 36.2,
+          "votes": 501725
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "TX U.S. SENATE (R)",
+        "pct_in": "95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "TX U.S. SENATE (R)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1"
+    }
+  ],
+  "sourceFrame": "multi.png"
+}

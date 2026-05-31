@@ -1,0 +1,80 @@
+{
+  "frame": "ticker_tx_senate.png",
+  "goldens": [
+    {
+      "frameSha256": "75902e94a2c8d12c9d3f141a0901415334304f8328b02ee222717327518f16db",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "8774d9f8bbc0fcd260a24da71f7f1408107184e73c8fea91da61be9be6c573bd",
+      "response": {
+        "templates": [
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "TX U.S. SENATE (R)",
+              "pct_in": "95% IN"
+            },
+            "candidates": [
+              {
+                "name": "KEN PAXTON",
+                "party": "R",
+                "pct": "63.8%",
+                "votes": "885,949"
+              },
+              {
+                "name": "JOHN CORNYN",
+                "party": "R",
+                "pct": "36.2%",
+                "votes": "501,725"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "7db99eec6710812f3d24c4470f91f24a0665d4c100a0c6617b3b544c70b3444f",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "4e9ab0689eb83955e4ec04fbd5d5b75b2c6d9afc1cf8bf47de7570ff44da741a",
+      "response": {
+        "calledCandidateNames": [
+          "KEN PAXTON"
+        ]
+      }
+    }
+  ],
+  "name": "ticker_tx_senate",
+  "observations": [
+    {
+      "calledFor": [
+        "KEN PAXTON"
+      ],
+      "candidates": [
+        {
+          "key": "KEN PAXTON",
+          "name": "KEN PAXTON",
+          "party": "R",
+          "pct": 63.8,
+          "votes": 885949
+        },
+        {
+          "key": "JOHN CORNYN",
+          "name": "JOHN CORNYN",
+          "party": "R",
+          "pct": 36.2,
+          "votes": 501725
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "TX U.S. SENATE (R)",
+        "pct_in": "95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "TX U.S. SENATE (R)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1"
+    }
+  ],
+  "sourceFrame": "ticker_1920.png"
+}

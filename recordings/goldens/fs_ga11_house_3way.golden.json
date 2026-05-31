@@ -1,0 +1,98 @@
+{
+  "frame": "fs_ga11_house_3way.png",
+  "goldens": [
+    {
+      "frameSha256": "5ff926d53f286a23a1e160e299d0378843ac579eba8674e569fd898bc2771eec",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "8774d9f8bbc0fcd260a24da71f7f1408107184e73c8fea91da61be9be6c573bd",
+      "response": {
+        "templates": [
+          {
+            "templateId": "fullscreen_results",
+            "singletons": {
+              "race_heading": "GA-11 U.S. HOUSE (R)",
+              "pct_in": "90% IN"
+            },
+            "candidates": [
+              {
+                "name": "JOHN COWAN",
+                "party": "R",
+                "pct": "42.6%",
+                "votes": "34,141",
+                "called": "called"
+              },
+              {
+                "name": "ROBERT ADKERSON",
+                "party": "R",
+                "pct": "21.7%",
+                "votes": "17,399",
+                "called": "called"
+              },
+              {
+                "name": "TRICIA PRIDEMORE",
+                "party": "R",
+                "pct": "19.0%",
+                "votes": "15,194",
+                "called": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "8cad84b211c2a1754108e734deffbda08e3b122451fb308d2163496a7d9e35d2",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "f871bc269fad3a918e07e3af96ebbc060b0641c5b596df21054afadc3bfb1a7f",
+      "response": {
+        "calledCandidateNames": [
+          "John Cowan",
+          "Robert Adkerson"
+        ]
+      }
+    }
+  ],
+  "name": "fs_ga11_house_3way",
+  "observations": [
+    {
+      "calledFor": [
+        "JOHN COWAN",
+        "ROBERT ADKERSON"
+      ],
+      "candidates": [
+        {
+          "key": "JOHN COWAN",
+          "name": "JOHN COWAN",
+          "party": "R",
+          "pct": 42.6,
+          "votes": 34141
+        },
+        {
+          "key": "ROBERT ADKERSON",
+          "name": "ROBERT ADKERSON",
+          "party": "R",
+          "pct": 21.7,
+          "votes": 17399
+        },
+        {
+          "key": "TRICIA PRIDEMORE",
+          "name": "TRICIA PRIDEMORE",
+          "party": "R",
+          "pct": 19,
+          "votes": 15194
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "GA-11 U.S. HOUSE (R)",
+        "pct_in": "90% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 90,
+      "raceKey": "GA-11 U.S. HOUSE (R)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results"
+    }
+  ],
+  "sourceFrame": "fs-3.png"
+}

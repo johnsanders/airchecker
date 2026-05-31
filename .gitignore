@@ -1,0 +1,16 @@
+node_modules
+.DS_Store
+*.log
+dist
+.env
+.env.*
+!.env.example
+
+# Recordings are large and per-machine, except golden replays and the curated
+# reference frames (calibration source-of-truth) that we commit for tests
+recordings/*
+!recordings/goldens/
+!recordings/reference-frames/
+
+# Claude Code machine-local runtime state
+.claude/

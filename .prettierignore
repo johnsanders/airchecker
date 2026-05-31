@@ -1,0 +1,9 @@
+# Real provider/vendor API samples — kept verbatim as fixtures, don't reformat
+ddhq_response_example.json
+chameleon_response_example.json
+
+# Generated / large / per-machine
+package-lock.json
+recordings/
+dist/
+node_modules/
