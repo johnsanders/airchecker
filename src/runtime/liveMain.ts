@@ -4,6 +4,7 @@ import makeRecorder from '../replay/recorder.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import type { CaptureMode } from '../sources/air/captureScheduler.js';
 import { makeProviderSource } from '../sources/provider/providerSource.js';
+import { makeVendorSource } from '../sources/vendor/vendorSource.js';
 import makeComposition from './composition.js';
 
 // Capture cadence is env-configurable:
@@ -64,9 +65,29 @@ const liveMain = async (): Promise<void> => {
 		console.log('[provider] DDHQ not configured (no DDHQ_CLIENT_ID) — skipping.');
 	}
 
+	// Chameleon vendor source: poll the fixed playlist URL once per minute (VPN-only).
+	let vendorScheduler: ReturnType<typeof makeCaptureScheduler> | undefined;
+	if (process.env.CHAMELEON_URL !== undefined) {
+		const vendor = makeVendorSource((observations) =>
+			observations.forEach(composition.store.record),
+		);
+		vendorScheduler = makeCaptureScheduler({
+			captureOnce: vendor.poller.pollOnce,
+			intervalMs: vendor.intervalMs,
+			mode: 'interval',
+			onError: (error) => console.error('[vendor] poll error', error),
+			onSkip: () => console.warn('[vendor] poll skipped — previous still in flight'),
+		});
+		vendorScheduler.start();
+		console.log(`[vendor] Chameleon polling every ${vendor.intervalMs}ms.`);
+	} else {
+		console.log('[vendor] Chameleon not configured (no CHAMELEON_URL) — skipping.');
+	}
+
 	const shutdown = (): void => {
 		scheduler.stop();
 		providerScheduler?.stop();
+		vendorScheduler?.stop();
 		recorder.close();
 		process.exit(0);
 	};
