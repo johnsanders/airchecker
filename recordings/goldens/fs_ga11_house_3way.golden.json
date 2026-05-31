@@ -4,7 +4,7 @@
     {
       "frameSha256": "5ff926d53f286a23a1e160e299d0378843ac579eba8674e569fd898bc2771eec",
       "model": "claude-haiku-4-5-20251001",
-      "promptHash": "8774d9f8bbc0fcd260a24da71f7f1408107184e73c8fea91da61be9be6c573bd",
+      "promptHash": "47f706dd3e2c4a0743c1e2358b8cd950fa56f3b9598cf3aa78b3b9dbe8a091ec",
       "response": {
         "templates": [
           {
@@ -15,21 +15,21 @@
             },
             "candidates": [
               {
-                "name": "JOHN COWAN",
+                "name": "John Cowan",
                 "party": "R",
                 "pct": "42.6%",
                 "votes": "34,141",
                 "called": "called"
               },
               {
-                "name": "ROBERT ADKERSON",
+                "name": "Robert Adkerson",
                 "party": "R",
                 "pct": "21.7%",
                 "votes": "17,399",
                 "called": "called"
               },
               {
-                "name": "TRICIA PRIDEMORE",
+                "name": "Tricia Pridemore",
                 "party": "R",
                 "pct": "19.0%",
                 "votes": "15,194",
@@ -56,27 +56,27 @@
   "observations": [
     {
       "calledFor": [
-        "JOHN COWAN",
-        "ROBERT ADKERSON"
+        "John Cowan",
+        "Robert Adkerson"
       ],
       "candidates": [
         {
-          "key": "JOHN COWAN",
-          "name": "JOHN COWAN",
+          "key": "John Cowan",
+          "name": "John Cowan",
           "party": "R",
           "pct": 42.6,
           "votes": 34141
         },
         {
-          "key": "ROBERT ADKERSON",
-          "name": "ROBERT ADKERSON",
+          "key": "Robert Adkerson",
+          "name": "Robert Adkerson",
           "party": "R",
           "pct": 21.7,
           "votes": 17399
         },
         {
-          "key": "TRICIA PRIDEMORE",
-          "name": "TRICIA PRIDEMORE",
+          "key": "Tricia Pridemore",
+          "name": "Tricia Pridemore",
           "party": "R",
           "pct": 19,
           "votes": 15194

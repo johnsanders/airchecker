@@ -17,6 +17,28 @@ const normalizeName = (name: string): string =>
     .replace(/\p{Diacritic}/gu, '')
     .replace(/[^a-z0-9]/g, '');
 
+// The party chip's letter bleeds into the name on tight layouts (the ticker):
+// "R MAYES MIDDLETON" with party "R". Deterministically strip a leading single-
+// letter token when it matches the party field — belt-and-suspenders behind the
+// prompt rule, which proved unreliable on the ticker.
+const stripPartyPrefix = (name: string, party: string): string => {
+  const match = /^([A-Za-z])\s+(.+)$/.exec(name.trim());
+  if (match !== null && party.length > 0 && match[1]!.toUpperCase() === party.toUpperCase())
+    return match[2]!;
+  return name;
+};
+
+// Recall reads the called name as it appears (often surname only: "MIDDLETON"),
+// while pass-1 may have the full name ("Mayes Middleton"). Match if either
+// normalized name contains the other — tolerant of surname-vs-fullname and any
+// residual bleed.
+const namesMatch = (a: string, b: string): boolean => {
+  const na = normalizeName(a);
+  const nb = normalizeName(b);
+  if (na.length === 0 || nb.length === 0) return false;
+  return na === nb || na.includes(nb) || nb.includes(na);
+};
+
 // Pass 1 (full frame, bulk fields) is 30/30 on Haiku — cheap and sufficient.
 // The recall pass reads a tiny ✓ glyph; Sonnet reads it 20/20 single-shot on the
 // upscaled crop where Haiku needs ~3 votes, and the crop is small so the per-call
@@ -44,7 +66,9 @@ const buildPrompt = (registry: readonly TemplateSpec[]): string => {
     '- For each results graphic: read its singleton fields (e.g. race_heading, pct_in) and one entry per candidate shown, in reading order (left-to-right for rows, top-to-bottom for columns).',
     '- Report EVERY candidate the graphic displays, including trailing and losing candidates and any with low or zero votes. Never stop after the leader — if two candidates are shown, return two entries; if five are shown, return five.',
     '- ALWAYS fill race_heading with the race title exactly as printed (e.g. "TX U.S. SENATE (R)") and pct_in with the "X% IN" reporting figure. These are required for every results graphic — never leave them blank.',
-    '- Read vote totals and percentages exactly as printed. Use the party letter on each candidate\'s color chip. Set "called" to "called" only when the candidate has a check mark or is clearly the winner; otherwise "".',
+    '- Read vote totals and percentages exactly as printed.',
+    '- "name" is the candidate\'s personal name ONLY. The single party letter on the color chip (D, R, L, I, G…) goes in "party", NEVER in "name". For a chip "R" beside "MAYES MIDDLETON", return name "Mayes Middleton" and party "R" — never name "R Mayes Middleton".',
+    '- Set "called" to "called" only when the candidate has a check mark or is clearly the winner; otherwise "".',
     '',
     'Report via the report_templates tool. If no results graphics are present, return an empty list.',
   ].join('\n');
@@ -271,16 +295,18 @@ export const extractFrame = async (
     .map((item): RaceObservation | null => {
       const spec = findTemplate(item.templateId);
       if (spec === undefined) return null;
+      const cleanName = (candidate: z.infer<typeof candidateSchema>): string =>
+        stripPartyPrefix(candidate.name, candidate.party ?? '');
       const candidateRecord = (candidate: z.infer<typeof candidateSchema>): Record<string, string> => ({
         called: candidate.called ?? '',
-        name: candidate.name,
+        name: cleanName(candidate),
         party: candidate.party ?? '',
         pct: candidate.pct ?? '',
         votes: candidate.votes ?? '',
       });
       const candidates: CandidateState[] = item.candidates.map((candidate) => ({
         key: spec.bind.candidateKeyFrom(candidateRecord(candidate)),
-        name: candidate.name,
+        name: cleanName(candidate),
         party: candidate.party ?? '',
         pct: toPct(candidate.pct),
         votes: toInt(candidate.votes),
@@ -323,10 +349,9 @@ export const extractFrame = async (
       // Map each re-read name to a pass-1 candidate key; the recall pass is
       // authoritative for the call set, so it replaces (not merges) calledFor.
       const calledFor = calledNames
-        .map((calledName) => {
-          const target = normalizeName(calledName);
-          return observation.candidates.find((candidate) => normalizeName(candidate.name) === target);
-        })
+        .map((calledName) =>
+          observation.candidates.find((candidate) => namesMatch(candidate.name, calledName)),
+        )
         .filter((candidate): candidate is CandidateState => candidate !== undefined)
         .map((candidate) => candidate.key);
       return { ...observation, calledFor };

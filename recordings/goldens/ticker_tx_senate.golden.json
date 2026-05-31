@@ -4,7 +4,7 @@
     {
       "frameSha256": "75902e94a2c8d12c9d3f141a0901415334304f8328b02ee222717327518f16db",
       "model": "claude-haiku-4-5-20251001",
-      "promptHash": "8774d9f8bbc0fcd260a24da71f7f1408107184e73c8fea91da61be9be6c573bd",
+      "promptHash": "47f706dd3e2c4a0743c1e2358b8cd950fa56f3b9598cf3aa78b3b9dbe8a091ec",
       "response": {
         "templates": [
           {
@@ -15,16 +15,18 @@
             },
             "candidates": [
               {
-                "name": "KEN PAXTON",
+                "name": "Ken Paxton",
                 "party": "R",
                 "pct": "63.8%",
-                "votes": "885,949"
+                "votes": "885,949",
+                "called": "called"
               },
               {
-                "name": "JOHN CORNYN",
+                "name": "John Cornyn",
                 "party": "R",
                 "pct": "36.2%",
-                "votes": "501,725"
+                "votes": "501,725",
+                "called": ""
               }
             ]
           }
@@ -46,19 +48,19 @@
   "observations": [
     {
       "calledFor": [
-        "KEN PAXTON"
+        "Ken Paxton"
       ],
       "candidates": [
         {
-          "key": "KEN PAXTON",
-          "name": "KEN PAXTON",
+          "key": "Ken Paxton",
+          "name": "Ken Paxton",
           "party": "R",
           "pct": 63.8,
           "votes": 885949
         },
         {
-          "key": "JOHN CORNYN",
-          "name": "JOHN CORNYN",
+          "key": "John Cornyn",
+          "name": "John Cornyn",
           "party": "R",
           "pct": 36.2,
           "votes": 501725
