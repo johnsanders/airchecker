@@ -46,6 +46,43 @@ describe('extractFrame', () => {
     expect(paxton.pct).toBeCloseTo(63.8, 4);
   });
 
+  it('drops a race as a missed capture when a candidate lacks a full name', async () => {
+    // Frame caught mid-transition: the ticker shows surnames only, before the first
+    // names have scrolled in. A partial roster can't reconcile — emit nothing.
+    const client = clientReturning({
+      templates: [
+        {
+          candidates: [
+            { called: 'called', name: 'MEALER', party: 'R', pct: '68.3', votes: '15,597' },
+            { called: '', name: 'CAIN', party: 'R', pct: '31.7', votes: '7,245' },
+          ],
+          singletons: { pct_in: '90', race_heading: 'TX U.S. HOUSE (R) DISTRICT 9' },
+          templateId: 'ticker_v1',
+        },
+      ],
+    });
+    const observations = await extractFrame(FRAME, 0, { client, ...DEPS_NO_RECALL });
+    expect(observations).toHaveLength(0);
+  });
+
+  it('keeps a race when every candidate has a full first and last name', async () => {
+    const client = clientReturning({
+      templates: [
+        {
+          candidates: [
+            { called: 'called', name: 'Alex Mealer', party: 'R', pct: '68.3', votes: '15,597' },
+            { called: '', name: 'Briscoe Cain', party: 'R', pct: '31.7', votes: '7,245' },
+          ],
+          singletons: { pct_in: '90', race_heading: 'TX U.S. HOUSE (R) DISTRICT 9' },
+          templateId: 'ticker_v1',
+        },
+      ],
+    });
+    const observations = await extractFrame(FRAME, 0, { client, ...DEPS_NO_RECALL });
+    expect(observations).toHaveLength(1);
+    expect(observations[0]!.candidates).toHaveLength(2);
+  });
+
   it('returns one observation per detected template and ignores unknown ids', async () => {
     const client = clientReturning({
       templates: [

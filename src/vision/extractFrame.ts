@@ -265,6 +265,13 @@ export type ExtractFrameDeps = {
   recallVotes?: number;
 };
 
+// A frame caught mid-transition (a graphic sliding in or out) yields a partial read —
+// typically a candidate showing only a surname before the first name has scrolled in.
+// We can't reconcile a partial roster, so treat any race whose candidates aren't all
+// full "First Last" names as a missed capture and drop it rather than emit bad data.
+const isMissedCapture = (observation: RaceObservation): boolean =>
+  observation.candidates.some((candidate) => candidate.name.trim().split(/\s+/).length < 2);
+
 export const extractFrame = async (
   framePng: Buffer,
   observedAt: number,
@@ -340,14 +347,15 @@ export const extractFrame = async (
 
   // Re-crop pass is on by default (it's the production-correct behavior). Isolated
   // unit tests that use a single-response fake client pass recallPass: false.
-  if (deps.recallPass === false) return observations;
+  if (deps.recallPass === false)
+    return observations.filter((observation) => !isMissedCapture(observation));
   const recrop = deps.recropRegion ?? cropAndUpscaleRegion;
   const votes = deps.recallVotes ?? DEFAULT_RECALL_VOTES;
 
   // For each detected template with a captureRegion, re-read its candidates + pct_in
   // from the upscaled crop and override pass 1 (the crop reads small digits + the ✓
   // reliably where the full frame doesn't). Pass 1 keeps the template id + raceKey.
-  return Promise.all(
+  const recropped = await Promise.all(
     observations.map(async (observation): Promise<RaceObservation> => {
       const spec = findTemplate(observation.templateId ?? '');
       if (spec?.captureRegion === undefined) return observation;
@@ -396,6 +404,7 @@ export const extractFrame = async (
       };
     }),
   );
+  return recropped.filter((observation) => !isMissedCapture(observation));
 };
 
 export type { Rect };
