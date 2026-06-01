@@ -1,15 +1,19 @@
 import { randomUUID } from 'node:crypto';
 
 import type { Anomaly, RaceObservation } from '../reconcile/reconcile.js';
+import type { CaptureMode } from '../sources/air/captureScheduler.js';
+import type { QueryStore } from '../sources/provider/queryStore.js';
+
+import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
 import makeRecorder from '../replay/recorder.js';
+import { makeSettingsStore } from '../settings/settingsStore.js';
 import { makeAirSource } from '../sources/air/airSource.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
-import type { CaptureMode } from '../sources/air/captureScheduler.js';
 import { makeProviderSource } from '../sources/provider/providerSource.js';
 import { makeQueryStore } from '../sources/provider/queryStore.js';
-import type { QueryStore } from '../sources/provider/queryStore.js';
 import { makeVendorSource } from '../sources/vendor/vendorSource.js';
-import { makeSettingsStore } from '../settings/settingsStore.js';
+import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
+import { makeRecordingLlmClient } from '../vision/llmClient.js';
 import { makeWebServer } from '../web/server.js';
 import makeComposition from './composition.js';
 
@@ -32,26 +36,47 @@ const liveMain = async (): Promise<void> => {
 
 	// Persistent config (survives restarts), separate from the session-scoped recorder DB.
 	const settings = makeSettingsStore('recordings/settings.sqlite');
+	const llmClient = makeRecordingLlmClient(makeAnthropicLlmClient(), recorder);
+	const raceIdentity = makeRaceIdentityResolver({
+		llmClient,
+		onError: (error) => console.error('[identity] resolver error', error),
+		onEvent: recorder.recordIdentityEvent,
+		settings,
+	});
 
 	// Rolling buffer of recent anomalies for the web view. Reconciliation runs after
 	// each new batch of observations lands, over the races those observations touched.
 	const recentAlerts: Anomaly[] = [];
-	const reconcileTouched = (observations: RaceObservation[]): void => {
+	const reconcileKeys = (raceKeys: Iterable<string>): void => {
 		const now = Date.now();
-		const touched = new Set(observations.map((o) => o.raceKey));
-		touched.forEach((raceKey) => {
+		Array.from(new Set(raceKeys)).forEach((raceKey) => {
 			composition.reconcileRace(raceKey, now).forEach((anomaly) => recentAlerts.push(anomaly));
 		});
 		while (recentAlerts.length > RECENT_ALERTS_MAX) recentAlerts.shift();
 	};
-	const ingest = (observations: RaceObservation[]): void => {
-		observations.forEach(composition.store.record);
-		reconcileTouched(observations);
+	const reconcileTouched = (observations: RaceObservation[]): void => {
+		reconcileKeys(observations.map((o) => o.raceKey));
+	};
+	const ingest = async (observations: RaceObservation[]): Promise<RaceObservation[]> => {
+		const resolved = await Promise.all(
+			observations.map((observation) => raceIdentity.resolveObservation(observation)),
+		);
+		resolved.forEach(composition.store.record);
+		reconcileTouched(resolved);
+		return resolved;
+	};
+	const applyRelink = (
+		source: RaceObservation['source'],
+		sourceRaceKey: string,
+		canonicalRaceKey: string,
+	): void => {
+		const result = composition.store.rekeySourceRace(source, sourceRaceKey, canonicalRaceKey);
+		reconcileKeys([...result.fromRaceKeys, result.toRaceKey]);
 	};
 
 	// Air source: real browser capture → extractFrame → store. Driven by the cadence
 	// scheduler (interval or manual web button).
-	const airSource = makeAirSource({ onObservations: ingest, recorder });
+	const airSource = makeAirSource({ llmClient, onObservations: ingest, recorder });
 	const mode = readCaptureMode();
 	const intervalMs = readIntervalMs();
 	const airScheduler = makeCaptureScheduler({
@@ -88,7 +113,9 @@ const liveMain = async (): Promise<void> => {
 			onSkip: () => console.warn('[provider] poll skipped — previous still in flight'),
 		});
 		providerScheduler.start();
-		console.log(`[provider] DDHQ polling every ${provider.intervalMs}ms (queries set via web view).`);
+		console.log(
+			`[provider] DDHQ polling every ${provider.intervalMs}ms (queries set via web view).`,
+		);
 	} else {
 		console.log('[provider] DDHQ not configured (no DDHQ_CLIENT_ID) — skipping.');
 	}
@@ -113,6 +140,8 @@ const liveMain = async (): Promise<void> => {
 		getLastFrame: airSource.getLastFrame,
 		getRecentAlerts: () => recentAlerts,
 		matchStore: airSource.matchStore,
+		onRaceRelink: applyRelink,
+		raceIdentity,
 		reconcileRace: composition.reconcileRace,
 		setCadence: airScheduler.reconfigure,
 		store: composition.store,

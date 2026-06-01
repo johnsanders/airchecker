@@ -140,3 +140,35 @@ describe('recorder llm lookup', () => {
 		recorder.close();
 	});
 });
+
+describe('recorder identity events', () => {
+	it('records and replays race identity events', () => {
+		const recorder = makeRecorder({ baseDir, sessionId: 'sess-identity' });
+		recorder.recordIdentityEvent({
+			payload: {
+				canonicalRaceKey: 'DDHQ:RACE',
+				method: 'manual',
+				source: 'air',
+				sourceRaceKey: 'AIR HEADING',
+				updatedAt: 1_000,
+			},
+			type: 'alias_upsert',
+		});
+		recorder.close();
+
+		const player = makePlayer({ baseDir, sessionId: 'sess-identity' });
+		expect(player.readIdentityEvents()).toEqual([
+			{
+				payload: {
+					canonicalRaceKey: 'DDHQ:RACE',
+					method: 'manual',
+					source: 'air',
+					sourceRaceKey: 'AIR HEADING',
+					updatedAt: 1_000,
+				},
+				type: 'alias_upsert',
+			},
+		]);
+		player.close();
+	});
+});

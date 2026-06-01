@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import type { RaceIdentityEvent } from '../identity/raceIdentity.js';
 import type { RaceObservation } from '../reconcile/reconcile.js';
 
 const SCHEMA = `
@@ -42,6 +43,14 @@ CREATE TABLE IF NOT EXISTS llm_calls (
   response TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS llm_calls_lookup ON llm_calls(frame_hash, prompt_hash);
+CREATE TABLE IF NOT EXISTS identity_events (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT NOT NULL,
+  ts INTEGER NOT NULL,
+  event_type TEXT NOT NULL,
+  payload TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS identity_events_session_seq ON identity_events(session_id, seq);
 `;
 
 export type FrameRecordInput = {
@@ -69,6 +78,7 @@ export type Recorder = {
 	close: () => void;
 	lookupLlm: (frameHash: null | string, promptHash: string) => LlmLookupResult | undefined;
 	recordFrame: (input: FrameRecordInput) => string;
+	recordIdentityEvent: (event: RaceIdentityEvent) => void;
 	recordLlmCall: (input: LlmCallInput) => void;
 	recordObservation: (observation: RaceObservation) => void;
 	sessionId: string;
@@ -105,6 +115,9 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 	);
 	const insertLlm = db.prepare(
 		'INSERT INTO llm_calls (session_id, ts, frame_hash, prompt_hash, model, request, response) VALUES (?, ?, ?, ?, ?, ?, ?)',
+	);
+	const insertIdentityEvent = db.prepare(
+		'INSERT INTO identity_events (session_id, ts, event_type, payload) VALUES (?, ?, ?, ?)',
 	);
 	const selectLlmWithFrame = db.prepare(
 		'SELECT model, response FROM llm_calls WHERE frame_hash = ? AND prompt_hash = ? ORDER BY seq DESC LIMIT 1',
@@ -152,6 +165,15 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 		);
 	};
 
+	const recordIdentityEvent = (event: RaceIdentityEvent): void => {
+		insertIdentityEvent.run(
+			config.sessionId,
+			Date.now(),
+			event.type,
+			JSON.stringify(event.payload),
+		);
+	};
+
 	const lookupLlm = (frameHash: null | string, promptHash: string): LlmLookupResult | undefined => {
 		const row =
 			frameHash === null
@@ -172,6 +194,7 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 		close,
 		lookupLlm,
 		recordFrame,
+		recordIdentityEvent,
 		recordLlmCall,
 		recordObservation,
 		sessionId: config.sessionId,

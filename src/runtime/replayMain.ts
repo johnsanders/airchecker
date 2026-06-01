@@ -1,3 +1,4 @@
+import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
 import makePlayer from '../replay/player.js';
 import makeComposition from './composition.js';
 
@@ -10,8 +11,18 @@ const replayMain = async (options: ReplayOptions): Promise<void> => {
 	const baseDir = options.baseDir ?? 'recordings';
 	const player = makePlayer({ baseDir, sessionId: options.sessionId });
 	const composition = makeComposition();
+	const raceIdentity = makeRaceIdentityResolver();
 
 	player.emitObservationsInto(composition.store.record);
+	player.readIdentityEvents().forEach((event) => {
+		raceIdentity.applyEvent(event);
+		if (event.type !== 'alias_upsert') return;
+		composition.store.rekeySourceRace(
+			event.payload.source,
+			event.payload.sourceRaceKey,
+			event.payload.canonicalRaceKey,
+		);
+	});
 
 	const raceKeys = composition.store.getRaceKeys();
 	console.log(`[replay] session ${options.sessionId}: ${raceKeys.length} race(s)`);

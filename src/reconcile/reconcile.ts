@@ -41,9 +41,10 @@ export type RaceObservation = {
 	extractedFields?: Record<string, string>;
 	observedAt: number;
 	pctIn: number;
-	raceKey: string;
+	raceKey: string; // canonical reconciliation bucket key
 	reportedAt: null | number;
 	source: SourceName;
+	sourceRaceKey?: string; // raw source/template key; missing legacy rows imply raceKey
 	templateId?: string;
 };
 
@@ -266,7 +267,8 @@ const checkCallConsistency = (
 	}
 
 	// Air called someone. Exact agreement with any provider snapshot → fine.
-	if (providerHistory.some((observation) => sameMembers(observation.calledFor, airCalled))) return [];
+	if (providerHistory.some((observation) => sameMembers(observation.calledFor, airCalled)))
+		return [];
 
 	const providerUnion = providerHistory.flatMap((observation) => observation.calledFor);
 	const extra = airCalled.filter((key) => !providerUnion.includes(key));
