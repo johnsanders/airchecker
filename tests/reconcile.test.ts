@@ -322,6 +322,60 @@ describe('call consistency', () => {
 		const result = reconcile(baseInput({ airHistory: [air], providerHistory: [provider] }));
 		expect(result.filter((a) => a.type === 'missing_call' || a.type === 'call_mismatch')).toHaveLength(0);
 	});
+
+	it('does not flag call_mismatch when provider calls by upstream ID and air by the same name', () => {
+		// The live false positive: DDHQ calledFor holds cand_ids ("808048"); air holds
+		// names ("Nathan Johnson"). Same candidate — must resolve to a match, not mismatch.
+		const provider = observation({
+			at: 990_000,
+			calledFor: '808048',
+			candidates: [
+				{ key: '808048', name: 'Nathan Johnson', votes: 332_330 },
+				{ key: '808049', name: 'Joe Jaworski', votes: 219_021 },
+			],
+			source: 'DDHQ',
+		});
+		const air = observation({
+			at: 1_000_000,
+			calledFor: 'Nathan Johnson',
+			candidates: [
+				{ key: 'Nathan Johnson', name: 'Nathan Johnson', votes: 228_973 },
+				{ key: 'Joe Jaworski', name: 'Joe Jaworski', votes: 157_779 },
+			],
+			source: 'air',
+			templateId: 'ticker_v1',
+		});
+		const result = reconcile(baseInput({ airHistory: [air], providerHistory: [provider] }));
+		expect(result.find((a) => a.type === 'call_mismatch')).toBeUndefined();
+	});
+
+	it('still flags call_mismatch (named, not by ID) when the provider ID is a different candidate', () => {
+		const provider = observation({
+			at: 990_000,
+			calledFor: '808049', // Joe Jaworski
+			candidates: [
+				{ key: '808048', name: 'Nathan Johnson', votes: 332_330 },
+				{ key: '808049', name: 'Joe Jaworski', votes: 219_021 },
+			],
+			source: 'DDHQ',
+		});
+		const air = observation({
+			at: 1_000_000,
+			calledFor: 'Nathan Johnson',
+			candidates: [
+				{ key: 'Nathan Johnson', name: 'Nathan Johnson', votes: 228_973 },
+				{ key: 'Joe Jaworski', name: 'Joe Jaworski', votes: 157_779 },
+			],
+			source: 'air',
+			templateId: 'ticker_v1',
+		});
+		const result = reconcile(baseInput({ airHistory: [air], providerHistory: [provider] }));
+		const mismatch = result.find((a) => a.type === 'call_mismatch');
+		expect(mismatch).toBeDefined();
+		// The alert names the candidate, never the raw upstream ID.
+		expect(mismatch?.detail).toContain('Joe Jaworski');
+		expect(mismatch?.detail).not.toContain('808049');
+	});
 });
 
 describe('vote drop', () => {

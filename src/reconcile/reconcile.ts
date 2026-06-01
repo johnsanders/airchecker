@@ -97,6 +97,12 @@ const observationsInWindow = (
 const candidateBy = (observation: RaceObservation, key: string): CandidateState | undefined =>
 	observation.candidates.find((candidate) => candidate.key === key);
 
+// calledFor holds each source's OWN candidate keys — DDHQ/Chameleon use upstream IDs,
+// air uses names. Resolve them to candidate names so calls compare across sources by
+// identity, not by raw token. Falls back to the key if it isn't in the roster.
+const calledCandidateNames = (observation: RaceObservation): string[] =>
+	observation.calledFor.map((key) => candidateBy(observation, key)?.name ?? key);
+
 const candidateByNormalizedName = (
 	observation: RaceObservation,
 	name: string,
@@ -243,9 +249,10 @@ const checkCallConsistency = (
 	providerHistory: RaceObservation[],
 	thresholds: Thresholds,
 ): Anomaly[] => {
-	const airCalled = airObservation.calledFor;
+	const airCalledNames = calledCandidateNames(airObservation);
+	const airCalledNorm = airCalledNames.map(normalizeName);
 
-	if (airCalled.length === 0) {
+	if (airObservation.calledFor.length === 0) {
 		// Air shows no call — flag only if provider called someone long enough ago.
 		const providerCalled = providerHistory.find((observation) => observation.calledFor.length > 0);
 		if (providerCalled === undefined) return [];
@@ -253,7 +260,7 @@ const checkCallConsistency = (
 		if (elapsedSinceCall > lagWindowMs(thresholds)) {
 			return [
 				{
-					detail: `Provider called race for "${providerCalled.calledFor.join(', ')}" ${Math.round(elapsedSinceCall / 1000)}s ago; air still uncalled`,
+					detail: `Provider called race for "${calledCandidateNames(providerCalled).join(', ')}" ${Math.round(elapsedSinceCall / 1000)}s ago; air still uncalled`,
 					involves: { air: [airObservation], provider: providerCalled },
 					observedAt: airObservation.observedAt,
 					owner: 'us',
@@ -266,12 +273,20 @@ const checkCallConsistency = (
 		return [];
 	}
 
-	// Air called someone. Exact agreement with any provider snapshot → fine.
-	if (providerHistory.some((observation) => sameMembers(observation.calledFor, airCalled)))
+	// Compare by candidate IDENTITY (resolved name), not raw key: air calls by name,
+	// the provider by upstream ID, so a raw set compare would always falsely mismatch.
+	// Exact agreement with any provider snapshot → fine.
+	if (
+		providerHistory.some((observation) =>
+			sameMembers(calledCandidateNames(observation).map(normalizeName), airCalledNorm),
+		)
+	)
 		return [];
 
-	const providerUnion = providerHistory.flatMap((observation) => observation.calledFor);
-	const extra = airCalled.filter((key) => !providerUnion.includes(key));
+	const providerUnionNorm = providerHistory.flatMap((observation) =>
+		calledCandidateNames(observation).map(normalizeName),
+	);
+	const extra = airCalledNorm.filter((name) => !providerUnionNorm.includes(name));
 	if (extra.length > 0) {
 		// Air called someone the provider never called: premature (provider called
 		// nobody) or a mismatch (provider called someone else).
@@ -280,8 +295,8 @@ const checkCallConsistency = (
 			{
 				detail:
 					anyProviderCall === undefined
-						? `Air called race for "${airCalled.join(', ')}" but provider has never called it`
-						: `Air called race for "${airCalled.join(', ')}" but provider called it for "${anyProviderCall.calledFor.join(', ')}"`,
+						? `Air called race for "${airCalledNames.join(', ')}" but provider has never called it`
+						: `Air called race for "${airCalledNames.join(', ')}" but provider called it for "${calledCandidateNames(anyProviderCall).join(', ')}"`,
 				involves:
 					anyProviderCall === undefined
 						? { air: [airObservation] }
@@ -301,12 +316,15 @@ const checkCallConsistency = (
 		.reverse()
 		.find((observation) => observation.calledFor.length > 0);
 	if (latestProviderCall !== undefined) {
-		const missing = latestProviderCall.calledFor.filter((key) => !airCalled.includes(key));
+		const providerCallNames = calledCandidateNames(latestProviderCall);
+		const missing = providerCallNames.filter(
+			(name) => !airCalledNorm.includes(normalizeName(name)),
+		);
 		const elapsedSinceCall = airObservation.observedAt - latestProviderCall.observedAt;
 		if (missing.length > 0 && elapsedSinceCall > lagWindowMs(thresholds)) {
 			return [
 				{
-					detail: `Provider called "${latestProviderCall.calledFor.join(', ')}" but air only shows "${airCalled.join(', ')}"`,
+					detail: `Provider called "${providerCallNames.join(', ')}" but air only shows "${airCalledNames.join(', ')}"`,
 					involves: { air: [airObservation], provider: latestProviderCall },
 					observedAt: airObservation.observedAt,
 					owner: 'us',
