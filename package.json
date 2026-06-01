@@ -13,6 +13,7 @@
 		"format:check": "prettier --check .",
 		"calibrate": "tsx src/tools/calibrate.ts",
 		"probe": "node --env-file-if-exists=.env --import tsx src/tools/probeFrame.ts",
+		"probe-identity": "node --env-file-if-exists=.env --import tsx src/tools/probeIdentity.ts",
 		"capture-golden": "node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts",
 		"verify": "node --env-file-if-exists=.env --import tsx src/tools/verifyExtraction.ts",
 		"measure-call": "node --env-file-if-exists=.env --import tsx src/tools/measureCall.ts",
