@@ -15,6 +15,7 @@ import type { RaceCell, RaceDetailResponse, RaceLinksResponse, SourceName } from
 
 import { api } from '../api.js';
 import { sourceLabel } from '../api.js';
+import { pct } from '../format.js';
 import { useLiveQuery } from '../useLiveQuery.js';
 
 interface Props {
@@ -32,7 +33,7 @@ const fmtCell = (cell: RaceCell | undefined): React.ReactNode => {
 		);
 	return (
 		<>
-			{cell.votes.toLocaleString()} · {cell.pct}%{cell.called ? ' ✓' : ''}
+			{cell.votes.toLocaleString()} · {pct(cell.pct)}%{cell.called ? ' ✓' : ''}
 		</>
 	);
 };
@@ -63,7 +64,7 @@ const RaceDetail: React.FC<Props> = (props) => {
 					>
 						<Stack spacing={0.5}>
 							<Box>
-								<b>{sourceLabel(s.source)}</b>: {s.present ? `${s.pctIn ?? '—'}% in` : 'no data'}
+								<b>{sourceLabel(s.source)}</b>: {s.present ? `${pct(s.pctIn)}% in` : 'no data'}
 							</Box>
 							{s.sourceRaceKey !== null && (
 								<Typography color="text.secondary" variant="caption">

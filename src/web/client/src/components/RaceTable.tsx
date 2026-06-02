@@ -11,7 +11,7 @@ import React from 'react';
 import type { RaceSourceSummary, RaceSummary, SourceName } from '../api.js';
 
 import { sourceLabel } from '../api.js';
-import { ago } from '../format.js';
+import { ago, pct } from '../format.js';
 
 interface Props {
 	onSelect: (raceKey: string) => void;
@@ -36,7 +36,7 @@ const SourceCell: React.FC<{ summary: RaceSourceSummary }> = (props) => {
 	return (
 		<Box sx={{ minWidth: 170 }}>
 			<Typography color="text.secondary" sx={{ display: 'block', mb: 0.5 }} variant="caption">
-				{props.summary.pctIn ?? '—'}% in
+				{pct(props.summary.pctIn)}% in
 			</Typography>
 			{shown.length === 0 ? (
 				<Typography color="text.secondary" variant="caption">
@@ -64,7 +64,7 @@ const SourceCell: React.FC<{ summary: RaceSourceSummary }> = (props) => {
 							color="text.secondary"
 							sx={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}
 						>
-							{candidate.votes.toLocaleString()} · {candidate.pct}%
+							{candidate.votes.toLocaleString()} · {pct(candidate.pct)}%
 						</Typography>
 					</Box>
 				))

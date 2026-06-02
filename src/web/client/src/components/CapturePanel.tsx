@@ -9,7 +9,7 @@ import React from 'react';
 
 import { AIR_PRESETS, api } from '../api.js';
 import type { Cadence, Observation } from '../api.js';
-import { ago } from '../format.js';
+import { ago, pct } from '../format.js';
 
 interface Props {
   cadence: Cadence | null;
@@ -126,10 +126,10 @@ const CapturePanel: React.FC<Props> = (props) => {
           </Typography>
           {props.lastFrame?.observations.map((o, i) => (
             <Box key={i} sx={{ mt: 1, fontSize: 12 }}>
-              <b>{o.templateId ?? '?'}</b> — {o.raceKey} · {o.pctIn}% in
+              <b>{o.templateId ?? '?'}</b> — {o.raceKey} · {pct(o.pctIn)}% in
               {o.candidates.map((c) => (
                 <div key={c.key} style={{ color: '#9fb0d6' }}>
-                  {c.party} {c.name} — {c.pct}% / {c.votes.toLocaleString()}
+                  {c.party} {c.name} — {pct(c.pct)}% / {c.votes.toLocaleString()}
                   {o.calledFor.includes(c.key) ? ' ✓' : ''}
                 </div>
               ))}
