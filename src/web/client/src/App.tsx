@@ -12,9 +12,9 @@ import { api } from './api.js';
 import Alerts from './components/Alerts.js';
 import CapturePanel from './components/CapturePanel.js';
 import QueryEditor from './components/QueryEditor.js';
-import RaceDetail from './components/RaceDetail.js';
+import RaceDetailDialog from './components/RaceDetailDialog.js';
 import RaceLinks from './components/RaceLinks.js';
-import RaceList from './components/RaceList.js';
+import RaceTable from './components/RaceTable.js';
 import SourceHealth from './components/SourceHealth.js';
 import { useLiveQuery } from './useLiveQuery.js';
 
@@ -37,10 +37,6 @@ const App: React.FC = () => {
 	const [selected, setSelected] = React.useState<string | undefined>(undefined);
 
 	const races = racesData?.races ?? [];
-	// Default selection to the first race once data arrives.
-	React.useEffect(() => {
-		if (selected === undefined && races.length > 0) setSelected(races[0]!.raceKey);
-	}, [races, selected]);
 
 	return (
 		<Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
@@ -59,21 +55,9 @@ const App: React.FC = () => {
 				</Box>
 
 				<Grid container spacing={2}>
-					<Grid size={{ md: 4, xs: 12 }}>
+					<Grid size={{ xs: 12 }}>
 						<Section title="Races">
-							<RaceList onSelect={setSelected} races={races} selected={selected} />
-						</Section>
-					</Grid>
-
-					<Grid size={{ md: 8, xs: 12 }}>
-						<Section title="Race detail">
-							{selected ? (
-								<RaceDetail raceKey={selected} />
-							) : (
-								<Typography color="text.secondary" variant="body2">
-									Select a race to compare sources.
-								</Typography>
-							)}
+							<RaceTable onSelect={setSelected} races={races} />
 						</Section>
 					</Grid>
 
@@ -104,6 +88,8 @@ const App: React.FC = () => {
 					</Grid>
 				</Grid>
 			</Box>
+
+			<RaceDetailDialog onClose={() => setSelected(undefined)} raceKey={selected} />
 		</Box>
 	);
 };

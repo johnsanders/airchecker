@@ -68,6 +68,32 @@ const aliasFor = (
 // Strip the Buffer from an observation for JSON (frames live behind /api/last-frame).
 const serializeObservation = (o: RaceObservation): Omit<RaceObservation, never> => o;
 
+type RaceSourceSummary = {
+	candidates: { called: boolean; name: string; party: string; pct: number; votes: number }[];
+	pctIn: null | number;
+	present: boolean;
+};
+
+// Compact per-source view for the races table: pctIn + candidates sorted by votes
+// desc (the UI shows the top few + a "more" hint). called is matched within the
+// source's own keys (with a name fallback) since calledFor holds that source's keys.
+const summarizeSource = (observation: RaceObservation | undefined): RaceSourceSummary => {
+	if (observation === undefined) return { candidates: [], pctIn: null, present: false };
+	const calledKeys = observation.calledFor ?? [];
+	const candidates = [...observation.candidates]
+		.sort((a, b) => b.votes - a.votes || b.pct - a.pct || a.name.localeCompare(b.name))
+		.map((candidate) => ({
+			called: calledKeys.some(
+				(key) => key === candidate.key || normalizeName(key) === normalizeName(candidate.name),
+			),
+			name: candidate.name,
+			party: candidate.party,
+			pct: candidate.pct,
+			votes: candidate.votes,
+		}));
+	return { candidates, pctIn: observation.pctIn, present: true };
+};
+
 const clientDistDir = (): string => {
 	const here = dirname(fileURLToPath(import.meta.url));
 	return join(here, 'client', 'dist');
@@ -122,15 +148,18 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		};
 	});
 
-	// Race list: which sources have data, last activity, alert count.
+	// Race list: per-source summary (pctIn + ranked candidates), last activity, alert count.
 	app.get('/api/races', () => {
 		const store = config.store;
 		const now = Date.now();
 		return {
 			races: store.getRaceKeys().map((raceKey) => {
-				const present = Object.fromEntries(
-					SOURCES.map((source) => [source, historyFor(store, source, raceKey).length > 0]),
-				) as Record<SourceName, boolean>;
+				const sources = Object.fromEntries(
+					SOURCES.map((source) => [
+						source,
+						summarizeSource(latest(historyFor(store, source, raceKey))),
+					]),
+				) as Record<SourceName, RaceSourceSummary>;
 				const lastAt = Math.max(
 					0,
 					...SOURCES.flatMap((source) =>
@@ -152,9 +181,9 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 					alertCount,
 					lastAt: lastAt > 0 ? lastAt : null,
 					pendingLinkCount,
-					present,
 					provisional: canonical?.provisional ?? false,
 					raceKey,
+					sources,
 				};
 			}),
 		};

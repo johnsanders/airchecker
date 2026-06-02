@@ -172,9 +172,18 @@ describe('web server', () => {
 		expect(res.body).toContain('Eagle Eye');
 	});
 
-	it('lists races with per-source presence and alert count', async () => {
+	it('lists races with per-source summaries and alert count', async () => {
 		const store = makeStore();
-		store.record(obs('DDHQ', 'TX-SEN'));
+		store.record(
+			obs('DDHQ', 'TX-SEN', {
+				calledFor: ['p1'],
+				candidates: [
+					{ key: 'p2', name: 'Allred', pct: 40, votes: 50 },
+					{ key: 'p1', name: 'Paxton', pct: 60, votes: 100 },
+				],
+				pctIn: 80,
+			}),
+		);
 		store.record(obs('air', 'TX-SEN'));
 		store.record(obs('Ross', 'GA-HOUSE'));
 		app = makeWebServer({
@@ -183,13 +192,32 @@ describe('web server', () => {
 			store,
 		});
 		const body = (await app.inject({ method: 'GET', url: '/api/races' })).json() as {
-			races: { alertCount: number; present: Record<string, boolean>; raceKey: string }[];
+			races: {
+				alertCount: number;
+				raceKey: string;
+				sources: Record<
+					string,
+					{
+						candidates: { called: boolean; name: string }[];
+						pctIn: null | number;
+						present: boolean;
+					}
+				>;
+			}[];
 		};
 		const tx = body.races.find((r) => r.raceKey === 'TX-SEN')!;
-		expect(tx.present).toEqual({ air: true, DDHQ: true, Ross: false });
+		expect(tx.sources.DDHQ!.present).toBe(true);
+		expect(tx.sources.air!.present).toBe(true);
+		expect(tx.sources.Ross!.present).toBe(false);
+		expect(tx.sources.DDHQ!.pctIn).toBe(80);
 		expect(tx.alertCount).toBe(1);
+		// Candidates ranked by votes desc, with the called flag set on the winner.
+		expect(tx.sources.DDHQ!.candidates.map((c) => c.name)).toEqual(['Paxton', 'Allred']);
+		expect(tx.sources.DDHQ!.candidates[0]!.called).toBe(true);
+		expect(tx.sources.DDHQ!.candidates[1]!.called).toBe(false);
 		const ga = body.races.find((r) => r.raceKey === 'GA-HOUSE')!;
-		expect(ga.present).toEqual({ air: false, DDHQ: false, Ross: true });
+		expect(ga.sources.Ross!.present).toBe(true);
+		expect(ga.sources.DDHQ!.present).toBe(false);
 	});
 
 	it('aligns candidates across sources by normalized name in /api/race/:key', async () => {

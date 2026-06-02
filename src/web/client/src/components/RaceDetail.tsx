@@ -41,9 +41,10 @@ const fmtCell = (cell: RaceCell | undefined): React.ReactNode => {
 // row, aligned across sources (server matches by normalized name). A discrepancy —
 // different votes, or a ✓ in one column but not another — is visible at a glance.
 const RaceDetail: React.FC<Props> = (props) => {
-	const { data, error } = useLiveQuery<RaceDetailResponse>(() => api.getRace(props.raceKey), [
-		props.raceKey,
-	]);
+	const { data, error } = useLiveQuery<RaceDetailResponse>(
+		() => api.getRace(props.raceKey),
+		[props.raceKey],
+	);
 	const { data: links, reload: reloadLinks } = useLiveQuery<RaceLinksResponse>(() =>
 		api.getRaceLinks(),
 	);
@@ -54,8 +55,6 @@ const RaceDetail: React.FC<Props> = (props) => {
 
 	return (
 		<Box>
-			<Typography sx={{ fontWeight: 600, mb: 1 }}>{data.raceKey}</Typography>
-
 			<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
 				{data.sources.map((s) => (
 					<Box

@@ -100,13 +100,27 @@ export interface RaceLinksResponse {
 	proposals: RaceLinkProposal[];
 }
 
+export interface RaceSourceCandidate {
+	called: boolean;
+	name: string;
+	party: string;
+	pct: number;
+	votes: number;
+}
+
+export interface RaceSourceSummary {
+	candidates: RaceSourceCandidate[];
+	pctIn: null | number;
+	present: boolean;
+}
+
 export interface RaceSummary {
 	alertCount: number;
 	lastAt: null | number;
 	pendingLinkCount: number;
-	present: Record<SourceName, boolean>;
 	provisional: boolean;
 	raceKey: string;
+	sources: Record<SourceName, RaceSourceSummary>;
 }
 
 export interface SourceStat {
