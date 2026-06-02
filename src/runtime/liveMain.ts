@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import type { Anomaly, RaceObservation } from '../reconcile/reconcile.js';
+import type { RaceObservation } from '../reconcile/reconcile.js';
 import type { CaptureMode } from '../sources/air/captureScheduler.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
 
@@ -16,6 +16,7 @@ import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
 import { makeRecordingLlmClient } from '../vision/llmClient.js';
 import { makeChangeBus } from '../web/changeBus.js';
 import { makeWebServer } from '../web/server.js';
+import { makeAnomalyTracker } from './anomalyTracker.js';
 import makeComposition from './composition.js';
 import { observationChanged } from './observationChanged.js';
 
@@ -28,8 +29,6 @@ const readIntervalMs = (): number => {
 	const raw = Number(process.env.CAPTURE_INTERVAL_MS);
 	return Number.isFinite(raw) && raw > 0 ? raw : 5000;
 };
-
-const RECENT_ALERTS_MAX = 200;
 
 const liveMain = async (): Promise<void> => {
 	const sessionId = `live-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`;
@@ -50,15 +49,16 @@ const liveMain = async (): Promise<void> => {
 	// of polling on a timer. Broadcast wherever server state settles.
 	const changeBus = makeChangeBus();
 
-	// Rolling buffer of recent anomalies for the web view. Reconciliation runs after
-	// each new batch of observations lands, over the races those observations touched.
-	const recentAlerts: Anomaly[] = [];
+	// Current anomalies per race for the web view. Reconciliation re-runs on every
+	// batch over the races it touched; the tracker replaces a race's anomalies each
+	// time, so a standing anomaly shows once and a resolved one clears (rather than
+	// re-appending duplicates every poll).
+	const anomalies = makeAnomalyTracker();
 	const reconcileKeys = (raceKeys: Iterable<string>): void => {
 		const now = Date.now();
 		Array.from(new Set(raceKeys)).forEach((raceKey) => {
-			composition.reconcileRace(raceKey, now).forEach((anomaly) => recentAlerts.push(anomaly));
+			anomalies.update(raceKey, composition.reconcileRace(raceKey, now));
 		});
-		while (recentAlerts.length > RECENT_ALERTS_MAX) recentAlerts.shift();
 	};
 	const reconcileTouched = (observations: RaceObservation[]): void => {
 		reconcileKeys(observations.map((o) => o.raceKey));
@@ -165,7 +165,7 @@ const liveMain = async (): Promise<void> => {
 		changeBus,
 		getCadence: airScheduler.getConfig,
 		getLastFrame: airSource.getLastFrame,
-		getRecentAlerts: () => recentAlerts,
+		getRecentAlerts: anomalies.list,
 		matchStore: airSource.matchStore,
 		onRaceRelink: applyRelink,
 		raceIdentity,
