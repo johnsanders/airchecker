@@ -10,12 +10,12 @@ import React from 'react';
 import type { RaceAlias, RaceLinksResponse, SourceName } from '../api.js';
 
 import { api, sourceLabel } from '../api.js';
-import { usePolling } from '../usePolling.js';
+import { useLiveQuery } from '../useLiveQuery.js';
 
 const aliasId = (alias: RaceAlias): string => `${alias.source}:${alias.sourceRaceKey}`;
 
 const RaceLinks: React.FC = () => {
-	const { data, reload } = usePolling<RaceLinksResponse>(() => api.getRaceLinks(), 3000);
+	const { data, reload } = useLiveQuery<RaceLinksResponse>(() => api.getRaceLinks());
 	const links = data ?? { aliases: [], canonicalRaces: [], proposals: [] };
 	const pending = links.proposals.filter((proposal) => proposal.status === 'pending');
 	const nonProviderAliases = links.aliases.filter((alias) => alias.source !== 'DDHQ');

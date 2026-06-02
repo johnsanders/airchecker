@@ -9,7 +9,7 @@ import React from 'react';
 import type { RaceSummary, SourceName } from '../api.js';
 
 import { sourceLabel } from '../api.js';
-import { ago } from '../usePolling.js';
+import { ago } from '../format.js';
 
 interface Props {
 	onSelect: (raceKey: string) => void;

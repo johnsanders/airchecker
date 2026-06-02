@@ -16,7 +16,7 @@ import RaceDetail from './components/RaceDetail.js';
 import RaceLinks from './components/RaceLinks.js';
 import RaceList from './components/RaceList.js';
 import SourceHealth from './components/SourceHealth.js';
-import { usePolling } from './usePolling.js';
+import { useLiveQuery } from './useLiveQuery.js';
 
 const Section: React.FC<{ children: React.ReactNode; title: string }> = (props) => (
 	<Paper sx={{ height: '100%', p: 2 }}>
@@ -32,8 +32,8 @@ const Section: React.FC<{ children: React.ReactNode; title: string }> = (props) 
 );
 
 const App: React.FC = () => {
-	const { data: state } = usePolling<StateResponse>(() => api.getState(), 2500);
-	const { data: racesData } = usePolling<{ races: RaceSummary[] }>(() => api.getRaces(), 2500);
+	const { data: state } = useLiveQuery<StateResponse>(() => api.getState());
+	const { data: racesData } = useLiveQuery<{ races: RaceSummary[] }>(() => api.getRaces());
 	const [selected, setSelected] = React.useState<string | undefined>(undefined);
 
 	const races = racesData?.races ?? [];

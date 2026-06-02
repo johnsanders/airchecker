@@ -9,7 +9,7 @@ import React from 'react';
 
 import { AIR_PRESETS, api } from '../api.js';
 import type { Cadence, Observation } from '../api.js';
-import { ago } from '../usePolling.js';
+import { ago } from '../format.js';
 
 interface Props {
   cadence: Cadence | null;

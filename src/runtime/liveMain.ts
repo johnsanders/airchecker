@@ -14,8 +14,10 @@ import { makeQueryStore } from '../sources/provider/queryStore.js';
 import { makeVendorSource } from '../sources/vendor/vendorSource.js';
 import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
 import { makeRecordingLlmClient } from '../vision/llmClient.js';
+import { makeChangeBus } from '../web/changeBus.js';
 import { makeWebServer } from '../web/server.js';
 import makeComposition from './composition.js';
+import { observationChanged } from './observationChanged.js';
 
 //   CAPTURE_MODE=interval|manual     air cadence (default interval)
 //   CAPTURE_INTERVAL_MS=<n>          default 5000; interval mode only
@@ -44,6 +46,10 @@ const liveMain = async (): Promise<void> => {
 		settings,
 	});
 
+	// Pushes a "changed" nudge to live web clients so they refetch on demand instead
+	// of polling on a timer. Broadcast wherever server state settles.
+	const changeBus = makeChangeBus();
+
 	// Rolling buffer of recent anomalies for the web view. Reconciliation runs after
 	// each new batch of observations lands, over the races those observations touched.
 	const recentAlerts: Anomaly[] = [];
@@ -61,8 +67,26 @@ const liveMain = async (): Promise<void> => {
 		const resolved = await Promise.all(
 			observations.map((observation) => raceIdentity.resolveObservation(observation)),
 		);
+		// Only nudge clients about races whose rendered data actually moved — sources
+		// re-poll on a timer and append identical observations (and air emits an empty
+		// batch when no graphic is up), which must not read as a change. Computed before
+		// record() so we compare against the prior latest.
+		const changedKeys = Array.from(
+			new Set(
+				resolved
+					.filter((observation) => {
+						const history = composition.store.getHistory(observation.source, observation.raceKey);
+						return observationChanged(history[history.length - 1], observation);
+					})
+					.map((observation) => observation.raceKey),
+			),
+		);
 		resolved.forEach(composition.store.record);
 		reconcileTouched(resolved);
+		// One nudge covers every source and the air frame panel: an air capture awaits
+		// this ingest before setting its lastFrame (synchronously, before any client
+		// refetch could return), so /api/state is already current when the client reads.
+		if (changedKeys.length > 0) changeBus.broadcast({ raceKeys: changedKeys, type: 'changed' });
 		return resolved;
 	};
 	const applyRelink = (
@@ -71,7 +95,9 @@ const liveMain = async (): Promise<void> => {
 		canonicalRaceKey: string,
 	): void => {
 		const result = composition.store.rekeySourceRace(source, sourceRaceKey, canonicalRaceKey);
+		if (result.fromRaceKeys.length === 0) return; // nothing actually re-bucketed
 		reconcileKeys([...result.fromRaceKeys, result.toRaceKey]);
+		changeBus.broadcast({ raceKeys: [...result.fromRaceKeys, result.toRaceKey], type: 'changed' });
 	};
 
 	// Air source: real browser capture → extractFrame → store. Driven by the cadence
@@ -136,6 +162,7 @@ const liveMain = async (): Promise<void> => {
 	// Web view: state per source, recent alerts, last frame, manual capture button,
 	// editable DDHQ queries.
 	const web = makeWebServer({
+		changeBus,
 		getCadence: airScheduler.getConfig,
 		getLastFrame: airSource.getLastFrame,
 		getRecentAlerts: () => recentAlerts,

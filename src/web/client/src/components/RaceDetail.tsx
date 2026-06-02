@@ -15,7 +15,7 @@ import type { RaceCell, RaceDetailResponse, RaceLinksResponse, SourceName } from
 
 import { api } from '../api.js';
 import { sourceLabel } from '../api.js';
-import { usePolling } from '../usePolling.js';
+import { useLiveQuery } from '../useLiveQuery.js';
 
 interface Props {
 	raceKey: string;
@@ -41,12 +41,11 @@ const fmtCell = (cell: RaceCell | undefined): React.ReactNode => {
 // row, aligned across sources (server matches by normalized name). A discrepancy —
 // different votes, or a ✓ in one column but not another — is visible at a glance.
 const RaceDetail: React.FC<Props> = (props) => {
-	const { data, error } = usePolling<RaceDetailResponse>(() => api.getRace(props.raceKey), 3000, [
+	const { data, error } = useLiveQuery<RaceDetailResponse>(() => api.getRace(props.raceKey), [
 		props.raceKey,
 	]);
-	const { data: links, reload: reloadLinks } = usePolling<RaceLinksResponse>(
-		() => api.getRaceLinks(),
-		3000,
+	const { data: links, reload: reloadLinks } = useLiveQuery<RaceLinksResponse>(() =>
+		api.getRaceLinks(),
 	);
 
 	if (error !== undefined)

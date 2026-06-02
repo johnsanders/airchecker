@@ -8,7 +8,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import React from 'react';
 
 import type { Anomaly } from '../api.js';
-import { ago } from '../usePolling.js';
+import { ago } from '../format.js';
 
 interface Props {
   alerts: Anomaly[];

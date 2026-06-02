@@ -6,7 +6,7 @@ import React from 'react';
 
 import { sourceLabel } from '../api.js';
 import type { SourceStat } from '../api.js';
-import { ago } from '../usePolling.js';
+import { ago } from '../format.js';
 
 interface Props {
   sources: SourceStat[];

@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 
 import fastifyStatic from '@fastify/static';
+import fastifyWebsocket from '@fastify/websocket';
 import Fastify from 'fastify';
 import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -12,6 +13,7 @@ import type { CadenceConfig, CaptureResult } from '../sources/air/captureSchedul
 import type { MatchStore } from '../sources/air/matchStore.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
 import type { Store } from '../store/store.js';
+import type { ChangeBus } from './changeBus.js';
 
 import { normalizeName } from '../reconcile/reconcile.js';
 
@@ -27,6 +29,9 @@ export type LastFrameView = {
 };
 
 export type WebServerConfig = {
+	// When present, the server opens a /ws endpoint and pushes a "changed" nudge over
+	// it on every state change, so the client refetches on demand instead of polling.
+	changeBus?: ChangeBus;
 	getCadence?: () => CadenceConfig;
 	getLastFrame?: () => LastFrameView | undefined;
 	getRecentAlerts: () => Anomaly[];
@@ -70,6 +75,24 @@ const clientDistDir = (): string => {
 
 export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	const app = Fastify();
+
+	// --- Live push (websocket) -----------------------------------------------
+	// @fastify/websocket registers via fastify-plugin, so its onRoute hook is global
+	// once loaded. Defining /ws inside a child register() (queued after the plugin)
+	// guarantees the hook is installed before the route is added — the route then
+	// upgrades to a websocket. Each connection just relays bus "changed" nudges.
+	const changeBus = config.changeBus;
+	if (changeBus !== undefined) {
+		void app.register(fastifyWebsocket);
+		void app.register(async (instance) => {
+			instance.get('/ws', { websocket: true }, (socket) => {
+				const off = changeBus.subscribe((message) => {
+					if (socket.readyState === 1) socket.send(JSON.stringify(message));
+				});
+				socket.on('close', off);
+			});
+		});
+	}
 
 	// --- API -----------------------------------------------------------------
 
@@ -148,6 +171,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		const alias = config.raceIdentity.acceptProposal(decodeURIComponent(req.params.id));
 		if (alias === undefined) return reply.code(404).send({ error: 'proposal not found' });
 		config.onRaceRelink?.(alias.source, alias.sourceRaceKey, alias.canonicalRaceKey);
+		changeBus?.broadcast({ type: 'changed' });
 		return { alias, raceLinks: config.raceIdentity.getSnapshot() };
 	});
 
@@ -156,6 +180,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			return reply.code(503).send({ error: 'race identity not wired' });
 		const proposal = config.raceIdentity.rejectProposal(decodeURIComponent(req.params.id));
 		if (proposal === undefined) return reply.code(404).send({ error: 'proposal not found' });
+		changeBus?.broadcast({ type: 'changed' });
 		return { proposal, raceLinks: config.raceIdentity.getSnapshot() };
 	});
 
@@ -259,6 +284,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		if (typeof req.body.intervalMs === 'number' && req.body.intervalMs > 0)
 			next.intervalMs = req.body.intervalMs;
 		config.setCadence(next);
+		changeBus?.broadcast({ type: 'changed' });
 		return config.getCadence();
 	});
 
@@ -271,6 +297,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		if (!Array.isArray(raw) || !raw.every((q) => typeof q === 'string'))
 			return reply.code(400).send({ error: 'queries must be an array of strings' });
 		config.queryStore.set(raw);
+		changeBus?.broadcast({ type: 'changed' });
 		return { queries: config.queryStore.get() };
 	});
 
@@ -283,6 +310,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		if (typeof req.body.match !== 'string' || req.body.match.trim().length === 0)
 			return reply.code(400).send({ error: 'match must be a non-empty string' });
 		config.matchStore.set(req.body.match);
+		changeBus?.broadcast({ type: 'changed' });
 		return { match: config.matchStore.get() };
 	});
 
