@@ -1,3 +1,4 @@
+import Database from 'better-sqlite3';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -70,5 +71,32 @@ describe('recording + stub round-trip', () => {
 		const stub = makeStubLlmClient(recorder);
 		await expect(stub.call({ model: 'm', prompt: 'never-seen' })).rejects.toThrow(/stub LLM miss/);
 		recorder.close();
+	});
+
+	it('persists the request without the image payload; replay still hits', async () => {
+		const recorder = makeRecorder({ baseDir, sessionId: 'sess-strip' });
+		const underlying: LlmClient = {
+			call: async (request) => ({ body: { ok: true }, model: request.model }),
+		};
+		const recording = makeRecordingLlmClient(underlying, recorder);
+
+		const request: LlmRequest = {
+			frameHash: 'frame-2',
+			image: { base64: 'A'.repeat(500_000), mediaType: 'image/png' },
+			model: 'claude-haiku-4-5',
+			prompt: 'read the ticker',
+		};
+		const live = await recording.call(request);
+
+		const stub = makeStubLlmClient(recorder);
+		expect(await stub.call(request)).toEqual(live);
+		recorder.close();
+
+		const db = new Database(join(baseDir, 'sess-strip.sqlite'), { readonly: true });
+		const row = db.prepare('SELECT request FROM llm_calls').get() as { request: string };
+		db.close();
+		const persisted = JSON.parse(row.request) as LlmRequest;
+		expect(persisted.image).toEqual({ base64: '<stripped>', mediaType: 'image/png' });
+		expect(row.request.length).toBeLessThan(1_000);
 	});
 });
