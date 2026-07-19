@@ -53,12 +53,21 @@ A **frame golden** freezes one image + its recorded two-pass LLM responses (visi
 1. **Surname-only air reads — RESOLVED: no template shows surnames only.** The single such read (`"MEALER"`, `"CAIN"`) came from the DD26 ticker's **stacked two-line name layout** ("R ALEX / ✓MEALER" — first names fully visible on screen; see frame `9a5b30e8…` in the June-1 session): a VLM line-miss, not a graphic convention. Already **fixed upstream 21 minutes after that read was recorded** — `d12428c` ("Drop partial-name air reads as missed captures") drops any air race whose candidates aren't all full "First Last" names as a missed capture, so partial reads no longer reach the store. The golden replays the pre-guard recorded observation, so its `name_mismatch` + `call_mismatch` + duplicate `votes_mismatch` fan-out stays frozen as a faithful "what the reconciler does with a partial read" — do **not** refreeze it away, and no reconciler surname-fallback is needed. Residual policy: each VLM fumble now costs one dropped capture (~one cadence interval); only if drops get frequent, add a `tickerV1` prompt hint that ticker names stack on two lines.
 2. The other 11 alerts were **stale-air votes / pct_in mismatches**, plausible for that session (captured graphics replayed against a vendor DB that already held final numbers). Thresholds behaved sanely — no tuning needed.
 
+## Primary-night noise audit — done 2026-07-19
+
+Replayed `live-2026-06-02T15-45-45-019Z-d1626ace` through `replaySessionTimeline`: **49.75 h of monitoring** (the recorder ran through June 4), 117,277 observations → 3,801 poll batches, **9.9 s replay wall time** — scale is a non-issue; only the ~50MB doc size keeps this session out of the committed goldens.
+
+- **9 distinct alerts in ~50 h — all real, zero false noise.** All medium `vote_drop`, all Ross, all IA primaries (Governor R ×5, US Senate D ×2, US Senate R ×2), all in one window (~01:52–01:55 UTC June 3, election night). Vote curves confirm a genuine vendor over-count + correction: IA-Sen-D Turek jumped 45,045 → 83,628 **in one poll while pct_in FELL** (17.02 → 16.83), peaked at 88,185, snapped back to 51,290, then resumed a normal climb. Thresholds behaved; no tuning needed.
+- **Finding: standing alerts are transient.** All 9 cleared on the next clean poll (~1 min later) — final standing count was 0. An operator watching the web view could miss the entire event. The deferred alert-history/log sink now has a concrete justification (next move #2).
+- **Finding: the reconciler flagged the *correction*, not the *inflation*.** The bad (inflated) numbers were live for ~3 polls before the drop fired. A "votes rose while pct_in fell" internal-consistency rule would catch it at onset — next move #3, user's call.
+
 ## Next moves (priority order)
 
-1. **Primary-night noise audit at real scale.** Replay `live-2026-06-02T15-45-45-019Z-d1626ace` (117k obs) via `node --import tsx src/runtime/replayMain.ts <sessionId>` and review what would have alerted. **Too big to commit as a golden** (~50MB JSON) — analysis target only; optionally freeze a downsampled slice later.
-2. **Recorder bloat fix before a real 6-hour broadcast.** The recorder stores each LLM request verbatim **including the base64 frame** in `llm_calls.request` → **~240MB/hour** sessions. Store the request **minus the image payload** (the frame is already content-addressed in `frames/`).
-3. **Carried over, still open:** `judge()` LLM downgrade call (rules-only for now); real alert sinks (Slack / dashboard / paging); auth on the web view; multi-race concurrent monitoring config; sample-data variants (one Presidential, one Primary, one Special) to widen schema-parse tests before those race types go live.
-4. **Housekeeping (user's call).** ~20 near-empty May-31 shakeout session DBs + stray `-wal`/`-shm` files in `recordings/` can be deleted; all gitignored.
+1. **Recorder bloat fix before a real 6-hour broadcast.** The recorder stores each LLM request verbatim **including the base64 frame** in `llm_calls.request` → **~240MB/hour** sessions. Store the request **minus the image payload** (the frame is already content-addressed in `frames/`).
+2. **Alert history / log sink.** Standing alerts clear on the next clean poll (see audit above), so one-poll events vanish from the web view in ~a minute. Persist an append-only alert event log (structured log sink + a recent-events panel) so they survive operator blinks.
+3. **Candidate rule — votes up while pct_in down (user decision).** Catches upstream inflation at onset instead of at correction; on primary night it would have fired at 01:52 instead of 01:54. If added: review + `--refreeze` the session golden.
+4. **Carried over, still open:** `judge()` LLM downgrade call (rules-only for now); Slack / paging sinks; auth on the web view; multi-race concurrent monitoring config; sample-data variants (one Presidential, one Primary, one Special) to widen schema-parse tests before those race types go live.
+5. **Housekeeping (user's call).** ~20 near-empty May-31 shakeout session DBs + stray `-wal`/`-shm` files in `recordings/` can be deleted; all gitignored.
 
 ## Useful commands
 
