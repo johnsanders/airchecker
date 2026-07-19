@@ -186,7 +186,7 @@ types → store → reconciler with unit tests → adapters → recorder → rep
 
 Currently done: **the entire build order above, plus the identity resolver, live pollers, the air capturer, `liveMain`, the Fastify + websocket web view, and session goldens.** Proven live against two June 2026 broadcast nights (TX runoffs with all three sources + a DDHQ/Ross primary night). **170 tests passing.**
 
-Next up — no longer blocked on user inputs. See [`NEXT_STEPS.md`](NEXT_STEPS.md) for the current list: surname-only air candidate matching, a primary-night noise audit at real scale, the recorder image-payload bloat fix before a 6-hour broadcast, then the still-deferred items below.
+Next up — no longer blocked on user inputs. See [`NEXT_STEPS.md`](NEXT_STEPS.md) for the current list: a primary-night noise audit at real scale, the recorder image-payload bloat fix before a 6-hour broadcast, then the still-deferred items below.
 
 ## Don't
 
