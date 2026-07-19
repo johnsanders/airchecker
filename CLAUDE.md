@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Eagle Eye is an observer for live election-night TV graphics. It reconciles three independent streams — political provider API (DDHQ), graphics vendor DB (Chameleon), and on-air visual capture (DirecTV window via MCP screenshot) — and flags inconsistencies for human review. Greenfield TypeScript/Node service.
+Eagle Eye is an observer for live election-night TV graphics. It reconciles three independent streams — political provider API (DDHQ), graphics vendor DB (Chameleon), and on-air visual capture (DirecTV web player via a CDP-attached Chrome) — and flags inconsistencies for human review. Greenfield TypeScript/Node service.
 
 ## Quick start
 
@@ -34,18 +34,19 @@ src/
   templates/        TemplateSpec types + one spec file per on-air template
   sources/
     common.ts       Shared race-key composition + party-letter mapping (MUST be shared so keys align across sources)
-    provider/       DDHQ schema + adapter
-    vendor/         Chameleon schema + adapter
-    air/            (planned) MCP screenshot driver + frame buffer
+    provider/       DDHQ schema + adapter + OAuth paginated poller (queryStore = runtime race list)
+    vendor/         Chameleon schema + adapter + poller (VPN-only playlist URL)
+    air/            browserCapturer (puppeteer-core over CDP :9222) + captureScheduler + matchStore
+  identity/         raceIdentity — cross-source race-linking (DDHQ canonical spine + provisional buckets + one-time Haiku proposal)
   vision/           extractFrame (two-pass VLM: Haiku bulk + Sonnet call-recrop), anthropicClient, goldenClient, cropRegion, llmClient, redact
-  tools/            calibrate / probe / capture-golden / verify / measure-call
+  tools/            calibrate / probe / capture-golden / verify / measure-call / freeze-session / air-probe / probe-identity
   store/            In-memory ring buffer per source with onRecord hook for recorder
   reconcile/        Pure triangulation + severity functions; thresholds in thresholds.ts
-  alerts/           (planned) Sink interface, logSink, webSink
-  web/              (planned) Fastify; live state, recent alerts, last frame with overlay
-  replay/           Recorder + player; recorder is sessions/observations/frames/llm_calls SQLite + content-addressed PNGs
-  runtime/          composition.ts + liveMain.ts + replayMain.ts
-tests/              Vitest; reconciler rules + adapters + store
+  settings/         settingsStore — persistent settings.sqlite (DDHQ query list + identity snapshot survive restarts)
+  web/              Fastify JSON API + websocket push (server.ts, changeBus.ts) + Vite/React/MUI SPA (client/)
+  replay/           Recorder + player + sessionGolden; recorder is sessions/observations/frames/llm_calls SQLite + content-addressed PNGs
+  runtime/          composition.ts + liveMain.ts + replayMain.ts + anomalyTracker (emission/hysteresis — the alert layer, no separate alerts/ dir)
+tests/              Vitest; reconciler rules + adapters + store + identity + frame & session goldens
 ```
 
 Sample fixtures (real responses, kept in repo root):
@@ -115,7 +116,10 @@ Opus 4.7/4.8 is not used. **Prompt caching is NOT used** — measured, the stabl
 
 ### Replay harness (the test backbone)
 
-Recorder is always on in live mode. Every observation, every frame PNG, every LLM request/response goes to `recordings/<sessionId>.sqlite` keyed by `(frame hash, prompt hash)`. Replay player swaps the three source modules for replay sources; `--stub-llm` mode reuses recorded LLM responses for zero-cost deterministic runs. Golden replays under `recordings/goldens/` are the CI suite.
+Recorder is always on in live mode. Every observation, every frame PNG, every LLM request/response, and every identity event goes to `recordings/<sessionId>.sqlite` keyed by `(frame hash, prompt hash)`. Replay player swaps the three source modules for replay sources; `--stub-llm` mode reuses recorded LLM responses for zero-cost deterministic runs. Golden replays are the CI suite, in **two kinds**:
+
+- **Frame goldens** (`recordings/goldens/*.golden.json` + PNG) — one image + its recorded two-pass LLM responses; regression for `extractFrame`. `npm run capture-golden -- <framePng> <name>` freezes one live; `-- --from-session <sessionId> <frameHash> <name>` freezes one from a recorded session's frames + responses (**no API key**). Two real broadcast frames now sit alongside the synthetic ones.
+- **Session goldens** (`recordings/goldens/sessions/*.session.json`) — `src/replay/sessionGolden.ts` `replaySessionTimeline` replays a whole recorded timeline in its original poll batches, applies recorded identity events as mid-timeline rekeys, and freezes what the store + reconciler emit (distinct-anomaly set, final anomalies, identity + store summaries). `npm run freeze-session -- <sessionId> <name>` writes the self-contained doc (session sqlites stay gitignored); `-- --refreeze <goldenFile>` recomputes expectations from the doc's own inputs after an intentional rule change. `tests/replay/sessionGoldens.test.ts` runs them hermetically. First one: `tx_runoffs_2026-06-01_all_sources` (64 min, 4,147 obs, all three sources).
 
 ## Coding style
 
@@ -172,19 +176,17 @@ These are deliberate v1 cuts, written down so they're not forgotten:
 - **County-level reconciliation.** We adapt only the topline; county-detail graphics can't be cross-checked. Extend `RaceObservation` (or introduce `SubRaceObservation`) when needed.
 - **Magic wall.** Plan accommodates it (`captureRegion?` + `dataPath: 'provider_direct'`) but locatable detection and dynamic-jurisdiction extraction are v1.1. User has a library of recordings that will become golden replays.
 - **`judge()` LLM call.** Deferred until rule volume is known.
-- **Slack / dashboard / paging sinks.** v1 is structured log + simple web view. Add only once severity tiers are trusted.
-- **Provider poller endpoint + auth.** Adapter is ready; HTTP loop needs the actual DDHQ URL + auth scheme from the user.
-- **Vendor SQL poller.** Adapter is ready; need to confirm whether the vendor exposes a queryable DB directly or only via this JSON response shape.
-- **Multi-race concurrent monitoring.** Architecture supports it; runtime configures one race for MVP.
+- **Slack / dashboard / paging sinks.** v1 is structured log + web view (`anomalyTracker` + `RaceLinks`/`Alerts`). Add only once severity tiers are trusted.
+- **Multi-race concurrent monitoring.** Architecture supports it; runtime configures the tracked set via the DDHQ query list.
 - **Auth on the web view.**
 
 ## Build order (per the plan)
 
 types → store → reconciler with unit tests → adapters → recorder → replay player with stub sources → template specs + calibrate → **two-pass `extractFrame` + first golden** → real pollers → air capturer → wire `liveMain` → web view.
 
-Currently done: project skeleton, types, store, reconciler + tests, both adapters (DDHQ + Ross) + tests against real samples, recorder + replay player + LLM stub scaffold + composition root, four template specs + registry + `calibrate`, **two-pass `extractFrame` (Haiku bulk + Sonnet call-recrop) verified live against all template families, first golden + hermetic replay test**. 83 tests passing.
+Currently done: **the entire build order above, plus the identity resolver, live pollers, the air capturer, `liveMain`, the Fastify + websocket web view, and session goldens.** Proven live against two June 2026 broadcast nights (TX runoffs with all three sources + a DDHQ/Ross primary night). **170 tests passing.**
 
-Next up — all blocked on user inputs: real pollers (DDHQ endpoint+auth / Chameleon access pattern), air capturer (DirecTV screenshot mechanism), then wire `liveMain` + Fastify web view.
+Next up — no longer blocked on user inputs. See [`NEXT_STEPS.md`](NEXT_STEPS.md) for the current list: surname-only air candidate matching, a primary-night noise audit at real scale, the recorder image-payload bloat fix before a 6-hour broadcast, then the still-deferred items below.
 
 ## Don't
 
