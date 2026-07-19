@@ -159,14 +159,17 @@ describe('recorder identity events', () => {
 		const player = makePlayer({ baseDir, sessionId: 'sess-identity' });
 		expect(player.readIdentityEvents()).toEqual([
 			{
-				payload: {
-					canonicalRaceKey: 'DDHQ:RACE',
-					method: 'manual',
-					source: 'air',
-					sourceRaceKey: 'AIR HEADING',
-					updatedAt: 1_000,
+				event: {
+					payload: {
+						canonicalRaceKey: 'DDHQ:RACE',
+						method: 'manual',
+						source: 'air',
+						sourceRaceKey: 'AIR HEADING',
+						updatedAt: 1_000,
+					},
+					type: 'alias_upsert',
 				},
-				type: 'alias_upsert',
+				ts: expect.any(Number),
 			},
 		]);
 		player.close();

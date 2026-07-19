@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import type { RaceIdentityEvent } from '../identity/raceIdentity.js';
 import type { RaceObservation } from '../reconcile/reconcile.js';
+import type { LlmLookupResult } from './recorder.js';
 
 export type FrameRow = {
 	frameHash: string;
@@ -16,8 +17,9 @@ export type FrameRow = {
 export type Player = {
 	close: () => void;
 	emitObservationsInto: (handler: (observation: RaceObservation) => void) => void;
+	lookupLlm: (frameHash: null | string, promptHash: string) => LlmLookupResult | undefined;
 	readFrames: () => FrameRow[];
-	readIdentityEvents: () => RaceIdentityEvent[];
+	readIdentityEvents: () => { event: RaceIdentityEvent; ts: number }[];
 	readObservations: () => RaceObservation[];
 	sessionId: string;
 };
@@ -44,8 +46,14 @@ const makePlayer = (config: PlayerConfig): Player => {
 		hasIdentityEvents === undefined
 			? undefined
 			: db.prepare(
-					'SELECT event_type AS eventType, payload FROM identity_events WHERE session_id = ? ORDER BY seq ASC',
+					'SELECT event_type AS eventType, payload, ts FROM identity_events WHERE session_id = ? ORDER BY seq ASC',
 				);
+	const selectLlmWithFrame = db.prepare(
+		'SELECT model, response FROM llm_calls WHERE frame_hash = ? AND prompt_hash = ? ORDER BY seq DESC LIMIT 1',
+	);
+	const selectLlmNoFrame = db.prepare(
+		'SELECT model, response FROM llm_calls WHERE frame_hash IS NULL AND prompt_hash = ? ORDER BY seq DESC LIMIT 1',
+	);
 
 	const readObservations = (): RaceObservation[] =>
 		(selectObservations.all(config.sessionId) as { payload: string }[]).map(
@@ -54,21 +62,33 @@ const makePlayer = (config: PlayerConfig): Player => {
 
 	const readFrames = (): FrameRow[] => selectFrames.all(config.sessionId) as FrameRow[];
 
-	const readIdentityEvents = (): RaceIdentityEvent[] =>
+	const readIdentityEvents = (): { event: RaceIdentityEvent; ts: number }[] =>
 		selectIdentityEvents === undefined
 			? []
 			: (
 					selectIdentityEvents.all(config.sessionId) as {
 						eventType: RaceIdentityEvent['type'];
 						payload: string;
+						ts: number;
 					}[]
-				).map(
-					(row) =>
-						({
-							payload: JSON.parse(row.payload) as RaceIdentityEvent['payload'],
-							type: row.eventType,
-						}) as RaceIdentityEvent,
-				);
+				).map((row) => ({
+					event: {
+						payload: JSON.parse(row.payload) as RaceIdentityEvent['payload'],
+						type: row.eventType,
+					} as RaceIdentityEvent,
+					ts: row.ts,
+				}));
+
+	const lookupLlm = (frameHash: null | string, promptHash: string): LlmLookupResult | undefined => {
+		const row =
+			frameHash === null
+				? (selectLlmNoFrame.get(promptHash) as { model: string; response: string } | undefined)
+				: (selectLlmWithFrame.get(frameHash, promptHash) as
+						| { model: string; response: string }
+						| undefined);
+		if (row === undefined) return undefined;
+		return { model: row.model, response: JSON.parse(row.response) as unknown };
+	};
 
 	const emitObservationsInto = (handler: (observation: RaceObservation) => void): void =>
 		readObservations().forEach(handler);
@@ -80,6 +100,7 @@ const makePlayer = (config: PlayerConfig): Player => {
 	return {
 		close,
 		emitObservationsInto,
+		lookupLlm,
 		readFrames,
 		readIdentityEvents,
 		readObservations,

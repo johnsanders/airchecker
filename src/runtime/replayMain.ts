@@ -14,13 +14,13 @@ const replayMain = async (options: ReplayOptions): Promise<void> => {
 	const raceIdentity = makeRaceIdentityResolver();
 
 	player.emitObservationsInto(composition.store.record);
-	player.readIdentityEvents().forEach((event) => {
-		raceIdentity.applyEvent(event);
-		if (event.type !== 'alias_upsert') return;
+	player.readIdentityEvents().forEach((timed) => {
+		raceIdentity.applyEvent(timed.event);
+		if (timed.event.type !== 'alias_upsert') return;
 		composition.store.rekeySourceRace(
-			event.payload.source,
-			event.payload.sourceRaceKey,
-			event.payload.canonicalRaceKey,
+			timed.event.payload.source,
+			timed.event.payload.sourceRaceKey,
+			timed.event.payload.canonicalRaceKey,
 		);
 	});
 

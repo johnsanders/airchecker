@@ -2,18 +2,26 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
+import type { Player } from '../replay/player.js';
+import type { Golden } from '../vision/goldenClient.js';
+import type { LlmClient } from '../vision/llmClient.js';
+
+import makePlayer from '../replay/player.js';
 import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
 import { extractFrame } from '../vision/extractFrame.js';
-import type { Golden } from '../vision/goldenClient.js';
 import { hashPrompt } from '../vision/llmClient.js';
-import type { LlmClient } from '../vision/llmClient.js';
 import { redactError } from '../vision/redact.js';
 
-// Captures a golden: one real VLM call against a frame, recording the exact
-// (frameSha256, promptHash, response) the live path produced plus the resulting
-// observations, so a stubbed replay can assert against it with no API key.
+// Captures a golden: the full two-pass extraction against a frame, recording the
+// exact (frameSha256, promptHash, response) tuples the flow produced plus the
+// resulting observations, so a stubbed replay can assert against it with no API key.
 //
 //   npm run capture-golden -- <framePng> <goldenName>
+//     live mode: real VLM calls (needs ANTHROPIC_API_KEY)
+//
+//   npm run capture-golden -- --from-session <sessionId> <frameHash> <goldenName>
+//     promote an already-recorded session frame: responses come from the session's
+//     llm_calls table — zero API cost, no key needed
 //
 // Writes recordings/goldens/<goldenName>.golden.json and copies the frame in.
 
@@ -21,64 +29,121 @@ import { redactError } from '../vision/redact.js';
 // Records EVERY frame-bearing call (pass 1 + each recall vote) as its own golden
 // entry, so a stubbed replay can satisfy the full two-pass flow with no API key.
 const makeCapturingClient = (underlying: LlmClient, sink: Golden[]): LlmClient => ({
-  call: async (request) => {
-    const response = await underlying.call(request);
-    const frameSha256 =
-      request.image === undefined
-        ? null
-        : createHash('sha256').update(Buffer.from(request.image.base64, 'base64')).digest('hex');
-    if (frameSha256 !== null)
-      sink.push({
-        frameSha256,
-        model: response.model,
-        promptHash: hashPrompt(request),
-        response: response.body,
-      });
-    return response;
-  },
+	call: async (request) => {
+		const response = await underlying.call(request);
+		const frameSha256 =
+			request.image === undefined
+				? null
+				: createHash('sha256').update(Buffer.from(request.image.base64, 'base64')).digest('hex');
+		if (frameSha256 !== null)
+			sink.push({
+				frameSha256,
+				model: response.model,
+				promptHash: hashPrompt(request),
+				response: response.body,
+			});
+		return response;
+	},
 });
 
+// Serves recorded responses from the session DB. extractFrame stamps every
+// request's frameHash with the sha256 of the image it sends (full frame in pass 1,
+// upscaled crop in pass 2) — the same keying the recorder wrote — so the lookup
+// needs no image re-hashing.
+const makeSessionStubClient = (player: Player): LlmClient => ({
+	call: async (request) => {
+		const promptHash = hashPrompt(request);
+		const hit = player.lookupLlm(request.frameHash ?? null, promptHash);
+		if (hit === undefined) {
+			throw new Error(
+				`session stub miss: frameHash=${request.frameHash ?? '<none>'} promptHash=${promptHash} — the current prompts don't match what the session recorded`,
+			);
+		}
+		return { body: hit.response, model: hit.model };
+	},
+});
+
+type CaptureMode =
+	| { frameHash: string; goldenName: string; kind: 'session'; sessionId: string }
+	| { framePath: string; goldenName: string; kind: 'live' };
+
+const parseMode = (args: string[]): CaptureMode | undefined => {
+	if (args[0] === '--from-session') {
+		const [, sessionId, frameHash, goldenName] = args;
+		if (sessionId === undefined || frameHash === undefined || goldenName === undefined)
+			return undefined;
+		return { frameHash, goldenName, kind: 'session', sessionId };
+	}
+	const [framePath, goldenName] = args;
+	if (framePath === undefined || goldenName === undefined) return undefined;
+	return { framePath, goldenName, kind: 'live' };
+};
+
 const run = async (): Promise<void> => {
-  const framePath = process.argv[2];
-  const goldenName = process.argv[3];
-  if (framePath === undefined || goldenName === undefined) {
-    console.error('Usage: npm run capture-golden -- <framePng> <goldenName>');
-    process.exit(1);
-  }
-  if (process.env.ANTHROPIC_API_KEY === undefined) {
-    console.error('ANTHROPIC_API_KEY is not set — capturing a golden requires a live call.');
-    process.exit(1);
-  }
+	const mode = parseMode(process.argv.slice(2));
+	if (mode === undefined) {
+		console.error(
+			[
+				'Usage:',
+				'  npm run capture-golden -- <framePng> <goldenName>',
+				'  npm run capture-golden -- --from-session <sessionId> <frameHash> <goldenName>',
+			].join('\n'),
+		);
+		process.exit(1);
+	}
+	if (mode.kind === 'live' && process.env.ANTHROPIC_API_KEY === undefined) {
+		console.error('ANTHROPIC_API_KEY is not set — capturing a live golden requires a real call.');
+		process.exit(1);
+	}
 
-  const png = readFileSync(framePath);
-  const sink: Golden[] = [];
-  const client = makeCapturingClient(makeAnthropicLlmClient(), sink);
-  const observations = await extractFrame(png, 0, { client });
+	const player =
+		mode.kind === 'session'
+			? makePlayer({ baseDir: 'recordings', sessionId: mode.sessionId })
+			: undefined;
+	const framePath =
+		mode.kind === 'session'
+			? join('recordings', mode.sessionId, 'frames', `${mode.frameHash}.png`)
+			: mode.framePath;
+	const sourceFrame =
+		mode.kind === 'session'
+			? join(mode.sessionId, 'frames', `${mode.frameHash}.png`)
+			: basename(mode.framePath);
+	const goldenName = mode.goldenName;
 
-  if (sink.length === 0) throw new Error('no frame request was captured');
+	const png = readFileSync(framePath);
+	const sink: Golden[] = [];
+	const underlying =
+		player === undefined ? makeAnthropicLlmClient() : makeSessionStubClient(player);
+	const client = makeCapturingClient(underlying, sink);
+	const observations = await extractFrame(png, 0, { client });
+	player?.close();
 
-  const outDir = 'recordings/goldens';
-  mkdirSync(outDir, { recursive: true });
-  const frameFile = `${goldenName}.png`;
-  copyFileSync(framePath, join(outDir, frameFile));
+	if (sink.length === 0) throw new Error('no frame request was captured');
 
-  const goldenDoc = {
-    frame: frameFile,
-    goldens: sink,
-    name: goldenName,
-    observations,
-    sourceFrame: basename(framePath),
-  };
-  const outPath = join(outDir, `${goldenName}.golden.json`);
-  writeFileSync(outPath, `${JSON.stringify(goldenDoc, null, 2)}\n`);
+	const outDir = 'recordings/goldens';
+	mkdirSync(outDir, { recursive: true });
+	const frameFile = `${goldenName}.png`;
+	copyFileSync(framePath, join(outDir, frameFile));
 
-  console.log(`captured ${observations.length} observation(s) → ${outPath}`);
-  observations.forEach((observation) => {
-    console.log(`  [${observation.templateId}] ${observation.raceKey} — ${observation.candidates.length} candidates`);
-  });
+	const goldenDoc = {
+		frame: frameFile,
+		goldens: sink,
+		name: goldenName,
+		observations,
+		sourceFrame,
+	};
+	const outPath = join(outDir, `${goldenName}.golden.json`);
+	writeFileSync(outPath, `${JSON.stringify(goldenDoc, null, 2)}\n`);
+
+	console.log(`captured ${observations.length} observation(s) → ${outPath}`);
+	observations.forEach((observation) => {
+		console.log(
+			`  [${observation.templateId}] ${observation.raceKey} — ${observation.candidates.length} candidates`,
+		);
+	});
 };
 
 run().catch((error: unknown) => {
-  console.error(redactError(error));
-  process.exit(1);
+	console.error(redactError(error));
+	process.exit(1);
 });
