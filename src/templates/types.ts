@@ -45,6 +45,10 @@ export type SingletonField = {
 };
 
 export type TemplateSpec = {
+	// The surface is on air whenever coverage is: read its region on every frame
+	// (cached, so it costs nothing when pass 1 saw it) and build the observation
+	// from the crop read alone when pass 1 missed it.
+	alwaysOnAir?: boolean;
 	bind: {
 		candidateKeyFrom: (candidate: Record<string, string>) => string;
 		raceKeyFrom: (singletons: Record<string, string>) => string;

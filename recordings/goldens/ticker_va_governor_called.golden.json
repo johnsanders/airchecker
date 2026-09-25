@@ -36,20 +36,22 @@
     {
       "frameSha256": "9589cef02a180109fc6264c91e514905cdeaaa6dbc99777f34a55779f25ff4ed",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "VA | GOVERNOR",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "name": "Abigail Spanberger",
+            "firstName": "ABIGAIL",
+            "surname": "SPANBERGER",
             "party": "D",
             "votes": "1,976,857",
             "pct": "57.7%",
             "called": "called"
           },
           {
-            "name": "Winsome Earle-Sears",
+            "firstName": "WINSOME",
+            "surname": "EARLE-SEARS",
             "party": "R",
             "votes": "1,449,586",
             "pct": "42.3%",

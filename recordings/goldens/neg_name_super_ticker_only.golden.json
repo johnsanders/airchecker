@@ -36,20 +36,22 @@
     {
       "frameSha256": "258fdea6c0280628e5270a4ba487398ad76e85c2072dd4c2a5a345e354430930",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "TX | U.S. SENATE (R)",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "name": "Ken Paxton",
+            "firstName": "KEN",
+            "surname": "PAXTON",
             "party": "R",
             "votes": "885,949",
             "pct": "63.8%",
             "called": "called"
           },
           {
-            "name": "John Cornyn",
+            "firstName": "JOHN",
+            "surname": "CORNYN",
             "party": "R",
             "votes": "501,725",
             "pct": "36.2%",

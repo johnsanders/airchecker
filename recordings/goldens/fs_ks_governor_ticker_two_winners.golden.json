@@ -56,20 +56,22 @@
     {
       "frameSha256": "f4a3c10e7d1d08b69ca8f931b63f083d6582eeb75c77f4d559ba29f18e85c2d6",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "SC | U.S. SENATE (R)",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "name": "Darline Graham",
+            "firstName": "DARLINE",
+            "surname": "GRAHAM",
             "party": "R",
             "votes": "109,881",
             "pct": "33.0%",
             "called": "called"
           },
           {
-            "name": "Ralph Norman",
+            "firstName": "RALPH",
+            "surname": "NORMAN",
             "party": "R",
             "votes": "82,628",
             "pct": "24.8%",
@@ -81,20 +83,22 @@
     {
       "frameSha256": "ee3a8dc33f35c0b6bed1933fd8cd2b56f4e6e6010d5f15d4798c630a1f7f4bad",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "KS GOVERNOR",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "name": "Cindy Holscher",
+            "firstName": "CINDY",
+            "surname": "HOLSCHER",
             "party": "D",
             "votes": "3783929",
             "pct": "62.0%",
             "called": ""
           },
           {
-            "name": "Ty Masterson",
+            "firstName": "TY",
+            "surname": "MASTERSON",
             "party": "R",
             "votes": "2729283",
             "pct": "48.0%",

@@ -16,6 +16,7 @@
 		"probe-identity": "node --env-file-if-exists=.env --import tsx src/tools/probeIdentity.ts",
 		"capture-golden": "node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts",
 		"freeze-session": "node --import tsx src/tools/freezeSessionGolden.ts",
+		"import-video": "node --env-file-if-exists=.env --import tsx src/tools/importVideo.ts",
 		"verify": "node --env-file-if-exists=.env --import tsx src/tools/verifyExtraction.ts",
 		"measure-call": "node --env-file-if-exists=.env --import tsx src/tools/measureCall.ts",
 		"chrome:debug": "'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --remote-debugging-port=9222 --user-data-dir=$HOME/.nn-airchecker-chrome --window-size=960,540 --window-position=0,0 https://stream.directv.com/player",

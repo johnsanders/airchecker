@@ -8,6 +8,25 @@
       "response": {
         "templates": []
       }
+    },
+    {
+      "frameSha256": "540266cfa21da9dbf7f37f624259703171c3fe816633d64c3ad648593c304c71",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "response": {
+        "raceHeading": "<UNKNOWN>",
+        "pctIn": "<UNKNOWN>",
+        "candidates": [
+          {
+            "firstName": "<UNKNOWN>",
+            "surname": "<UNKNOWN>",
+            "party": "<UNKNOWN>",
+            "votes": "<UNKNOWN>",
+            "pct": "<UNKNOWN>",
+            "called": ""
+          }
+        ]
+      }
     }
   ],
   "name": "neg_promo_bar_empty",

@@ -8,6 +8,7 @@ import { headingRaceKey } from './headingKey.js';
 // off the reference frames); the VLM reads the heading, "% in", and the two
 // candidate blocks from the crop.
 const tickerV1: TemplateSpec = {
+	alwaysOnAir: true,
 	bind: {
 		candidateKeyFrom: (candidate) => candidate.name ?? '',
 		raceKeyFrom: headingRaceKey,

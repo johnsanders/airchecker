@@ -200,23 +200,31 @@ const recropTool: LlmTool = {
 								'Exactly "called" if a gold/yellow check mark (✓) sits beside this candidate\'s surname; else "". A "PROJECTION" banner is not a call.',
 							type: 'string',
 						},
-						name: {
+						firstName: {
 							description:
-								'The candidate\'s FULL personal name — both stacked lines, first name then surname (e.g. "James Talarico") — never the party letter.',
+								'The SMALL upper line of the candidate\'s name (first name, e.g. "James") exactly as printed — never the party letter.',
 							type: 'string',
 						},
 						party: {
 							description: 'Party letter from the color chip (D, R, L, I, G…).',
 							type: 'string',
 						},
-						pct: { type: 'string' },
+						pct: {
+							description: 'Percentage exactly as printed (e.g. "52.4%").',
+							type: 'string',
+						},
+						surname: {
+							description:
+								'The LARGE lower line of the candidate\'s name (surname, e.g. "TALARICO") exactly as printed.',
+							type: 'string',
+						},
 						votes: {
 							description:
 								'Vote total exactly as printed (read every digit carefully; may or may not have thousands separators).',
 							type: 'string',
 						},
 					},
-					required: ['name', 'party', 'votes', 'pct', 'called'],
+					required: ['firstName', 'surname', 'party', 'votes', 'pct', 'called'],
 					type: 'object',
 				},
 				type: 'array',
@@ -238,11 +246,15 @@ const recropTool: LlmTool = {
 	name: RECROP_TOOL,
 };
 
+// The name is read as its two printed lines: asked for one "name" field the
+// model returned only the first name or only the surname often enough to lose
+// legible tickers, and two required fields make it read both.
 const recropCandidateSchema = z.object({
 	called: z.string(),
-	name: z.string(),
+	firstName: z.string(),
 	party: z.string(),
 	pct: z.string(),
+	surname: z.string(),
 	votes: z.string(),
 });
 const recropBodySchema = z.object({
@@ -256,7 +268,7 @@ type RecropRead = z.infer<typeof recropBodySchema>;
 const recropPrompt = (): string =>
 	[
 		'This is a zoomed-in crop of one on-air election result graphic.',
-		'Read EVERY candidate exactly as printed: the FULL personal name from both stacked lines (first name, then surname — e.g. "James Talarico"; never the party letter), the party letter from the color chip, the vote total (read each digit carefully — these are small), and the percentage.',
+		"Read EVERY candidate exactly as printed: the name's SMALL upper line (first name) and LARGE lower line (surname) as two separate fields — never the party letter — plus the party letter from the color chip, the vote total (read each digit carefully — these are small), and the percentage.",
 		'A candidate is "called" if a small gold/yellow check mark (✓) sits immediately beside their SURNAME — left of it on the ticker and lower-third, right of it on the fullscreen board. Set "called" to "called" for each candidate that has the mark, else "". A "PROJECTION" banner is not a call.',
 		'Also read the race heading exactly as printed (state, office, party in parentheses if shown, a DISTRICT line if shown — never the "X% IN" figure, which is not a district) and the "X% IN" reporting figure exactly as printed, including any ">" prefix. Report via the report_crop tool.',
 	].join('\n');
@@ -305,14 +317,27 @@ export type ExtractFrameDeps = {
 // typically a candidate showing only a surname before the first name has scrolled in.
 // We can't reconcile a partial roster, so treat any race whose candidates aren't all
 // full "First Last" names as a missed capture and drop it rather than emit bad data.
+// A name token is letters (with the usual hyphen/apostrophe/period), never a
+// placeholder the model invents for an unreadable field ("<UNKNOWN>", "—").
+const WORD_TOKEN = /^\p{L}[\p{L}'’.\-]*$/u;
+// Every race heading in the package opens with a state code, optionally with a
+// district ("AL-2"), then the office. Anything else ("DD26", "<UNKNOWN>", a stray
+// party letter) is not a race and must not become a store bucket.
+const RACE_KEY_SHAPE = /^[A-Z]{2}(?:-\d+)? \S/;
+
 const isMissedCapture = (observation: RaceObservation): boolean =>
-	observation.raceKey.trim().length === 0 ||
+	!RACE_KEY_SHAPE.test(observation.raceKey) ||
 	observation.candidates.some(
 		(candidate) =>
 			candidate.name.trim().split(/\s+/).length < 2 ||
-			// A nonzero share with zero votes is impossible — it's the mid-flip signature
-			// (the crop read couldn't make out the sliced vote total).
-			(candidate.pct > 0 && candidate.votes === 0),
+			!candidate.name
+				.trim()
+				.split(/\s+/)
+				.every((token) => WORD_TOKEN.test(token)) ||
+			// A nonzero share with zero votes (or votes with no share) is impossible —
+			// it's the mid-flip signature: the crop read couldn't make out a sliced field.
+			(candidate.pct > 0 && candidate.votes === 0) ||
+			(candidate.votes > 0 && candidate.pct === 0),
 	);
 
 export const extractFrame = async (
@@ -422,7 +447,8 @@ export const extractFrame = async (
 	// read owns the small print (votes, pct, ✓). The crop read tends to return only
 	// one of the two stacked name lines, so match its rows back to pass 1's by
 	// position first, then by partial name.
-	const cropName = (c: RecropCandidate): string => stripPartyPrefix(c.name, c.party);
+	const cropName = (c: RecropCandidate): string =>
+		stripPartyPrefix(`${c.firstName} ${c.surname}`.trim(), c.party);
 	const cropRowsFor = (
 		primary: RecropRead,
 		roster: CandidateState[],
@@ -533,7 +559,68 @@ export const extractFrame = async (
 			};
 		}),
 	);
-	return recropped.filter(
+	const survivors = recropped.filter(
+		(observation): observation is RaceObservation => observation !== null,
+	);
+
+	// Always-on surfaces (the ticker) must not depend on pass 1 noticing them: on the
+	// video dry run Haiku missed the ticker under a fullscreen on 2 of 8 such frames.
+	// When no pass-1 item survived for such a template, read its region anyway (a
+	// cache hit when pass 1 did see it) and build the observation from the crop read.
+	// The missed-capture guard still applies, so a promo bar or a mid-flip yields none.
+	const synthesized = await Promise.all(
+		specsWithRegion
+			.filter(
+				(spec) =>
+					spec.alwaysOnAir === true &&
+					!survivors.some((observation) => observation.templateId === spec.id),
+			)
+			.map(async (spec): Promise<null | RaceObservation> => {
+				const reads = await readRegion(spec, spec.captureRegion!);
+				const primary = reads[0]!;
+				if (primary.candidates.length === 0) return null;
+				const extractedFields = {
+					pct_in: primary.pctIn,
+					race_heading: primary.raceHeading?.trim() ?? '',
+				};
+				const recordFor = (c: RecropCandidate): Record<string, string> => ({
+					called: c.called,
+					name: cropName(c),
+					party: c.party,
+					pct: c.pct,
+					votes: c.votes,
+				});
+				const candidates: CandidateState[] = primary.candidates.map((c) => ({
+					key: spec.bind.candidateKeyFrom(recordFor(c)),
+					name: cropName(c),
+					party: c.party,
+					pct: toPct(c.pct),
+					votes: toInt(c.votes),
+				}));
+				const calledNames = new Set(
+					reads.flatMap((read) =>
+						read.candidates.filter((c) => c.called === 'called').map(cropName),
+					),
+				);
+				return {
+					calledFor: candidates
+						.filter((c) => Array.from(calledNames).some((called) => namesMatch(c.name, called)))
+						.map((c) => c.key),
+					candidates,
+					extractedFields,
+					...missingFieldsFor(primary.pctIn),
+					observedAt,
+					pctIn: toPct(primary.pctIn),
+					...(isMinimumPct(primary.pctIn) ? { pctInIsMinimum: true } : {}),
+					raceKey: spec.bind.raceKeyFrom(extractedFields),
+					reportedAt: null,
+					source: 'air',
+					templateId: spec.id,
+				};
+			}),
+	);
+
+	return [...survivors, ...synthesized].filter(
 		(observation): observation is RaceObservation =>
 			observation !== null && !isMissedCapture(observation),
 	);

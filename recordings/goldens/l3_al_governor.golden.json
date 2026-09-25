@@ -10,7 +10,7 @@
           {
             "templateId": "lower_third",
             "singletons": {
-              "race_heading": "AL GOVERNOR",
+              "race_heading": "AL GOVERNOR 76.IN",
               "pct_in": "76.IN"
             },
             "candidates": [
@@ -18,13 +18,15 @@
                 "name": "Doug Jones",
                 "party": "D",
                 "pct": "45.0%",
-                "votes": "289982"
+                "votes": "289982",
+                "called": ""
               },
               {
                 "name": "Tommy Tuberville",
                 "party": "R",
                 "pct": "54.0%",
-                "votes": "393720"
+                "votes": "393720",
+                "called": ""
               }
             ]
           },
@@ -46,7 +48,8 @@
                 "name": "Jason Miyares",
                 "party": "R",
                 "pct": "46.6%",
-                "votes": "1,577,843"
+                "votes": "1,577,843",
+                "called": ""
               }
             ]
           }
@@ -56,20 +59,22 @@
     {
       "frameSha256": "46e3203782ec4bba79ea596766135114e7f2473962199623c6da95c568310753",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "VA | ATTORNEY GENERAL",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "name": "Jay Jones",
+            "firstName": "JAY",
+            "surname": "JONES",
             "party": "D",
             "votes": "1,804,940",
             "pct": "53.4%",
             "called": "called"
           },
           {
-            "name": "Jason Miyares",
+            "firstName": "JASON",
+            "surname": "MIYARES",
             "party": "R",
             "votes": "1,577,843",
             "pct": "46.6%",
@@ -81,20 +86,22 @@
     {
       "frameSha256": "74c8e42a43e035f57a0ae54d40822623903922522ddcff1934d740b9927e3d93",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "AL GOVERNOR",
         "pctIn": "76% IN",
         "candidates": [
           {
-            "name": "Doug Jones",
+            "firstName": "DOUG",
+            "surname": "JONES",
             "party": "D",
             "votes": "289982",
             "pct": "45.0%",
             "called": ""
           },
           {
-            "name": "Tommy Tuberville",
+            "firstName": "TOMMY",
+            "surname": "TUBERVILLE",
             "party": "R",
             "votes": "393720",
             "pct": "54.0%",

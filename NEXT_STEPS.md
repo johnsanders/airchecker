@@ -1,92 +1,48 @@
 # Next steps
 
-A pick-up sheet for the next session. For full context see [`CLAUDE.md`](CLAUDE.md) and [`docs/PLAN.md`](docs/PLAN.md).
+A pick-up sheet for the next session. Full context: [`CLAUDE.md`](CLAUDE.md), the finish-line plan [`docs/PLAN_V2.md`](docs/PLAN_V2.md) (what was done, why, and what was measured), and the reference-frame index [`recordings/reference-frames/README.md`](recordings/reference-frames/README.md).
 
-## Where we left off
+## Where we left off (2026-09-25)
 
-The full live pipeline runs end-to-end **and has been proven against real broadcasts**: **all three sources → identity resolver → store → reconciler → web view**. **170 tests passing, typecheck clean.**
+The system is retargeted to the **September 2026 graphics package** and proven against it offline. **221 tests, typecheck and lint clean.** Working directory is `~/Developer/airchecker` (`.env`, `recordings/settings.sqlite`, and the June session recordings live here; `~/Developer/nn-airchecker-old` holds only leftovers and can be deleted).
 
-Done (foundation → live system):
-- **Store / reconciler** — `src/store/store.ts` (per-source ring buffer, retention trim, `onRecord` hook, `rekeySourceRace`); `src/reconcile/reconcile.ts` + `thresholds.ts` (pure rules; name / vote / pct_in / call / vote-drop / cross-surface / air-ahead).
-- **Sources, all wired and live-verified:**
-  - **DDHQ provider** (`src/sources/provider/`) — OAuth + paginated poller, zod schema, adapter, runtime query list.
-  - **Chameleon vendor** (`src/sources/vendor/`) — poller (hardcoded playlist URL, VPN-only), zod schema, adapter.
-  - **Air** (`src/sources/air/`) — browser/CDP-attach capturer (`browserCapturer.ts`, puppeteer-core over `localhost:9222`, DRM stream verified non-black), `captureScheduler.ts` (interval/manual, runtime-reconfigurable), `matchStore.ts` (which tab to capture).
-- **Vision** (`src/vision/`) — two-pass `extractFrame` (Haiku 4.5 bulk + Sonnet 4.6 call-recrop), `anthropicClient`, `goldenClient`, `cropRegion`, `redact`, recording/stub `llmClient`.
-- **Templates** (`src/templates/`) — `types`, `geometry`, `registry`, four region-verified specs (`fullscreenResults`, `sideSlab`, `lowerThird`, `tickerV1`).
-- **Identity resolver** (`src/identity/raceIdentity.ts`) — the cross-source race-linking layer (see below), **now exercised live end-to-end**.
-- **Replay harness** — `src/replay/recorder.ts` + `player.ts` (SQLite append log + content-addressed PNGs + identity-event log; `readIdentityEvents` returns `{ event, ts }[]`, `lookupLlm` replays a recorded response by hash). **Two golden kinds** (see below): frame goldens under `recordings/goldens/` and **session goldens** under `recordings/goldens/sessions/`.
-- **Settings** (`src/settings/settingsStore.ts`) — persistent `recordings/settings.sqlite` (DDHQ query list + identity snapshot survive restarts).
-- **Web view** (`src/web/`) — Fastify JSON API + **websocket push** (`server.ts`, `changeBus.ts`) + Vite/React/MUI SPA. Components: `SourceHealth`, `RaceTable`, `RaceDetail` (+ `RaceDetailDialog`), `Alerts`, `CapturePanel`, `QueryEditor`, `RaceLinks`.
-- **Runtime** — `composition.ts` + `liveMain.ts` (live, recorder always on) + `replayMain.ts`; anomaly emission/hysteresis in `anomalyTracker.ts` (the alert layer — no separate `alerts/` dir).
+Done since the July hand-off, in order:
 
-### What the June broadcast sessions demonstrated (the linking feature, live)
-
-The riskiest fresh code — cross-source linking against all three real sources at once — **shook out clean over two broadcast nights** (recordings gitignored; identity state persisted in `settings.sqlite`):
-
-- **TX runoffs, June 1** — a 16:09 session registered **57 Ross races as provisional canonicals** (all events recorded); the 16:17 / 16:40 / 17:44 sessions ran **all three sources simultaneously** (DDHQ + Ross + air with frames). Haiku link proposals fired live (7, then 21, then 3 proposal events); **a human accepted 10** via the web `RaceLinks` panel; **none pending now**. Current `settings.sqlite` identity state: aliases = 6 deterministic + 10 proposal + 57 provisional + 6 provider; 78 canonicals (72 provisional — Ross races with no DDHQ canonical, expected given the DDHQ query list).
-- **Primary night, June 2** — CA/IA/NJ/AL/LA races, **DDHQ + Ross only** (no air capture). The big one is `recordings/live-2026-06-02T15-45-45-019Z-d1626ace.sqlite`: **117,277 observations over ~hours** — the real-scale noise audit target below.
-
-## How race linking works now
-
-`src/identity/raceIdentity.ts` sits between the adapters and the store so the three sources land in **one canonical bucket per political race**, even when their raw keys don't match exactly.
-
-- **DDHQ is the canonical spine** — its `raceKey` registers the canonical race.
-- Each non-DDHQ observation resolves via: existing alias → deterministic normalized match against a **settled** canonical (auto-linked) → otherwise a **provisional** bucket plus a **one-time Haiku reconcile** that *proposes* a link for a human to accept/reject. **LLM links are never auto-applied.**
-- **Provisional races re-attempt on every later sighting**, so a source seen *before* its DDHQ canonical still links once that canonical lands (deterministic path or the one-time proposal). The Haiku call fires at most once per source race; `upsertAlias`/`ensureCanonical` skip emit+persist when unchanged.
-- Aliases / canonicals / proposals persist in `settings.sqlite`; identity events + the Haiku call are **recorded**, so replay reconstructs links with **no API key**.
-- The web `RaceLinks` panel + `/api/race-links/*` let a human **accept/reject proposals and re-link any source race at any time**; the store re-keys retained observations into the new bucket.
-
-## How session goldens work (the real-broadcast regression backbone)
-
-A **frame golden** freezes one image + its recorded two-pass LLM responses (vision regression). A **session golden** freezes what the store + reconciler emit over a whole recorded timeline (pipeline regression built from real data).
-
-- `src/replay/sessionGolden.ts` → `replaySessionTimeline` replays a session's observations **in their original poll batches** (grouped by `observedAt`), applies the recorded identity events as **mid-timeline rekeys**, reconciles at each batch's own timestamp, and returns frozen `SessionExpectations`: the **distinct-anomaly set** ("everything that would have alerted"), the **final standing anomalies**, an **identity summary** (aliases by method, canonical/provisional counts, proposals by status), and **store stats**.
-- **Freeze:** `npm run freeze-session -- <sessionId> <goldenName>` reads the session sqlite and writes `recordings/goldens/sessions/<name>.session.json` — self-contained (~2.5MB compact JSON: inputs + expectations), so the **session sqlites stay gitignored**.
-- **Refreeze:** `npm run freeze-session -- --refreeze <goldenFile>` recomputes expectations from the doc's **own frozen inputs**. Run this **only after an intentional rule/threshold change** that legitimately moves the anomaly set — review the diff first, then commit the new expectations.
-- `tests/replay/sessionGoldens.test.ts` iterates every `recordings/goldens/sessions/*.session.json` **hermetically (no API key)**.
-- **First session golden:** `tx_runoffs_2026-06-01_all_sources` from `live-2026-06-01T16-40-33-549Z-7ad55b7e` — 64 min, **4,147 observations → 180 poll batches, 45 identity events, all three sources**, freezing **14 distinct anomalies**.
-- **Vision goldens from sessions:** `capture-golden -- --from-session <sessionId> <frameHash> <goldenName>` freezes a frame golden from a recorded session's frames + recorded LLM responses (**zero API cost, no key**). Two real June-1 broadcast frames are now promoted into `recordings/goldens/` (`live_ticker_tx_ag_r`, `live_lower_third_tx9_house` — the only template families that aired in that session) alongside the synthetic-frame goldens.
-
-## Findings from the first session golden (14 alerts in 64 min)
-
-1. **Surname-only air reads — RESOLVED: no template shows surnames only.** The single such read (`"MEALER"`, `"CAIN"`) came from the DD26 ticker's **stacked two-line name layout** ("R ALEX / ✓MEALER" — first names fully visible on screen; see frame `9a5b30e8…` in the June-1 session): a VLM line-miss, not a graphic convention. Already **fixed upstream 21 minutes after that read was recorded** — `d12428c` ("Drop partial-name air reads as missed captures") drops any air race whose candidates aren't all full "First Last" names as a missed capture, so partial reads no longer reach the store. The golden replays the pre-guard recorded observation, so its `name_mismatch` + `call_mismatch` + duplicate `votes_mismatch` fan-out stays frozen as a faithful "what the reconciler does with a partial read" — do **not** refreeze it away, and no reconciler surname-fallback is needed. Residual policy: each VLM fumble now costs one dropped capture (~one cadence interval); only if drops get frequent, add a `tickerV1` prompt hint that ticker names stack on two lines.
-2. The other 11 alerts were **stale-air votes / pct_in mismatches**, plausible for that session (captured graphics replayed against a vendor DB that already held final numbers). Thresholds behaved sanely — no tuning needed.
-
-## Primary-night noise audit — done 2026-07-19
-
-Replayed `live-2026-06-02T15-45-45-019Z-d1626ace` through `replaySessionTimeline`: **49.75 h of monitoring** (the recorder ran through June 4), 117,277 observations → 3,801 poll batches, **9.9 s replay wall time** — scale is a non-issue; only the ~50MB doc size keeps this session out of the committed goldens.
-
-- **9 distinct alerts in ~50 h — all real, zero false noise.** All medium `vote_drop`, all Ross, all IA primaries (Governor R ×5, US Senate D ×2, US Senate R ×2), all in one window (~01:52–01:55 UTC June 3, election night). Vote curves confirm a genuine vendor over-count + correction: IA-Sen-D Turek jumped 45,045 → 83,628 **in one poll while pct_in FELL** (17.02 → 16.83), peaked at 88,185, snapped back to 51,290, then resumed a normal climb. Thresholds behaved; no tuning needed.
-- **Finding: standing alerts are transient.** All 9 cleared on the next clean poll (~1 min later) — final standing count was 0. An operator watching the web view could miss the entire event. The deferred alert-history/log sink now has a concrete justification (next move #2).
-- **Finding: the reconciler flagged the *correction*, not the *inflation*.** The bad (inflated) numbers were live for ~3 polls before the drop fired. A "votes rose while pct_in fell" internal-consistency rule would catch it at onset — next move #3, user's call.
+- **Graphics refresh** — ticker, lower-third and fullscreen specs rewritten against 23 reference frames cut from the graphics team's `air_example.mp4` (gitignored under `recordings/video/`); side slab retired; every race is two candidates; `>N% IN` is a floor; race keys drop the heading divider. The extractor changed shape in five measured ways (pass 1 owns names, crop reads per region with label self-correction, the crop read reads the heading and the name as two lines, crops sized to the API tier, placeholder/junk guards) — see `docs/PLAN_V2.md` Phase 1 for each with its evidence.
+- **Reliability** — check-mark detection 20/20 called and 20/20 uncalled on all three surfaces; nine goldens reproduce 10/10 over live re-runs; 23 frame goldens replay hermetically.
+- **Rules** — `field_missing` (a required on-air field absent, e.g. the `% IN` badge — always supposed to be there) and `multiple_winners` (`thresholds.maxWinners = 1` for the Nov 3 general).
+- **Hysteresis** in `anomalyTracker` with trigger-aware sighting counts and a recovery hold; **`airHysteresisN = 1`** by decision — a single bad graphic alerts when seen.
+- **Alert history** — every raise/clear is an `AlertEvent`: `GET /api/alert-history`, the "Recent alert events" panel, the recorder's `alert_events` table, and a `[alert] {json}` log line.
+- **Video dry run** — `npm run import-video -- <mp4> [fps]` runs the whole air pipeline over a recording; `recordings/goldens/sessions/air_example_video_0p2fps.session.json` freezes the result (air-only timeline; raises exactly the two-✓ SC ticker and the three badge-less fullscreens).
 
 ## Next moves (priority order)
 
-1. **Recorder bloat fix before a real 6-hour broadcast.** The recorder stores each LLM request verbatim **including the base64 frame** in `llm_calls.request` → **~240MB/hour** sessions. Store the request **minus the image payload** (the frame is already content-addressed in `frames/`).
-2. **Alert history / log sink.** Standing alerts clear on the next clean poll (see audit above), so one-poll events vanish from the web view in ~a minute. Persist an append-only alert event log (structured log sink + a recent-events panel) so they survive operator blinks.
-3. **Candidate rule — votes up while pct_in down (user decision).** Catches upstream inflation at onset instead of at correction; on primary night it would have fired at 01:52 instead of 01:54. If added: review + `--refreeze` the session golden.
-4. **Carried over, still open:** `judge()` LLM downgrade call (rules-only for now); Slack / paging sinks; auth on the web view; multi-race concurrent monitoring config; sample-data variants (one Presidential, one Primary, one Special) to widen schema-parse tests before those race types go live.
-5. **Housekeeping (user's call).** ~20 near-empty May-31 shakeout session DBs + stray `-wal`/`-shm` files in `recordings/` can be deleted; all gitignored.
+1. **Rehearsal session with all three sources** against the new package (needs the VPN for Chameleon and DDHQ queries for the Nov 3 races). Promote 1–2 real frames with `capture-golden -- --from-session`, freeze a second full session golden, and confirm the identity resolver links the new air headings (proposal-driven; a human accepts in the `RaceLinks` panel).
+2. **Rule: votes up while pct_in down** (plan 2.3, user's call). Catches upstream inflation at onset instead of at correction.
+3. **Fixtures** — a Chameleon General-election contest sample and a DDHQ statewide (Senate/Governor) sample in the repo root; widen the schema tests.
+4. **Operator runbook** (`docs/RUNBOOK.md`): launch order (`chrome:debug` → `live` → `:8787`), env vars, which tab, what each alert type means and who owns it, where recordings land, how to accept a race link. Add `WEB_TOKEN` auth only if the view leaves localhost.
+5. **Disk** — ~1 GB/hour of frame PNGs at the default cadence; a `prune-session` script or a documented `rm` for old `recordings/<session>/frames/`.
+6. **Lint warnings** — five real ones left (array-index keys in three components, one effect dependency).
+7. Deferred, unchanged: magic wall (`provider_direct` path), `judge()`, Slack/paging sinks, EC votes, county-level.
 
 ## Useful commands
 
 ```bash
-npm test                                              # 170 tests, hermetic (no API key)
-npm run typecheck
+npm test                                              # 221 tests, hermetic (no API key)
+npm run typecheck && npm run lint
 npm run live                                          # full live system + web view (needs .env + VPN)
-npm run chrome:debug                                  # launch the DirecTV Chrome the air capturer attaches to (CDP :9222)
-npm run web:build                                     # build the React SPA (src/web/client/dist)
-npm run freeze-session -- <sessionId> <goldenName>    # freeze a session golden → recordings/goldens/sessions/<name>.session.json
-npm run freeze-session -- --refreeze <goldenFile>     # recompute expectations after an intentional rule change (review diff first)
-npm run capture-golden -- <framePng> <name>           # freeze a frame golden (live, needs key)
-npm run capture-golden -- --from-session <sessionId> <frameHash> <name>   # freeze a frame golden from recorded frames (no key)
-npm run calibrate -- <templateId> <framePng>          # crop a region to verify it
-npm run probe -- <framePng>                           # one live extractFrame, prints observations (needs key via .env)
-npm run air:probe                                     # capture one live air frame and extract it (needs Chrome + key)
-npm run verify -- <goldenName> [runs]                 # N live runs vs golden, field-by-field pass count
-npm run measure-call -- <framePng> <expected> [runs]  # call-detection reliability (--model / --recall-model / --votes)
-node --import tsx src/runtime/replayMain.ts <sessionId>
+npm run chrome:debug                                  # the DirecTV/Actus Chrome the air capturer attaches to (CDP :9222)
+npm run web:build                                     # build the React SPA
+npm run import-video -- <mp4> [fps]                   # dry-run the air pipeline over a recording → a session (needs key)
+npm run freeze-session -- <sessionId> <goldenName>    # session golden → recordings/goldens/sessions/
+npm run freeze-session -- --refreeze <goldenFile>     # recompute expectations after an intentional rule change (review the diff)
+npm run capture-golden -- <framePng> <name>           # frame golden (live, needs key); reference frames are referenced in place
+npm run capture-golden -- --from-session <sessionId> <frameHash> <name>   # frame golden from a recorded session (no key)
+npm run capture-golden -- --refreeze <golden.json>... # recompute a frame golden's observations from its recorded responses (no key)
+npm run probe -- <framePng>                           # one live extractFrame; prints observations, ">N" floors, MISSING fields
+npm run measure-call -- <framePng> <expected> [runs] [--template <id>]   # check-mark reliability
+npm run verify -- <goldenName> [runs]                 # N live runs vs a golden, field-by-field
+npm run calibrate -- <templateId> <framePng>          # crop a captureRegion to eyeball it
 ```
 
-API key lives in gitignored `.env` (`ANTHROPIC_API_KEY=…`); all `probe`/`capture`/`verify` scripts load it automatically. Replay, session goldens, and `--from-session` need **no key**.
+API key lives in gitignored `.env` (`ANTHROPIC_API_KEY=…`); replay, goldens, and `--refreeze` need **no key**.

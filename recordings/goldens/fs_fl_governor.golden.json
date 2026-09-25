@@ -39,14 +39,14 @@
                 "name": "Lisa Demuth",
                 "party": "R",
                 "pct": "43.4%",
-                "votes": "179,714",
+                "votes": "179714",
                 "called": "called"
               },
               {
                 "name": "Mike Lindell",
                 "party": "R",
                 "pct": "32.5%",
-                "votes": "134,326"
+                "votes": "134326"
               }
             ]
           }
@@ -56,20 +56,22 @@
     {
       "frameSha256": "5832497869a1eb84975661b2eb34ae47ba4e5136d9f0c036176edc3736833f6f",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "MN | GOVERNOR (R)",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "name": "Lisa Demuth",
+            "firstName": "LISA",
+            "surname": "DEMUTH",
             "party": "R",
             "votes": "179,714",
             "pct": "43.4%",
             "called": "called"
           },
           {
-            "name": "Mike Lindell",
+            "firstName": "MIKE",
+            "surname": "LINDELL",
             "party": "R",
             "votes": "134,326",
             "pct": "32.5%",
@@ -81,20 +83,22 @@
     {
       "frameSha256": "228d1cfacd87b485e15d19e27880bdca76fb6469528e8a1a0c8b7b08fce53d56",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "FL GOVERNOR",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "name": "David Jolly",
+            "firstName": "DAVID",
+            "surname": "JOLLY",
             "party": "D",
             "votes": "3783929",
             "pct": "62.0%",
             "called": ""
           },
           {
-            "name": "Byron Donalds",
+            "firstName": "BYRON",
+            "surname": "DONALDS",
             "party": "R",
             "votes": "2729283",
             "pct": "48.0%",

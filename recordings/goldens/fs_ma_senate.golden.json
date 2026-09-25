@@ -59,20 +59,22 @@
     {
       "frameSha256": "ea29b3cb13a0bcb8018613d7bd265139498b523eff431e5a5a21a4f18b750e17",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "MN | U.S. SENATE (D)",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "name": "Peggy Flanagan",
+            "firstName": "PEGGY",
+            "surname": "FLANAGAN",
             "party": "D",
             "votes": "411,797",
             "pct": "59.0%",
             "called": "called"
           },
           {
-            "name": "Angie Craig",
+            "firstName": "ANGIE",
+            "surname": "CRAIG",
             "party": "D",
             "votes": "274,891",
             "pct": "39.4%",
@@ -84,20 +86,22 @@
     {
       "frameSha256": "b31c9170874d4d8a714d1e003be088b7c6e7f9f9a958f69d3c785c1ebb56c395",
       "model": "claude-sonnet-4-6",
-      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
       "response": {
         "raceHeading": "MA U.S. SENATE",
         "pctIn": "68% IN",
         "candidates": [
           {
-            "name": "Edward Markey",
+            "firstName": "EDWARD",
+            "surname": "MARKEY",
             "party": "D",
             "votes": "37923",
             "pct": "51.0%",
             "called": ""
           },
           {
-            "name": "John Deaton",
+            "firstName": "JOHN",
+            "surname": "DEATON",
             "party": "R",
             "votes": "36784",
             "pct": "49.0%",
