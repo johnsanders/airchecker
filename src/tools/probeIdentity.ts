@@ -95,7 +95,9 @@ const scenarios: Scenario[] = [
 
 const run = async (): Promise<void> => {
 	if (process.env.ANTHROPIC_API_KEY === undefined) {
-		console.error('ANTHROPIC_API_KEY is not set — this probe makes real Haiku calls and requires it.');
+		console.error(
+			'ANTHROPIC_API_KEY is not set — this probe makes real Haiku calls and requires it.',
+		);
 		process.exit(1);
 	}
 

@@ -154,7 +154,11 @@ describe('race identity relink with store history', () => {
 		const ddhq = await resolver.resolveObservation(obs('DDHQ', 'DDHQ:RACE', 2_000));
 		store.record(ddhq);
 		const alias = resolver.manualRelink('air', 'AIR HEADING', 'DDHQ:RACE', 3_000)!;
-		const rekeyed = store.rekeySourceRace(alias.source, alias.sourceRaceKey, alias.canonicalRaceKey);
+		const rekeyed = store.rekeySourceRace(
+			alias.source,
+			alias.sourceRaceKey,
+			alias.canonicalRaceKey,
+		);
 
 		expect(rekeyed.updated).toBe(1);
 		expect(store.getAirHistory('provisional:air:AIR-HEADING')).toHaveLength(0);

@@ -3,17 +3,17 @@
 // without a restart. The capturer reads get() fresh each capture; the web server
 // calls set() from the preset buttons.
 export type MatchStore = {
-  get: () => string;
-  set: (match: string) => void;
+	get: () => string;
+	set: (match: string) => void;
 };
 
 export const makeMatchStore = (initial = 'actus'): MatchStore => {
-  let match = initial;
-  return {
-    get: () => match,
-    set: (next) => {
-      const trimmed = next.trim();
-      if (trimmed.length > 0) match = trimmed;
-    },
-  };
+	let match = initial;
+	return {
+		get: () => match,
+		set: (next) => {
+			const trimmed = next.trim();
+			if (trimmed.length > 0) match = trimmed;
+		},
+	};
 };

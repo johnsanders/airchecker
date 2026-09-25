@@ -5,12 +5,12 @@ import { defineConfig } from 'vite';
 // proxies /api and the /ws websocket to the running Fastify server (npm run live)
 // for hot-reload dev.
 export default defineConfig({
-  build: { outDir: 'dist' },
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/api': 'http://localhost:8787',
-      '/ws': { target: 'ws://localhost:8787', ws: true },
-    },
-  },
+	build: { outDir: 'dist' },
+	plugins: [react()],
+	server: {
+		proxy: {
+			'/api': 'http://localhost:8787',
+			'/ws': { target: 'ws://localhost:8787', ws: true },
+		},
+	},
 });

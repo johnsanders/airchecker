@@ -3,16 +3,18 @@
 // get() fresh each tick; the web server calls set(). Returns copies so callers
 // can't mutate internal state.
 export type QueryStore = {
-  get: () => string[];
-  set: (queries: string[]) => void;
+	get: () => string[];
+	set: (queries: string[]) => void;
 };
 
 export const makeQueryStore = (initial: string[] = []): QueryStore => {
-  let queries = [...initial];
-  return {
-    get: () => [...queries],
-    set: (next) => {
-      queries = next.filter((q) => typeof q === 'string' && q.trim().length > 0).map((q) => q.trim());
-    },
-  };
+	let queries = [...initial];
+	return {
+		get: () => [...queries],
+		set: (next) => {
+			queries = next
+				.filter((q) => typeof q === 'string' && q.trim().length > 0)
+				.map((q) => q.trim());
+		},
+	};
 };

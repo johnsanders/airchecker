@@ -7,107 +7,107 @@
 // while a capture is still in flight is DROPPED (never queued, never concurrent) —
 // at worst we miss a frame; the next tick is one interval away.
 
-export type CaptureMode = 'interval' | 'manual';
-
-export type CaptureSchedulerConfig = {
-  captureOnce: () => Promise<void>;
-  // Fire one capture immediately on start() (interval mode) instead of waiting a
-  // full interval — so a freshly-booted monitor shows data right away, not after
-  // up to `intervalMs`. Default false (preserves the wait-one-interval behavior).
-  immediate?: boolean;
-  intervalMs?: number; // interval mode only; default 5000
-  mode: CaptureMode;
-  onError?: (error: unknown) => void;
-  onSkip?: () => void; // called when a fire is dropped because a capture is in flight
-};
-
 export type CadenceConfig = {
-  intervalMs: number;
-  mode: CaptureMode;
+	intervalMs: number;
+	mode: CaptureMode;
 };
+
+export type CaptureMode = 'interval' | 'manual';
 
 // 'ran' = captured cleanly; 'skipped' = a capture was already in flight;
 // 'error' = the capture itself threw (carries the message). The manual web button
 // needs this distinction — reporting "captured" on a failed grab is misleading.
 export type CaptureResult =
-  | { status: 'ran' }
-  | { status: 'skipped' }
-  | { message: string; status: 'error' };
+	| { message: string; status: 'error' }
+	| { status: 'ran' }
+	| { status: 'skipped' };
 
 export type CaptureScheduler = {
-  getConfig: () => CadenceConfig;
-  isBusy: () => boolean;
-  // Change mode and/or interval at runtime (the web cadence control). If currently
-  // running, the timer is restarted under the new settings. Partial — only the
-  // provided fields change.
-  reconfigure: (next: Partial<CadenceConfig>) => void;
-  // Manual / web-button entry. Works in BOTH modes; reports the true outcome.
-  triggerCapture: () => Promise<CaptureResult>;
-  start: () => void; // begins interval ticking in interval mode; no-op in manual mode
-  stop: () => void; // clears the interval; triggerCapture still works after stop()
+	getConfig: () => CadenceConfig;
+	isBusy: () => boolean;
+	// Change mode and/or interval at runtime (the web cadence control). If currently
+	// running, the timer is restarted under the new settings. Partial — only the
+	// provided fields change.
+	reconfigure: (next: Partial<CadenceConfig>) => void;
+	start: () => void; // begins interval ticking in interval mode; no-op in manual mode
+	stop: () => void; // clears the interval; triggerCapture still works after stop()
+	// Manual / web-button entry. Works in BOTH modes; reports the true outcome.
+	triggerCapture: () => Promise<CaptureResult>;
+};
+
+export type CaptureSchedulerConfig = {
+	captureOnce: () => Promise<void>;
+	// Fire one capture immediately on start() (interval mode) instead of waiting a
+	// full interval — so a freshly-booted monitor shows data right away, not after
+	// up to `intervalMs`. Default false (preserves the wait-one-interval behavior).
+	immediate?: boolean;
+	intervalMs?: number; // interval mode only; default 5000
+	mode: CaptureMode;
+	onError?: (error: unknown) => void;
+	onSkip?: () => void; // called when a fire is dropped because a capture is in flight
 };
 
 const DEFAULT_INTERVAL_MS = 5000;
 
 export const makeCaptureScheduler = (config: CaptureSchedulerConfig): CaptureScheduler => {
-  let busy = false;
-  let running = false; // whether start() is in effect (vs stopped)
-  let timer: ReturnType<typeof setInterval> | undefined;
-  let mode: CaptureMode = config.mode;
-  let intervalMs = config.intervalMs ?? DEFAULT_INTERVAL_MS;
+	let busy = false;
+	let running = false; // whether start() is in effect (vs stopped)
+	let timer: ReturnType<typeof setInterval> | undefined;
+	let mode: CaptureMode = config.mode;
+	let intervalMs = config.intervalMs ?? DEFAULT_INTERVAL_MS;
 
-  const runOnce = async (): Promise<CaptureResult> => {
-    if (busy) {
-      config.onSkip?.();
-      return { status: 'skipped' };
-    }
-    busy = true;
-    try {
-      await config.captureOnce();
-      return { status: 'ran' };
-    } catch (error) {
-      config.onError?.(error);
-      return { message: error instanceof Error ? error.message : String(error), status: 'error' };
-    } finally {
-      busy = false;
-    }
-  };
+	const runOnce = async (): Promise<CaptureResult> => {
+		if (busy) {
+			config.onSkip?.();
+			return { status: 'skipped' };
+		}
+		busy = true;
+		try {
+			await config.captureOnce();
+			return { status: 'ran' };
+		} catch (error) {
+			config.onError?.(error);
+			return { message: error instanceof Error ? error.message : String(error), status: 'error' };
+		} finally {
+			busy = false;
+		}
+	};
 
-  const clearTimer = (): void => {
-    if (timer !== undefined) {
-      clearInterval(timer);
-      timer = undefined;
-    }
-  };
+	const clearTimer = (): void => {
+		if (timer !== undefined) {
+			clearInterval(timer);
+			timer = undefined;
+		}
+	};
 
-  // Bring the timer in line with the current mode + running state.
-  const syncTimer = (): void => {
-    clearTimer();
-    if (running && mode === 'interval')
-      timer = setInterval(() => {
-        void runOnce();
-      }, intervalMs);
-  };
+	// Bring the timer in line with the current mode + running state.
+	const syncTimer = (): void => {
+		clearTimer();
+		if (running && mode === 'interval')
+			timer = setInterval(() => {
+				void runOnce();
+			}, intervalMs);
+	};
 
-  return {
-    getConfig: () => ({ intervalMs, mode }),
-    isBusy: () => busy,
-    reconfigure: (next) => {
-      if (next.mode !== undefined) mode = next.mode;
-      if (next.intervalMs !== undefined && next.intervalMs > 0) intervalMs = next.intervalMs;
-      syncTimer();
-    },
-    start: () => {
-      const wasRunning = running;
-      running = true;
-      syncTimer();
-      // Kick off one capture now (not after a full interval) on the first start.
-      if (config.immediate === true && mode === 'interval' && !wasRunning) void runOnce();
-    },
-    stop: () => {
-      running = false;
-      clearTimer();
-    },
-    triggerCapture: runOnce,
-  };
+	return {
+		getConfig: () => ({ intervalMs, mode }),
+		isBusy: () => busy,
+		reconfigure: (next) => {
+			if (next.mode !== undefined) mode = next.mode;
+			if (next.intervalMs !== undefined && next.intervalMs > 0) intervalMs = next.intervalMs;
+			syncTimer();
+		},
+		start: () => {
+			const wasRunning = running;
+			running = true;
+			syncTimer();
+			// Kick off one capture now (not after a full interval) on the first start.
+			if (config.immediate === true && mode === 'interval' && !wasRunning) void runOnce();
+		},
+		stop: () => {
+			running = false;
+			clearTimer();
+		},
+		triggerCapture: runOnce,
+	};
 };

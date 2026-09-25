@@ -15,40 +15,47 @@ import { redactError } from '../vision/redact.js';
 // to 1432 to simulate the API's ~1.15MP auto-shrink and see if the ticker survives.
 
 const run = async (): Promise<void> => {
-  const framePath = process.argv[2];
-  if (framePath === undefined) {
-    console.error('Usage: npm run probe -- <framePng> [--maxwidth N]');
-    process.exit(1);
-  }
-  if (process.env.ANTHROPIC_API_KEY === undefined) {
-    console.error('ANTHROPIC_API_KEY is not set — live mode requires it.');
-    process.exit(1);
-  }
+	const framePath = process.argv[2];
+	if (framePath === undefined) {
+		console.error('Usage: npm run probe -- <framePng> [--maxwidth N]');
+		process.exit(1);
+	}
+	if (process.env.ANTHROPIC_API_KEY === undefined) {
+		console.error('ANTHROPIC_API_KEY is not set — live mode requires it.');
+		process.exit(1);
+	}
 
-  const maxWidthFlag = process.argv.indexOf('--maxwidth');
-  const maxWidth = maxWidthFlag === -1 ? undefined : Number(process.argv[maxWidthFlag + 1]);
+	const maxWidthFlag = process.argv.indexOf('--maxwidth');
+	const maxWidth = maxWidthFlag === -1 ? undefined : Number(process.argv[maxWidthFlag + 1]);
 
-  const original = readFileSync(framePath);
-  const png =
-    maxWidth === undefined
-      ? original
-      : await sharp(original).resize({ width: maxWidth, withoutEnlargement: true }).png().toBuffer();
-  const meta = await sharp(png).metadata();
-  console.log(`frame ${framePath} → sending ${meta.width}×${meta.height}`);
+	const original = readFileSync(framePath);
+	const png =
+		maxWidth === undefined
+			? original
+			: await sharp(original)
+					.resize({ width: maxWidth, withoutEnlargement: true })
+					.png()
+					.toBuffer();
+	const meta = await sharp(png).metadata();
+	console.log(`frame ${framePath} → sending ${meta.width}×${meta.height}`);
 
-  const client = makeAnthropicLlmClient();
-  const observations = await extractFrame(png, Date.now(), { client });
+	const client = makeAnthropicLlmClient();
+	const observations = await extractFrame(png, Date.now(), { client });
 
-  console.log(`\n${observations.length} template(s) detected:\n`);
-  observations.forEach((observation) => {
-    console.log(`  [${observation.templateId}] raceKey=${observation.raceKey} pctIn=${observation.pctIn} calledFor=${observation.calledFor ?? '—'}`);
-    observation.candidates.forEach((candidate) => {
-      console.log(`    ${candidate.party} ${candidate.name} — ${candidate.pct}% / ${candidate.votes.toLocaleString()}`);
-    });
-  });
+	console.log(`\n${observations.length} template(s) detected:\n`);
+	observations.forEach((observation) => {
+		console.log(
+			`  [${observation.templateId}] raceKey=${observation.raceKey} pctIn=${observation.pctIn} calledFor=${observation.calledFor ?? '—'}`,
+		);
+		observation.candidates.forEach((candidate) => {
+			console.log(
+				`    ${candidate.party} ${candidate.name} — ${candidate.pct}% / ${candidate.votes.toLocaleString()}`,
+			);
+		});
+	});
 };
 
 run().catch((error: unknown) => {
-  console.error(redactError(error));
-  process.exit(1);
+	console.error(redactError(error));
+	process.exit(1);
 });

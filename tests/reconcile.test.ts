@@ -320,7 +320,9 @@ describe('call consistency', () => {
 			templateId: 'fullscreen_results',
 		});
 		const result = reconcile(baseInput({ airHistory: [air], providerHistory: [provider] }));
-		expect(result.filter((a) => a.type === 'missing_call' || a.type === 'call_mismatch')).toHaveLength(0);
+		expect(
+			result.filter((a) => a.type === 'missing_call' || a.type === 'call_mismatch'),
+		).toHaveLength(0);
 	});
 
 	it('does not flag call_mismatch when provider calls by upstream ID and air by the same name', () => {

@@ -11,45 +11,49 @@ import type { LlmClient } from './llmClient.js';
 // no-op — and the per-frame image (~1,560 tokens, the bulk of the cost) is unique
 // every frame and uncacheable. The cost lever here is capture cadence, not caching.
 export type AnthropicLlmClientOptions = {
-  apiKey?: string;
-  maxTokens?: number;
+	apiKey?: string;
+	maxTokens?: number;
 };
 
 export const makeAnthropicLlmClient = (options: AnthropicLlmClientOptions = {}): LlmClient => {
-  const client = new Anthropic(options.apiKey === undefined ? {} : { apiKey: options.apiKey });
-  const maxTokens = options.maxTokens ?? 4096;
-  return {
-    call: async (request) => {
-      const content: Anthropic.ContentBlockParam[] = [];
-      if (request.image !== undefined)
-        content.push({
-          source: { data: request.image.base64, media_type: request.image.mediaType, type: 'base64' },
-          type: 'image',
-        });
-      content.push({ text: request.prompt, type: 'text' });
+	const client = new Anthropic(options.apiKey === undefined ? {} : { apiKey: options.apiKey });
+	const maxTokens = options.maxTokens ?? 4096;
+	return {
+		call: async (request) => {
+			const content: Anthropic.ContentBlockParam[] = [];
+			if (request.image !== undefined)
+				content.push({
+					source: {
+						data: request.image.base64,
+						media_type: request.image.mediaType,
+						type: 'base64',
+					},
+					type: 'image',
+				});
+			content.push({ text: request.prompt, type: 'text' });
 
-      const params: Anthropic.MessageCreateParamsNonStreaming = {
-        max_tokens: maxTokens,
-        messages: [{ content, role: 'user' }],
-        model: request.model,
-      };
-      if (request.tool !== undefined) {
-        params.tools = [
-          {
-            description: request.tool.description,
-            input_schema: request.tool.inputSchema as Anthropic.Tool.InputSchema,
-            name: request.tool.name,
-          },
-        ];
-        if (request.toolChoice !== undefined)
-          params.tool_choice = { name: request.toolChoice, type: 'tool' };
-      }
+			const params: Anthropic.MessageCreateParamsNonStreaming = {
+				max_tokens: maxTokens,
+				messages: [{ content, role: 'user' }],
+				model: request.model,
+			};
+			if (request.tool !== undefined) {
+				params.tools = [
+					{
+						description: request.tool.description,
+						input_schema: request.tool.inputSchema as Anthropic.Tool.InputSchema,
+						name: request.tool.name,
+					},
+				];
+				if (request.toolChoice !== undefined)
+					params.tool_choice = { name: request.toolChoice, type: 'tool' };
+			}
 
-      const response = await client.messages.create(params);
-      const toolUse = response.content.find(
-        (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use',
-      );
-      return { body: toolUse === undefined ? null : toolUse.input, model: response.model };
-    },
-  };
+			const response = await client.messages.create(params);
+			const toolUse = response.content.find(
+				(block): block is Anthropic.ToolUseBlock => block.type === 'tool_use',
+			);
+			return { body: toolUse === undefined ? null : toolUse.input, model: response.model };
+		},
+	};
 };

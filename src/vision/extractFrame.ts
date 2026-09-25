@@ -2,30 +2,31 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 
 import type { CandidateState, RaceObservation } from '../reconcile/reconcile.js';
-import { findTemplate, templateRegistry } from '../templates/registry.js';
 import type { Rect, TemplateSpec } from '../templates/types.js';
-import { cropAndUpscaleRegion } from './cropRegion.js';
 import type { LlmClient, LlmTool } from './llmClient.js';
+
+import { findTemplate, templateRegistry } from '../templates/registry.js';
+import { cropAndUpscaleRegion } from './cropRegion.js';
 
 // Matches a re-read called name back to one of pass-1's candidates: lowercase →
 // strip diacritics → strip non-alphanumeric (same normalization the reconciler
 // uses for cross-source matching).
 const normalizeName = (name: string): string =>
-  name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .replace(/[^a-z0-9]/g, '');
+	name
+		.toLowerCase()
+		.normalize('NFD')
+		.replace(/\p{Diacritic}/gu, '')
+		.replace(/[^a-z0-9]/g, '');
 
 // The party chip's letter bleeds into the name on tight layouts (the ticker):
 // "R MAYES MIDDLETON" with party "R". Deterministically strip a leading single-
 // letter token when it matches the party field — belt-and-suspenders behind the
 // prompt rule, which proved unreliable on the ticker.
 const stripPartyPrefix = (name: string, party: string): string => {
-  const match = /^([A-Za-z])\s+(.+)$/.exec(name.trim());
-  if (match !== null && party.length > 0 && match[1]!.toUpperCase() === party.toUpperCase())
-    return match[2]!;
-  return name;
+	const match = /^([A-Za-z])\s+(.+)$/.exec(name.trim());
+	if (match !== null && party.length > 0 && match[1]!.toUpperCase() === party.toUpperCase())
+		return match[2]!;
+	return name;
 };
 
 // Recall reads the called name as it appears (often surname only: "MIDDLETON"),
@@ -33,10 +34,10 @@ const stripPartyPrefix = (name: string, party: string): string => {
 // normalized name contains the other — tolerant of surname-vs-fullname and any
 // residual bleed.
 const namesMatch = (a: string, b: string): boolean => {
-  const na = normalizeName(a);
-  const nb = normalizeName(b);
-  if (na.length === 0 || nb.length === 0) return false;
-  return na === nb || na.includes(nb) || nb.includes(na);
+	const na = normalizeName(a);
+	const nb = normalizeName(b);
+	if (na.length === 0 || nb.length === 0) return false;
+	return na === nb || na.includes(nb) || nb.includes(na);
 };
 
 // Pass 1 (full frame, bulk fields) is 30/30 on Haiku — cheap and sufficient.
@@ -51,27 +52,27 @@ const TOOL_NAME = 'report_templates';
 // templates actually present, each with its singletons and candidate list.
 
 const buildPrompt = (registry: readonly TemplateSpec[]): string => {
-  const menu = registry
-    .map((spec) => `- ${spec.id} (${spec.surface}): ${spec.vlmPromptHint}`)
-    .join('\n');
-  return [
-    'You are inspecting a single frame of live election-night TV. Identify the on-air ELECTION RESULTS graphics — ones that show candidate names alongside vote totals or percentages.',
-    '',
-    'Known templates:',
-    menu,
-    '',
-    'Rules:',
-    '- Report each distinct results graphic EXACTLY ONCE. If only one ticker is on screen, return exactly one ticker entry — never repeat it.',
-    '- Only report graphics that actually show candidate vote results. IGNORE news headlines, breaking-news banners, story chyrons, and lower-thirds that contain only a headline or topic and no candidate vote numbers.',
-    '- For each results graphic: read its singleton fields (e.g. race_heading, pct_in) and one entry per candidate shown, in reading order (left-to-right for rows, top-to-bottom for columns).',
-    '- Report EVERY candidate the graphic displays, including trailing and losing candidates and any with low or zero votes. Never stop after the leader — if two candidates are shown, return two entries; if five are shown, return five.',
-    '- ALWAYS fill race_heading with the race title exactly as printed (e.g. "TX U.S. SENATE (R)") and pct_in with the "X% IN" reporting figure. These are required for every results graphic — never leave them blank.',
-    '- Read vote totals and percentages exactly as printed.',
-    '- "name" is the candidate\'s personal name ONLY. The single party letter on the color chip (D, R, L, I, G…) goes in "party", NEVER in "name". For a chip "R" beside "MAYES MIDDLETON", return name "Mayes Middleton" and party "R" — never name "R Mayes Middleton".',
-    '- Set "called" to "called" only when the candidate has a check mark or is clearly the winner; otherwise "".',
-    '',
-    'Report via the report_templates tool. If no results graphics are present, return an empty list.',
-  ].join('\n');
+	const menu = registry
+		.map((spec) => `- ${spec.id} (${spec.surface}): ${spec.vlmPromptHint}`)
+		.join('\n');
+	return [
+		'You are inspecting a single frame of live election-night TV. Identify the on-air ELECTION RESULTS graphics — ones that show candidate names alongside vote totals or percentages.',
+		'',
+		'Known templates:',
+		menu,
+		'',
+		'Rules:',
+		'- Report each distinct results graphic EXACTLY ONCE. If only one ticker is on screen, return exactly one ticker entry — never repeat it.',
+		'- Only report graphics that actually show candidate vote results. IGNORE news headlines, breaking-news banners, story chyrons, and lower-thirds that contain only a headline or topic and no candidate vote numbers.',
+		'- For each results graphic: read its singleton fields (e.g. race_heading, pct_in) and one entry per candidate shown, in reading order (left-to-right for rows, top-to-bottom for columns).',
+		'- Report EVERY candidate the graphic displays, including trailing and losing candidates and any with low or zero votes. Never stop after the leader — if two candidates are shown, return two entries; if five are shown, return five.',
+		'- ALWAYS fill race_heading with the race title exactly as printed (e.g. "TX U.S. SENATE (R)") and pct_in with the "X% IN" reporting figure. These are required for every results graphic — never leave them blank.',
+		'- Read vote totals and percentages exactly as printed.',
+		'- "name" is the candidate\'s personal name ONLY. The single party letter on the color chip (D, R, L, I, G…) goes in "party", NEVER in "name". For a chip "R" beside "MAYES MIDDLETON", return name "Mayes Middleton" and party "R" — never name "R Mayes Middleton".',
+		'- Set "called" to "called" only when the candidate has a check mark or is clearly the winner; otherwise "".',
+		'',
+		'Report via the report_templates tool. If no results graphics are present, return an empty list.',
+	].join('\n');
 };
 
 // Singletons were a freeform string map, so nothing forced the model to read
@@ -80,86 +81,88 @@ const buildPrompt = (registry: readonly TemplateSpec[]): string => {
 // marks required, so the model must fill them (the candidate array never drifted
 // precisely because it had a required typed schema).
 const buildSingletonSchema = (registry: readonly TemplateSpec[]): Record<string, unknown> => {
-  const names = Array.from(
-    new Set(registry.flatMap((spec) => spec.singletons.map((field) => field.name))),
-  );
-  const requiredInEvery = names.filter((name) =>
-    registry.every((spec) => spec.singletons.some((field) => field.name === name && field.required)),
-  );
-  return {
-    additionalProperties: { type: 'string' },
-    properties: Object.fromEntries(names.map((name) => [name, { type: 'string' }])),
-    required: requiredInEvery,
-    type: 'object',
-  };
+	const names = Array.from(
+		new Set(registry.flatMap((spec) => spec.singletons.map((field) => field.name))),
+	);
+	const requiredInEvery = names.filter((name) =>
+		registry.every((spec) =>
+			spec.singletons.some((field) => field.name === name && field.required),
+		),
+	);
+	return {
+		additionalProperties: { type: 'string' },
+		properties: Object.fromEntries(names.map((name) => [name, { type: 'string' }])),
+		required: requiredInEvery,
+		type: 'object',
+	};
 };
 
 const buildTool = (registry: readonly TemplateSpec[]): LlmTool => ({
-  description: 'Report every on-air result template detected in the frame.',
-  inputSchema: {
-    additionalProperties: false,
-    properties: {
-      templates: {
-        items: {
-          additionalProperties: false,
-          properties: {
-            candidates: {
-              items: {
-                additionalProperties: false,
-                properties: {
-                  called: { type: 'string' },
-                  name: { type: 'string' },
-                  party: { type: 'string' },
-                  pct: { type: 'string' },
-                  votes: { type: 'string' },
-                },
-                required: ['name'],
-                type: 'object',
-              },
-              type: 'array',
-            },
-            singletons: buildSingletonSchema(registry),
-            templateId: { enum: registry.map((spec) => spec.id), type: 'string' },
-          },
-          required: ['templateId', 'singletons', 'candidates'],
-          type: 'object',
-        },
-        type: 'array',
-      },
-    },
-    required: ['templates'],
-    type: 'object',
-  },
-  name: TOOL_NAME,
+	description: 'Report every on-air result template detected in the frame.',
+	inputSchema: {
+		additionalProperties: false,
+		properties: {
+			templates: {
+				items: {
+					additionalProperties: false,
+					properties: {
+						candidates: {
+							items: {
+								additionalProperties: false,
+								properties: {
+									called: { type: 'string' },
+									name: { type: 'string' },
+									party: { type: 'string' },
+									pct: { type: 'string' },
+									votes: { type: 'string' },
+								},
+								required: ['name'],
+								type: 'object',
+							},
+							type: 'array',
+						},
+						singletons: buildSingletonSchema(registry),
+						templateId: { enum: registry.map((spec) => spec.id), type: 'string' },
+					},
+					required: ['templateId', 'singletons', 'candidates'],
+					type: 'object',
+				},
+				type: 'array',
+			},
+		},
+		required: ['templates'],
+		type: 'object',
+	},
+	name: TOOL_NAME,
 });
 
 const candidateSchema = z.object({
-  called: z.string().optional(),
-  name: z.string(),
-  party: z.string().optional(),
-  pct: z.string().optional(),
-  votes: z.string().optional(),
+	called: z.string().optional(),
+	name: z.string(),
+	party: z.string().optional(),
+	pct: z.string().optional(),
+	votes: z.string().optional(),
 });
 
 const bodySchema = z.object({
-  templates: z.array(
-    z.object({
-      candidates: z.array(candidateSchema),
-      singletons: z.record(z.string(), z.string()),
-      templateId: z.string(),
-    }),
-  ),
+	templates: z.array(
+		z.object({
+			candidates: z.array(candidateSchema),
+			singletons: z.record(z.string(), z.string()),
+			templateId: z.string(),
+		}),
+	),
 });
 
 const toInt = (raw: string | undefined): number => {
-  const digits = (raw ?? '').replace(/[^0-9]/g, '');
-  return digits.length === 0 ? 0 : Number(digits);
+	const digits = (raw ?? '').replace(/[^0-9]/g, '');
+	return digits.length === 0 ? 0 : Number(digits);
 };
 
 const toPct = (raw: string | undefined): number => {
-  const cleaned = (raw ?? '').replace(/[^0-9.]/g, '');
-  const value = Number(cleaned);
-  return cleaned.length === 0 || Number.isNaN(value) ? 0 : value;
+	const cleaned = (raw ?? '').replace(/[^0-9.]/g, '');
+	const value = Number(cleaned);
+	return cleaned.length === 0 || Number.isNaN(value) ? 0 : value;
 };
 
 // Second pass — re-read the small-text fields from an UPSCALED crop. On the full
@@ -173,96 +176,107 @@ const toPct = (raw: string | undefined): number => {
 const RECROP_TOOL = 'report_crop';
 
 const recropTool: LlmTool = {
-  description: 'Read every candidate and the reporting percentage from a zoomed-in election graphic crop.',
-  inputSchema: {
-    additionalProperties: false,
-    properties: {
-      candidates: {
-        items: {
-          additionalProperties: false,
-          properties: {
-            called: {
-              description: 'Exactly "called" if a yellow/gold check mark (✓) is next to this candidate; else "".',
-              type: 'string',
-            },
-            name: { description: 'Candidate personal name ONLY — never the party letter.', type: 'string' },
-            party: { description: 'Party letter from the color chip (D, R, L, I, G…).', type: 'string' },
-            pct: { type: 'string' },
-            votes: { description: 'Vote total exactly as printed (read every digit carefully).', type: 'string' },
-          },
-          required: ['name', 'party', 'votes', 'pct', 'called'],
-          type: 'object',
-        },
-        type: 'array',
-      },
-      pctIn: { description: 'The "X% IN" reporting figure as printed.', type: 'string' },
-    },
-    required: ['candidates', 'pctIn'],
-    type: 'object',
-  },
-  name: RECROP_TOOL,
+	description:
+		'Read every candidate and the reporting percentage from a zoomed-in election graphic crop.',
+	inputSchema: {
+		additionalProperties: false,
+		properties: {
+			candidates: {
+				items: {
+					additionalProperties: false,
+					properties: {
+						called: {
+							description:
+								'Exactly "called" if a yellow/gold check mark (✓) is next to this candidate; else "".',
+							type: 'string',
+						},
+						name: {
+							description: 'Candidate personal name ONLY — never the party letter.',
+							type: 'string',
+						},
+						party: {
+							description: 'Party letter from the color chip (D, R, L, I, G…).',
+							type: 'string',
+						},
+						pct: { type: 'string' },
+						votes: {
+							description: 'Vote total exactly as printed (read every digit carefully).',
+							type: 'string',
+						},
+					},
+					required: ['name', 'party', 'votes', 'pct', 'called'],
+					type: 'object',
+				},
+				type: 'array',
+			},
+			pctIn: { description: 'The "X% IN" reporting figure as printed.', type: 'string' },
+		},
+		required: ['candidates', 'pctIn'],
+		type: 'object',
+	},
+	name: RECROP_TOOL,
 };
 
 const recropCandidateSchema = z.object({
-  called: z.string(),
-  name: z.string(),
-  party: z.string(),
-  pct: z.string(),
-  votes: z.string(),
+	called: z.string(),
+	name: z.string(),
+	party: z.string(),
+	pct: z.string(),
+	votes: z.string(),
 });
 const recropBodySchema = z.object({
-  candidates: z.array(recropCandidateSchema),
-  pctIn: z.string(),
+	candidates: z.array(recropCandidateSchema),
+	pctIn: z.string(),
 });
 type RecropRead = z.infer<typeof recropBodySchema>;
 
 const recropPrompt = (raceHeading: string): string =>
-  [
-    `This is a zoomed-in crop of one on-air election result graphic (${raceHeading}).`,
-    'Read EVERY candidate exactly as printed: personal name (NOT the party letter), party letter from the color chip, vote total (read each digit carefully — these are small), and percentage.',
-    'A candidate is "called" if a small yellow/gold check mark (✓) sits next to their name, chip, or percentage — zero, one, or more may be called (top-two races commonly show two). Set "called" to "called" for each that has the mark, else "".',
-    'Also read the "X% IN" reporting figure. Report via the report_crop tool.',
-  ].join('\n');
+	[
+		`This is a zoomed-in crop of one on-air election result graphic (${raceHeading}).`,
+		'Read EVERY candidate exactly as printed: personal name (NOT the party letter), party letter from the color chip, vote total (read each digit carefully — these are small), and percentage.',
+		'A candidate is "called" if a small yellow/gold check mark (✓) sits next to their name, chip, or percentage — zero, one, or more may be called (top-two races commonly show two). Set "called" to "called" for each that has the mark, else "".',
+		'Also read the "X% IN" reporting figure. Report via the report_crop tool.',
+	].join('\n');
 
 // One crop read. `extra.vote` varies the prompt-hash per vote so each is recorded/
 // replayed as a distinct golden entry (the API ignores it). Votes are UNIONed for
 // the call set (a ✓ seen by any vote counts); for the numeric fields the first
 // read wins (they agree — measured 4/4 — and a single Sonnet read is reliable).
 const recropReadOnce = async (
-  cropPng: Buffer,
-  raceHeading: string,
-  vote: number,
-  deps: ExtractFrameDeps,
+	cropPng: Buffer,
+	raceHeading: string,
+	vote: number,
+	deps: ExtractFrameDeps,
 ): Promise<RecropRead> => {
-  const response = await deps.client.call({
-    extra: { vote },
-    frameHash: createHash('sha256').update(cropPng).digest('hex'),
-    image: { base64: cropPng.toString('base64'), mediaType: 'image/png' },
-    model: deps.recallModel ?? deps.model ?? DEFAULT_RECALL_MODEL,
-    prompt: recropPrompt(raceHeading),
-    tool: recropTool,
-    toolChoice: RECROP_TOOL,
-  });
-  return recropBodySchema.parse(response.body);
+	const response = await deps.client.call({
+		extra: { vote },
+		frameHash: createHash('sha256').update(cropPng).digest('hex'),
+		image: { base64: cropPng.toString('base64'), mediaType: 'image/png' },
+		model: deps.recallModel ?? deps.model ?? DEFAULT_RECALL_MODEL,
+		prompt: recropPrompt(raceHeading),
+		tool: recropTool,
+		toolChoice: RECROP_TOOL,
+	});
+	return recropBodySchema.parse(response.body);
 };
 
 const DEFAULT_RECALL_VOTES = 1;
 
 export type ExtractFrameDeps = {
-  client: LlmClient;
-  model?: string;
-  // Crops + upscales a template's captureRegion for the re-call pass. Injected so
-  // tests can stub it; defaults to the real sharp-backed implementation.
-  recropRegion?: (framePng: Buffer, region: Rect) => Promise<Buffer>;
-  registry?: readonly TemplateSpec[];
-  // Set false to skip the re-call pass (e.g. unit tests with a fake client).
-  recallPass?: boolean;
-  // Model for the recall (call-detection) pass. Defaults to Sonnet, which reads
-  // the ✓ glyph reliably single-shot; falls back to `model` then the constant.
-  recallModel?: string;
-  // Number of recall votes per template (OR-ed). Default 1 (Sonnet is reliable
-  // single-shot); bump for a weaker recall model.
-  recallVotes?: number;
+	client: LlmClient;
+	model?: string;
+	// Model for the recall (call-detection) pass. Defaults to Sonnet, which reads
+	// the ✓ glyph reliably single-shot; falls back to `model` then the constant.
+	recallModel?: string;
+	// Set false to skip the re-call pass (e.g. unit tests with a fake client).
+	recallPass?: boolean;
+	// Number of recall votes per template (OR-ed). Default 1 (Sonnet is reliable
+	// single-shot); bump for a weaker recall model.
+	recallVotes?: number;
+	// Crops + upscales a template's captureRegion for the re-call pass. Injected so
+	// tests can stub it; defaults to the real sharp-backed implementation.
+	recropRegion?: (framePng: Buffer, region: Rect) => Promise<Buffer>;
+	registry?: readonly TemplateSpec[];
 };
 
 // A frame caught mid-transition (a graphic sliding in or out) yields a partial read —
@@ -270,141 +284,147 @@ export type ExtractFrameDeps = {
 // We can't reconcile a partial roster, so treat any race whose candidates aren't all
 // full "First Last" names as a missed capture and drop it rather than emit bad data.
 const isMissedCapture = (observation: RaceObservation): boolean =>
-  observation.candidates.some((candidate) => candidate.name.trim().split(/\s+/).length < 2);
+	observation.candidates.some((candidate) => candidate.name.trim().split(/\s+/).length < 2);
 
 export const extractFrame = async (
-  framePng: Buffer,
-  observedAt: number,
-  deps: ExtractFrameDeps,
+	framePng: Buffer,
+	observedAt: number,
+	deps: ExtractFrameDeps,
 ): Promise<RaceObservation[]> => {
-  const registry = deps.registry ?? templateRegistry;
-  const model = deps.model ?? DEFAULT_MODEL;
-  const frameHash = createHash('sha256').update(framePng).digest('hex');
+	const registry = deps.registry ?? templateRegistry;
+	const model = deps.model ?? DEFAULT_MODEL;
+	const frameHash = createHash('sha256').update(framePng).digest('hex');
 
-  const response = await deps.client.call({
-    frameHash,
-    image: { base64: framePng.toString('base64'), mediaType: 'image/png' },
-    model,
-    prompt: buildPrompt(registry),
-    tool: buildTool(registry),
-    toolChoice: TOOL_NAME,
-  });
+	const response = await deps.client.call({
+		frameHash,
+		image: { base64: framePng.toString('base64'), mediaType: 'image/png' },
+		model,
+		prompt: buildPrompt(registry),
+		tool: buildTool(registry),
+		toolChoice: TOOL_NAME,
+	});
 
-  const parsed = bodySchema.parse(response.body);
+	const parsed = bodySchema.parse(response.body);
 
-  // The VLM intermittently repeats the same graphic many times in the array;
-  // "exactly once" prompting is unreliable, so collapse byte-identical detections
-  // here. Distinct races under the same template (different raceKey/candidates)
-  // survive — only true duplicates are dropped.
-  const seen = new Set<string>();
-  const deduped = parsed.templates.filter((item) => {
-    const signature = JSON.stringify([
-      item.templateId,
-      item.singletons,
-      item.candidates.map((candidate) => [candidate.name, candidate.votes, candidate.pct]),
-    ]);
-    if (seen.has(signature)) return false;
-    seen.add(signature);
-    return true;
-  });
+	// The VLM intermittently repeats the same graphic many times in the array;
+	// "exactly once" prompting is unreliable, so collapse byte-identical detections
+	// here. Distinct races under the same template (different raceKey/candidates)
+	// survive — only true duplicates are dropped.
+	const seen = new Set<string>();
+	const deduped = parsed.templates.filter((item) => {
+		const signature = JSON.stringify([
+			item.templateId,
+			item.singletons,
+			item.candidates.map((candidate) => [candidate.name, candidate.votes, candidate.pct]),
+		]);
+		if (seen.has(signature)) return false;
+		seen.add(signature);
+		return true;
+	});
 
-  const observations = deduped
-    .map((item): RaceObservation | null => {
-      const spec = findTemplate(item.templateId);
-      if (spec === undefined) return null;
-      const cleanName = (candidate: z.infer<typeof candidateSchema>): string =>
-        stripPartyPrefix(candidate.name, candidate.party ?? '');
-      const candidateRecord = (candidate: z.infer<typeof candidateSchema>): Record<string, string> => ({
-        called: candidate.called ?? '',
-        name: cleanName(candidate),
-        party: candidate.party ?? '',
-        pct: candidate.pct ?? '',
-        votes: candidate.votes ?? '',
-      });
-      const candidates: CandidateState[] = item.candidates.map((candidate) => ({
-        key: spec.bind.candidateKeyFrom(candidateRecord(candidate)),
-        name: cleanName(candidate),
-        party: candidate.party ?? '',
-        pct: toPct(candidate.pct),
-        votes: toInt(candidate.votes),
-      }));
-      const calledFor = item.candidates
-        .filter((candidate) => (candidate.called ?? '') === 'called')
-        .map((candidate) => spec.bind.candidateKeyFrom(candidateRecord(candidate)));
-      return {
-        calledFor,
-        candidates,
-        extractedFields: item.singletons,
-        observedAt,
-        pctIn: toPct(item.singletons.pct_in),
-        raceKey: spec.bind.raceKeyFrom(item.singletons),
-        reportedAt: null,
-        source: 'air',
-        templateId: spec.id,
-      };
-    })
-    .filter((observation): observation is RaceObservation => observation !== null);
+	const observations = deduped
+		.map((item): null | RaceObservation => {
+			const spec = findTemplate(item.templateId);
+			if (spec === undefined) return null;
+			const cleanName = (candidate: z.infer<typeof candidateSchema>): string =>
+				stripPartyPrefix(candidate.name, candidate.party ?? '');
+			const candidateRecord = (
+				candidate: z.infer<typeof candidateSchema>,
+			): Record<string, string> => ({
+				called: candidate.called ?? '',
+				name: cleanName(candidate),
+				party: candidate.party ?? '',
+				pct: candidate.pct ?? '',
+				votes: candidate.votes ?? '',
+			});
+			const candidates: CandidateState[] = item.candidates.map((candidate) => ({
+				key: spec.bind.candidateKeyFrom(candidateRecord(candidate)),
+				name: cleanName(candidate),
+				party: candidate.party ?? '',
+				pct: toPct(candidate.pct),
+				votes: toInt(candidate.votes),
+			}));
+			const calledFor = item.candidates
+				.filter((candidate) => (candidate.called ?? '') === 'called')
+				.map((candidate) => spec.bind.candidateKeyFrom(candidateRecord(candidate)));
+			return {
+				calledFor,
+				candidates,
+				extractedFields: item.singletons,
+				observedAt,
+				pctIn: toPct(item.singletons.pct_in),
+				raceKey: spec.bind.raceKeyFrom(item.singletons),
+				reportedAt: null,
+				source: 'air',
+				templateId: spec.id,
+			};
+		})
+		.filter((observation): observation is RaceObservation => observation !== null);
 
-  // Re-crop pass is on by default (it's the production-correct behavior). Isolated
-  // unit tests that use a single-response fake client pass recallPass: false.
-  if (deps.recallPass === false)
-    return observations.filter((observation) => !isMissedCapture(observation));
-  const recrop = deps.recropRegion ?? cropAndUpscaleRegion;
-  const votes = deps.recallVotes ?? DEFAULT_RECALL_VOTES;
+	// Re-crop pass is on by default (it's the production-correct behavior). Isolated
+	// unit tests that use a single-response fake client pass recallPass: false.
+	if (deps.recallPass === false)
+		return observations.filter((observation) => !isMissedCapture(observation));
+	const recrop = deps.recropRegion ?? cropAndUpscaleRegion;
+	const votes = deps.recallVotes ?? DEFAULT_RECALL_VOTES;
 
-  // For each detected template with a captureRegion, re-read its candidates + pct_in
-  // from the upscaled crop and override pass 1 (the crop reads small digits + the ✓
-  // reliably where the full frame doesn't). Pass 1 keeps the template id + raceKey.
-  const recropped = await Promise.all(
-    observations.map(async (observation): Promise<RaceObservation> => {
-      const spec = findTemplate(observation.templateId ?? '');
-      if (spec?.captureRegion === undefined) return observation;
-      const cropPng = await recrop(framePng, spec.captureRegion);
-      const heading = observation.extractedFields?.race_heading ?? observation.raceKey;
-      const reads = await Promise.all(
-        Array.from({ length: votes }, (_unused, index) =>
-          recropReadOnce(cropPng, heading, index, deps),
-        ),
-      );
-      const primary = reads[0]!; // numeric fields: first read (they agree)
+	// For each detected template with a captureRegion, re-read its candidates + pct_in
+	// from the upscaled crop and override pass 1 (the crop reads small digits + the ✓
+	// reliably where the full frame doesn't). Pass 1 keeps the template id + raceKey.
+	const recropped = await Promise.all(
+		observations.map(async (observation): Promise<RaceObservation> => {
+			const spec = findTemplate(observation.templateId ?? '');
+			if (spec?.captureRegion === undefined) return observation;
+			const cropPng = await recrop(framePng, spec.captureRegion);
+			const heading = observation.extractedFields?.race_heading ?? observation.raceKey;
+			const reads = await Promise.all(
+				Array.from({ length: votes }, (_unused, index) =>
+					recropReadOnce(cropPng, heading, index, deps),
+				),
+			);
+			const primary = reads[0]!; // numeric fields: first read (they agree)
 
-      // Union the called set across votes (a ✓ seen by any vote counts), matched by
-      // name so it lines up with the rebuilt candidate list.
-      const calledNames = new Set(
-        reads.flatMap((read) =>
-          read.candidates.filter((c) => c.called === 'called').map((c) => stripPartyPrefix(c.name, c.party)),
-        ),
-      );
+			// Union the called set across votes (a ✓ seen by any vote counts), matched by
+			// name so it lines up with the rebuilt candidate list.
+			const calledNames = new Set(
+				reads.flatMap((read) =>
+					read.candidates
+						.filter((c) => c.called === 'called')
+						.map((c) => stripPartyPrefix(c.name, c.party)),
+				),
+			);
 
-      const recordFor = (c: z.infer<typeof recropCandidateSchema>): Record<string, string> => ({
-        called: c.called,
-        name: stripPartyPrefix(c.name, c.party),
-        party: c.party,
-        pct: c.pct,
-        votes: c.votes,
-      });
-      const candidates: CandidateState[] = primary.candidates.map((c) => ({
-        key: spec.bind.candidateKeyFrom(recordFor(c)),
-        name: stripPartyPrefix(c.name, c.party),
-        party: c.party,
-        pct: toPct(c.pct),
-        votes: toInt(c.votes),
-      }));
-      const calledFor = primary.candidates
-        .filter((c) =>
-          Array.from(calledNames).some((called) => namesMatch(stripPartyPrefix(c.name, c.party), called)),
-        )
-        .map((c) => spec.bind.candidateKeyFrom(recordFor(c)));
+			const recordFor = (c: z.infer<typeof recropCandidateSchema>): Record<string, string> => ({
+				called: c.called,
+				name: stripPartyPrefix(c.name, c.party),
+				party: c.party,
+				pct: c.pct,
+				votes: c.votes,
+			});
+			const candidates: CandidateState[] = primary.candidates.map((c) => ({
+				key: spec.bind.candidateKeyFrom(recordFor(c)),
+				name: stripPartyPrefix(c.name, c.party),
+				party: c.party,
+				pct: toPct(c.pct),
+				votes: toInt(c.votes),
+			}));
+			const calledFor = primary.candidates
+				.filter((c) =>
+					Array.from(calledNames).some((called) =>
+						namesMatch(stripPartyPrefix(c.name, c.party), called),
+					),
+				)
+				.map((c) => spec.bind.candidateKeyFrom(recordFor(c)));
 
-      return {
-        ...observation,
-        calledFor,
-        candidates,
-        pctIn: toPct(primary.pctIn),
-      };
-    }),
-  );
-  return recropped.filter((observation) => !isMissedCapture(observation));
+			return {
+				...observation,
+				calledFor,
+				candidates,
+				pctIn: toPct(primary.pctIn),
+			};
+		}),
+	);
+	return recropped.filter((observation) => !isMissedCapture(observation));
 };
 
 export type { Rect };
