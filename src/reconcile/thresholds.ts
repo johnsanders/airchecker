@@ -1,4 +1,7 @@
 export type Thresholds = {
+	// Distinct air sightings before an air-involved anomaly is emitted. 1 for the
+	// Nov 3, 2026 general: with hundreds of races cycling through the ticker, a single
+	// bad graphic must alert the moment it is seen (user decision, 2026-09-25).
 	airHysteresisN: number;
 	inBreakSilenceMs: number;
 	lagSlackMs: number;
@@ -17,7 +20,7 @@ export type Thresholds = {
 };
 
 const defaultThresholds: Thresholds = {
-	airHysteresisN: 3,
+	airHysteresisN: 1,
 	inBreakSilenceMs: 20_000,
 	lagSlackMs: 5_000,
 	maxWinners: 1,

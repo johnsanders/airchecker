@@ -100,15 +100,16 @@ const batchByObservedAt = (observations: RaceObservation[]): ObservationBatch[] 
 
 export const replaySessionTimeline = (inputs: SessionTimelineInputs): SessionExpectations => {
 	const composition = makeComposition();
-	const tracker = makeAnomalyTracker();
+	const tracker = makeAnomalyTracker(composition.thresholds);
 	const resolver = makeRaceIdentityResolver();
 	const distinct = new Map<string, FrozenAnomaly>();
 
 	const reconcileKeys = (raceKeys: string[], now: number): void => {
 		Array.from(new Set(raceKeys)).forEach((raceKey) => {
-			const anomalies = composition.reconcileRace(raceKey, now);
-			tracker.update(raceKey, anomalies);
-			anomalies.forEach((anomaly) => {
+			// "Everything that would have alerted" = what the tracker emitted after
+			// hysteresis, not the raw rule output.
+			const diff = tracker.update(raceKey, composition.reconcileRace(raceKey, now));
+			diff.raised.forEach((anomaly) => {
 				const key = distinctKey(anomaly);
 				if (!distinct.has(key)) distinct.set(key, toFrozenAnomaly(anomaly));
 			});

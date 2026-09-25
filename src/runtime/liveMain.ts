@@ -53,7 +53,7 @@ const liveMain = async (): Promise<void> => {
 	// batch over the races it touched; the tracker replaces a race's anomalies each
 	// time, so a standing anomaly shows once and a resolved one clears (rather than
 	// re-appending duplicates every poll).
-	const anomalies = makeAnomalyTracker();
+	const anomalies = makeAnomalyTracker(composition.thresholds);
 	const reconcileKeys = (raceKeys: Iterable<string>): void => {
 		const now = Date.now();
 		Array.from(new Set(raceKeys)).forEach((raceKey) => {

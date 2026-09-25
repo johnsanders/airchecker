@@ -11,6 +11,10 @@ export type Anomaly = {
 	owner: Owner;
 	raceKey: string;
 	severity: Severity;
+	// What the anomaly is about within the race (a candidate name, a field name) for
+	// rules that fire per candidate/field — the hysteresis identity is type + race +
+	// subject, since `detail` carries volatile numbers.
+	subject?: string;
 	type: AnomalyType;
 };
 
@@ -145,6 +149,7 @@ const checkNameAgreement = (
 				owner: 'us' as const,
 				raceKey,
 				severity: 'high' as const,
+				subject: airCandidate.name,
 				type: 'name_mismatch' as const,
 			},
 		];
@@ -206,6 +211,7 @@ const checkVotesMatchInLagWindow = (
 				owner: 'us' as const,
 				raceKey,
 				severity: 'high' as const,
+				subject: airCandidate.name,
 				type: 'votes_mismatch' as const,
 			},
 		];
@@ -383,6 +389,7 @@ const checkVoteDrop = (
 				owner: 'observe' as const,
 				raceKey,
 				severity: 'medium' as const,
+				subject: currentCandidate.name,
 				type: 'vote_drop' as const,
 			},
 		];
@@ -423,6 +430,7 @@ const checkCrossSurface = (
 						owner: 'us',
 						raceKey,
 						severity: 'high',
+						subject: aCandidate.name,
 						type: 'cross_surface_mismatch',
 					});
 				}
@@ -442,6 +450,7 @@ const checkFieldMissing = (raceKey: string, airObservation: RaceObservation): An
 		owner: 'us' as const,
 		raceKey,
 		severity: 'medium' as const,
+		subject: field,
 		type: 'field_missing' as const,
 	}));
 
