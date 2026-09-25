@@ -9,6 +9,7 @@ import type {
 } from '../reconcile/reconcile.js';
 
 import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
+import { makeAlertLog } from '../runtime/alertLog.js';
 import { makeAnomalyTracker } from '../runtime/anomalyTracker.js';
 import makeComposition from '../runtime/composition.js';
 
@@ -25,6 +26,7 @@ export type FrozenAnomaly = {
 };
 
 export type SessionExpectations = {
+	alertEvents: { cleared: number; raised: number };
 	distinctAnomalies: FrozenAnomaly[];
 	finalAnomalies: FrozenAnomaly[];
 	identity: {
@@ -101,6 +103,7 @@ const batchByObservedAt = (observations: RaceObservation[]): ObservationBatch[] 
 export const replaySessionTimeline = (inputs: SessionTimelineInputs): SessionExpectations => {
 	const composition = makeComposition();
 	const tracker = makeAnomalyTracker(composition.thresholds);
+	const alertLog = makeAlertLog({ capacity: Number.MAX_SAFE_INTEGER });
 	const resolver = makeRaceIdentityResolver();
 	const distinct = new Map<string, FrozenAnomaly>();
 
@@ -109,6 +112,7 @@ export const replaySessionTimeline = (inputs: SessionTimelineInputs): SessionExp
 			// "Everything that would have alerted" = what the tracker emitted after
 			// hysteresis, not the raw rule output.
 			const diff = tracker.update(raceKey, composition.reconcileRace(raceKey, now));
+			alertLog.record(diff, now);
 			diff.raised.forEach((anomaly) => {
 				const key = distinctKey(anomaly);
 				if (!distinct.has(key)) distinct.set(key, toFrozenAnomaly(anomaly));
@@ -159,7 +163,12 @@ export const replaySessionTimeline = (inputs: SessionTimelineInputs): SessionExp
 	const raceKeys = composition.store.getRaceKeys();
 	const sources: SourceName[] = ['air', 'DDHQ', 'Ross'];
 
+	const events = alertLog.recent(Number.MAX_SAFE_INTEGER);
 	return {
+		alertEvents: {
+			cleared: events.filter((event) => event.kind === 'cleared').length,
+			raised: events.filter((event) => event.kind === 'raised').length,
+		},
 		distinctAnomalies: Array.from(distinct.values()),
 		finalAnomalies: tracker.list().map(toFrozenAnomaly),
 		identity: {

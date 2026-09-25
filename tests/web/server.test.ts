@@ -82,6 +82,32 @@ describe('web server', () => {
 		expect(body.alerts.map((a) => a.detail)).toEqual(['b', 'a']);
 	});
 
+	it('serves alert history newest-first with a bounded limit', async () => {
+		const events = [20, 10].map((ts) => ({
+			detail: 'd',
+			kind: 'raised' as const,
+			owner: 'us' as const,
+			raceKey: 'r',
+			severity: 'high' as const,
+			ts,
+			type: 'votes_mismatch' as const,
+		}));
+		app = makeWebServer({
+			getAlertHistory: (limit) => events.slice(0, limit),
+			getRecentAlerts: () => [],
+			store: makeStore(),
+		});
+		const all = await app.inject({ method: 'GET', url: '/api/alert-history' });
+		expect((all.json() as { events: { ts: number }[] }).events.map((e) => e.ts)).toEqual([20, 10]);
+		const one = await app.inject({ method: 'GET', url: '/api/alert-history?limit=1' });
+		expect((one.json() as { events: { ts: number }[] }).events.map((e) => e.ts)).toEqual([20]);
+		const unwired = makeWebServer({ getRecentAlerts: () => [], store: makeStore() });
+		expect((await unwired.inject({ method: 'GET', url: '/api/alert-history' })).json()).toEqual({
+			events: [],
+		});
+		await unwired.close();
+	});
+
 	it('gets and sets DDHQ queries', async () => {
 		const queryStore = makeQueryStore();
 		app = makeWebServer({ getRecentAlerts: () => [], queryStore, store: makeStore() });

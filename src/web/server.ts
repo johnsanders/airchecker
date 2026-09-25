@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 import type { RaceAlias, RaceIdentityResolver } from '../identity/raceIdentity.js';
 import type { Anomaly, RaceObservation, SourceName } from '../reconcile/reconcile.js';
+import type { AlertEvent } from '../runtime/alertLog.js';
 import type { CadenceConfig, CaptureResult } from '../sources/air/captureScheduler.js';
 import type { MatchStore } from '../sources/air/matchStore.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
@@ -32,6 +33,8 @@ export type WebServerConfig = {
 	// When present, the server opens a /ws endpoint and pushes a "changed" nudge over
 	// it on every state change, so the client refetches on demand instead of polling.
 	changeBus?: ChangeBus;
+	// Newest-first raise/clear events; omitted if alert history isn't wired.
+	getAlertHistory?: (limit?: number) => AlertEvent[];
 	getCadence?: () => CadenceConfig;
 	getLastFrame?: () => LastFrameView | undefined;
 	getRecentAlerts: () => Anomaly[];
@@ -281,6 +284,12 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 				sourceRaceKey: observation?.sourceRaceKey ?? observation?.raceKey ?? null,
 			})),
 		};
+	});
+
+	app.get<{ Querystring: { limit?: string } }>('/api/alert-history', (req) => {
+		const parsed = Number(req.query.limit);
+		const limit = Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, 1000) : 100;
+		return { events: config.getAlertHistory?.(limit) ?? [] };
 	});
 
 	app.get('/api/last-frame', (_req, reply) => {

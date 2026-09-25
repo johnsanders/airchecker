@@ -5,6 +5,7 @@ import { join } from 'node:path';
 
 import type { RaceIdentityEvent } from '../identity/raceIdentity.js';
 import type { RaceObservation } from '../reconcile/reconcile.js';
+import type { AlertEvent } from '../runtime/alertLog.js';
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS sessions (
@@ -51,6 +52,16 @@ CREATE TABLE IF NOT EXISTS identity_events (
   payload TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS identity_events_session_seq ON identity_events(session_id, seq);
+CREATE TABLE IF NOT EXISTS alert_events (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_id TEXT NOT NULL,
+  ts INTEGER NOT NULL,
+  kind TEXT NOT NULL,
+  race_key TEXT NOT NULL,
+  type TEXT NOT NULL,
+  payload TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS alert_events_session_seq ON alert_events(session_id, seq);
 `;
 
 export type FrameRecordInput = {
@@ -77,6 +88,7 @@ export type LlmLookupResult = {
 export type Recorder = {
 	close: () => void;
 	lookupLlm: (frameHash: null | string, promptHash: string) => LlmLookupResult | undefined;
+	recordAlertEvent: (event: AlertEvent) => void;
 	recordFrame: (input: FrameRecordInput) => string;
 	recordIdentityEvent: (event: RaceIdentityEvent) => void;
 	recordLlmCall: (input: LlmCallInput) => void;
@@ -118,6 +130,9 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 	);
 	const insertIdentityEvent = db.prepare(
 		'INSERT INTO identity_events (session_id, ts, event_type, payload) VALUES (?, ?, ?, ?)',
+	);
+	const insertAlertEvent = db.prepare(
+		'INSERT INTO alert_events (session_id, ts, kind, race_key, type, payload) VALUES (?, ?, ?, ?, ?, ?)',
 	);
 	const selectLlmWithFrame = db.prepare(
 		'SELECT model, response FROM llm_calls WHERE frame_hash = ? AND prompt_hash = ? ORDER BY seq DESC LIMIT 1',
@@ -174,6 +189,17 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 		);
 	};
 
+	const recordAlertEvent = (event: AlertEvent): void => {
+		insertAlertEvent.run(
+			config.sessionId,
+			event.ts,
+			event.kind,
+			event.raceKey,
+			event.type,
+			JSON.stringify(event),
+		);
+	};
+
 	const lookupLlm = (frameHash: null | string, promptHash: string): LlmLookupResult | undefined => {
 		const row =
 			frameHash === null
@@ -193,6 +219,7 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 	return {
 		close,
 		lookupLlm,
+		recordAlertEvent,
 		recordFrame,
 		recordIdentityEvent,
 		recordLlmCall,

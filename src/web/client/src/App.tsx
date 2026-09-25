@@ -9,6 +9,7 @@ import React from 'react';
 import type { RaceSummary, StateResponse } from './api.js';
 
 import { api } from './api.js';
+import AlertHistory from './components/AlertHistory.js';
 import Alerts from './components/Alerts.js';
 import CapturePanel from './components/CapturePanel.js';
 import QueryEditor from './components/QueryEditor.js';
@@ -64,6 +65,12 @@ const App: React.FC = () => {
 					<Grid size={{ md: 6, xs: 12 }}>
 						<Section title="Alerts">
 							<Alerts alerts={state?.alerts ?? []} onSelectRace={setSelected} />
+						</Section>
+					</Grid>
+
+					<Grid size={{ md: 6, xs: 12 }}>
+						<Section title="Recent alert events">
+							<AlertHistory onSelectRace={setSelected} />
 						</Section>
 					</Grid>
 

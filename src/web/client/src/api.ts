@@ -7,11 +7,23 @@ export type SourceName = 'air' | 'DDHQ' | 'Ross';
 // on-air source in the reconciler/store/types); the UI shows 'Actus' per request.
 export const sourceLabel = (source: SourceName): string => (source === 'air' ? 'Actus' : source);
 
+export interface AlertEvent {
+	detail: string;
+	kind: 'cleared' | 'raised';
+	owner: string;
+	raceKey: string;
+	severity: 'high' | 'low' | 'medium';
+	subject?: string;
+	ts: number;
+	type: string;
+}
+
 export interface Anomaly {
 	detail: string;
 	observedAt: number;
 	raceKey: string;
 	severity: 'high' | 'low' | 'medium';
+	subject?: string;
 	type: string;
 }
 
@@ -166,6 +178,8 @@ export const api = {
 		return res.json() as Promise<{ error?: string; ran: boolean; status: string }>;
 	},
 	getAirMatch: () => getJson<{ match: null | string }>('/api/air-match'),
+	getAlertHistory: (limit = 100) =>
+		getJson<{ events: AlertEvent[] }>(`/api/alert-history?limit=${limit}`),
 	getQueries: () => getJson<{ queries: string[] }>('/api/queries'),
 	getRace: (raceKey: string) =>
 		getJson<RaceDetailResponse>(`/api/race/${encodeURIComponent(raceKey)}`),

@@ -3,6 +3,7 @@ import { join } from 'node:path';
 
 import type { RaceIdentityEvent } from '../identity/raceIdentity.js';
 import type { RaceObservation } from '../reconcile/reconcile.js';
+import type { AlertEvent } from '../runtime/alertLog.js';
 import type { LlmLookupResult } from './recorder.js';
 
 export type FrameRow = {
@@ -18,6 +19,7 @@ export type Player = {
 	close: () => void;
 	emitObservationsInto: (handler: (observation: RaceObservation) => void) => void;
 	lookupLlm: (frameHash: null | string, promptHash: string) => LlmLookupResult | undefined;
+	readAlertEvents: () => AlertEvent[];
 	readFrames: () => FrameRow[];
 	readIdentityEvents: () => { event: RaceIdentityEvent; ts: number }[];
 	readObservations: () => RaceObservation[];
@@ -48,6 +50,14 @@ const makePlayer = (config: PlayerConfig): Player => {
 			: db.prepare(
 					'SELECT event_type AS eventType, payload, ts FROM identity_events WHERE session_id = ? ORDER BY seq ASC',
 				);
+	// Sessions recorded before alert history have no table; report none.
+	const hasAlertEvents = db
+		.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'alert_events'")
+		.get() as { name: string } | undefined;
+	const selectAlertEvents =
+		hasAlertEvents === undefined
+			? undefined
+			: db.prepare('SELECT payload FROM alert_events WHERE session_id = ? ORDER BY seq ASC');
 	const selectLlmWithFrame = db.prepare(
 		'SELECT model, response FROM llm_calls WHERE frame_hash = ? AND prompt_hash = ? ORDER BY seq DESC LIMIT 1',
 	);
@@ -90,6 +100,13 @@ const makePlayer = (config: PlayerConfig): Player => {
 		return { model: row.model, response: JSON.parse(row.response) as unknown };
 	};
 
+	const readAlertEvents = (): AlertEvent[] =>
+		selectAlertEvents === undefined
+			? []
+			: (selectAlertEvents.all(config.sessionId) as { payload: string }[]).map(
+					(row) => JSON.parse(row.payload) as AlertEvent,
+				);
+
 	const emitObservationsInto = (handler: (observation: RaceObservation) => void): void =>
 		readObservations().forEach(handler);
 
@@ -101,6 +118,7 @@ const makePlayer = (config: PlayerConfig): Player => {
 		close,
 		emitObservationsInto,
 		lookupLlm,
+		readAlertEvents,
 		readFrames,
 		readIdentityEvents,
 		readObservations,

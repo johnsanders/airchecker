@@ -175,3 +175,36 @@ describe('recorder identity events', () => {
 		player.close();
 	});
 });
+
+describe('alert events', () => {
+	it('round-trips raise/clear events through the session DB', () => {
+		const recorder = makeRecorder({ baseDir, sessionId: 'alerts' });
+		recorder.recordAlertEvent({
+			detail: 'Air shows 1 for A',
+			kind: 'raised',
+			owner: 'us',
+			raceKey: 'TEST:RACE',
+			severity: 'high',
+			subject: 'Candidate A',
+			ts: 10,
+			type: 'votes_mismatch',
+		});
+		recorder.recordAlertEvent({
+			detail: 'Air shows 1 for A',
+			kind: 'cleared',
+			owner: 'us',
+			raceKey: 'TEST:RACE',
+			severity: 'high',
+			subject: 'Candidate A',
+			ts: 20,
+			type: 'votes_mismatch',
+		});
+		recorder.close();
+		const player = makePlayer({ baseDir, sessionId: 'alerts' });
+		expect(player.readAlertEvents().map((e) => [e.kind, e.ts, e.subject])).toEqual([
+			['raised', 10, 'Candidate A'],
+			['cleared', 20, 'Candidate A'],
+		]);
+		player.close();
+	});
+});

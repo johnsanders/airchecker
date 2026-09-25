@@ -16,6 +16,7 @@ import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
 import { makeRecordingLlmClient } from '../vision/llmClient.js';
 import { makeChangeBus } from '../web/changeBus.js';
 import { makeWebServer } from '../web/server.js';
+import { makeAlertLog } from './alertLog.js';
 import { makeAnomalyTracker } from './anomalyTracker.js';
 import makeComposition from './composition.js';
 import { observationChanged } from './observationChanged.js';
@@ -54,11 +55,22 @@ const liveMain = async (): Promise<void> => {
 	// time, so a standing anomaly shows once and a resolved one clears (rather than
 	// re-appending duplicates every poll).
 	const anomalies = makeAnomalyTracker(composition.thresholds);
+	// Every raise/clear is appended to the session recording and printed as one JSON
+	// line (`[alert] {...}`), so a transient alert survives an operator's blink and
+	// `tail -f` of the process log works in the truck.
+	const alertLog = makeAlertLog({
+		onEvent: (event) => {
+			recorder.recordAlertEvent(event);
+			console.log(`[alert] ${JSON.stringify(event)}`);
+		},
+	});
 	const reconcileKeys = (raceKeys: Iterable<string>): void => {
 		const now = Date.now();
-		Array.from(new Set(raceKeys)).forEach((raceKey) => {
-			anomalies.update(raceKey, composition.reconcileRace(raceKey, now));
-		});
+		const events = Array.from(new Set(raceKeys)).flatMap((raceKey) =>
+			alertLog.record(anomalies.update(raceKey, composition.reconcileRace(raceKey, now)), now),
+		);
+		if (events.length > 0)
+			changeBus.broadcast({ raceKeys: events.map((event) => event.raceKey), type: 'changed' });
 	};
 	const reconcileTouched = (observations: RaceObservation[]): void => {
 		reconcileKeys(observations.map((o) => o.raceKey));
@@ -163,6 +175,7 @@ const liveMain = async (): Promise<void> => {
 	// editable DDHQ queries.
 	const web = makeWebServer({
 		changeBus,
+		getAlertHistory: alertLog.recent,
 		getCadence: airScheduler.getConfig,
 		getLastFrame: airSource.getLastFrame,
 		getRecentAlerts: anomalies.list,
