@@ -93,14 +93,97 @@ describe('extractFrame', () => {
 				{
 					candidates: [],
 					singletons: { race_heading: 'GA-13 U.S. HOUSE (D)' },
-					templateId: 'side_slab',
+					templateId: 'lower_third',
 				},
 				{ candidates: [], singletons: {}, templateId: 'not_a_real_template' },
 			],
 		});
 		const observations = await extractFrame(FRAME, 0, { client, ...DEPS_NO_RECALL });
 		expect(observations).toHaveLength(1);
-		expect(observations[0]!.templateId).toBe('side_slab');
+		expect(observations[0]!.templateId).toBe('lower_third');
+	});
+
+	it('marks a ">95% IN" reporting figure as a floor', async () => {
+		const client = clientReturning({
+			templates: [
+				{
+					candidates: [
+						{
+							called: 'called',
+							name: 'Abigail Spanberger',
+							party: 'D',
+							pct: '57.7%',
+							votes: '1,976,857',
+						},
+						{
+							called: '',
+							name: 'Winsome Earle-Sears',
+							party: 'R',
+							pct: '42.3%',
+							votes: '1,449,586',
+						},
+					],
+					singletons: { pct_in: '>95% IN', race_heading: 'VA | GOVERNOR' },
+					templateId: 'ticker_v1',
+				},
+			],
+		});
+		const observations = await extractFrame(FRAME, 0, { client, ...DEPS_NO_RECALL });
+		expect(observations[0]!.pctIn).toBe(95);
+		expect(observations[0]!.pctInIsMinimum).toBe(true);
+	});
+
+	it('leaves pctInIsMinimum unset for a plain reporting figure', async () => {
+		const client = clientReturning({
+			templates: [
+				{
+					candidates: [
+						{ called: '', name: 'Luke Bronin', party: 'D', pct: '54.3%', votes: '29,658' },
+						{ called: '', name: 'John Larson', party: 'D', pct: '32.8%', votes: '17,933' },
+					],
+					singletons: { pct_in: '84% IN', race_heading: 'CT | U.S. HOUSE (D) DISTRICT 1' },
+					templateId: 'ticker_v1',
+				},
+			],
+		});
+		const observations = await extractFrame(FRAME, 0, { client, ...DEPS_NO_RECALL });
+		expect(observations[0]!.pctIn).toBe(84);
+		expect(observations[0]!.pctInIsMinimum).toBeUndefined();
+	});
+
+	it('keeps a graphic with no reporting badge and marks pct_in as missing', async () => {
+		const client = clientReturning({
+			templates: [
+				{
+					candidates: [
+						{ called: '', name: 'Pia Dandiya', party: 'D', pct: '32.0%', votes: '373632' },
+						{ called: '', name: 'Casey Askar', party: 'R', pct: '66.0%', votes: '827282' },
+					],
+					singletons: { pct_in: '', race_heading: 'FL-22 U.S. HOUSE' },
+					templateId: 'fullscreen_results',
+				},
+			],
+		});
+		const observations = await extractFrame(FRAME, 0, { client, ...DEPS_NO_RECALL });
+		expect(observations).toHaveLength(1);
+		expect(observations[0]!.pctIn).toBe(0);
+		expect(observations[0]!.missingFields).toEqual(['pct_in']);
+	});
+
+	it('drops a graphic whose race heading came back empty', async () => {
+		const client = clientReturning({
+			templates: [
+				{
+					candidates: [
+						{ called: '', name: 'Pia Dandiya', party: 'D', pct: '32.0%', votes: '373632' },
+						{ called: '', name: 'Casey Askar', party: 'R', pct: '66.0%', votes: '827282' },
+					],
+					singletons: { pct_in: '68% IN', race_heading: '' },
+					templateId: 'fullscreen_results',
+				},
+			],
+		});
+		expect(await extractFrame(FRAME, 0, { client, ...DEPS_NO_RECALL })).toEqual([]);
 	});
 
 	it('returns an empty array when no templates are present', async () => {
@@ -193,7 +276,260 @@ describe('extractFrame', () => {
 		);
 		const observations = await extractFrame(FRAME, 0, { client, ...RECROP_DEPS });
 		expect(observations[0]!.calledFor).toEqual(['John Cowan', 'Robert Adkerson']);
-		expect(observations[0]!.candidates).toHaveLength(3); // crop's full list wins
+		expect(observations[0]!.candidates).toHaveLength(2); // pass-1 roster is authoritative
+	});
+
+	it('keeps pass-1 names when the crop returns only first names, taking its numbers and ✓', async () => {
+		const client = twoPassClient(
+			{
+				templates: [
+					{
+						candidates: [
+							{ called: '', name: 'James Talarico', party: 'D', pct: '52.4%', votes: '1,216,412' },
+							{
+								called: '',
+								name: 'Jasmine Crockett',
+								party: 'D',
+								pct: '46.2%',
+								votes: '1,071,900',
+							},
+						],
+						singletons: { pct_in: '>95% IN', race_heading: 'TX | U.S. SENATE (D)' },
+						templateId: 'ticker_v1',
+					},
+				],
+			},
+			{
+				candidates: [
+					{ called: 'called', name: 'James', party: 'D', pct: '52.4%', votes: '1,216,412' },
+					{ called: '', name: 'Jasmine', party: 'D', pct: '46.2%', votes: '1,071,908' },
+				],
+				pctIn: '>95%',
+			},
+		);
+		const observations = await extractFrame(FRAME, 0, { client, ...RECROP_DEPS });
+		expect(observations).toHaveLength(1);
+		const o = observations[0]!;
+		expect(o.candidates.map((c) => c.name)).toEqual(['James Talarico', 'Jasmine Crockett']);
+		expect(o.calledFor).toEqual(['James Talarico']);
+		expect(o.candidates[1]!.votes).toBe(1071908); // crop digits win
+		expect(o.pctIn).toBe(95);
+		expect(o.pctInIsMinimum).toBe(true);
+	});
+
+	it('corrects swapped pass-1 labels by matching each roster to the region that shows it', async () => {
+		// Pass 1 filed the Arizona lower-third as the ticker and the Virginia ticker as
+		// the lower-third. The region reads (keyed by captureRegion) show the truth.
+		const azRow = [
+			{ called: '', name: 'Amish', party: 'D', pct: '30.0%', votes: '2368978' },
+			{ called: '', name: 'Jay', party: 'R', pct: '70.0%', votes: '493809' },
+		];
+		const vaRow = [
+			{ called: 'called', name: 'Abigail', party: 'D', pct: '57.7%', votes: '1,976,857' },
+			{ called: '', name: 'Winsome', party: 'R', pct: '42.3%', votes: '1,449,586' },
+		];
+		let cropCalls = 0;
+		const client: LlmClient = {
+			call: async (request) => {
+				if (request.tool?.name !== 'report_crop')
+					return {
+						body: {
+							templates: [
+								{
+									candidates: [
+										{ name: 'Amish Shah', party: 'D', pct: '30.0%', votes: '2368978' },
+										{ name: 'Jay Feely', party: 'R', pct: '70.0%', votes: '493809' },
+									],
+									singletons: { pct_in: '45 IN', race_heading: 'AZ | U.S. HOUSE' },
+									templateId: 'ticker_v1',
+								},
+								{
+									candidates: [
+										{ name: 'Abigail Spanberger', party: 'D', pct: '57.7%', votes: '1976857' },
+										{ name: 'Winsome Earle-Sears', party: 'R', pct: '42.3%', votes: '1449586' },
+									],
+									singletons: { pct_in: '>95% IN', race_heading: 'VA | GOVERNOR' },
+									templateId: 'lower_third',
+								},
+							],
+						},
+						model: 'claude-haiku-4-5',
+					};
+				cropCalls += 1;
+				const region = Buffer.from(request.image!.base64, 'base64').toString();
+				const body =
+					region === 'region:ticker_v1'
+						? { candidates: vaRow, pctIn: '>95% IN' }
+						: region === 'region:lower_third'
+							? { candidates: azRow, pctIn: '45% IN' }
+							: { candidates: [], pctIn: '' };
+				return { body, model: 'claude-sonnet-4-6' };
+			},
+		};
+		// The stub crop encodes which template's region was requested.
+		const recropRegion = async (_png: Buffer, region: { y: number }): Promise<Buffer> =>
+			Buffer.from(
+				region.y > 0.8
+					? 'region:ticker_v1'
+					: region.y > 0.5
+						? 'region:lower_third'
+						: 'region:fullscreen',
+			);
+
+		const observations = await extractFrame(FRAME, 0, { client, recallPass: true, recropRegion });
+		expect(observations.map((o) => o.templateId).sort()).toEqual(['lower_third', 'ticker_v1']);
+		const az = observations.find((o) => o.templateId === 'lower_third')!;
+		expect(az.raceKey).toBe('AZ U.S. HOUSE');
+		expect(az.candidates.map((c) => c.name)).toEqual(['Amish Shah', 'Jay Feely']);
+		expect(az.pctIn).toBe(45);
+		const va = observations.find((o) => o.templateId === 'ticker_v1')!;
+		expect(va.raceKey).toBe('VA GOVERNOR');
+		expect(va.calledFor).toEqual(['Abigail Spanberger']);
+		expect(va.pctInIsMinimum).toBe(true);
+		expect(cropCalls).toBe(2); // both regions already read once; no extra calls to recover
+	});
+
+	it('keys the race from the crop heading when the crop read one', async () => {
+		// Pass 1 folded the badge into the heading as a phantom district; the zoomed crop
+		// reads the heading cleanly and wins.
+		const client = twoPassClient(
+			{
+				templates: [
+					{
+						candidates: [
+							{ name: 'Amish Shah', party: 'D', pct: '30.0%', votes: '2368978' },
+							{ name: 'Jay Feely', party: 'R', pct: '70.0%', votes: '493809' },
+						],
+						singletons: { pct_in: '45 IN', race_heading: 'AZ | U.S. HOUSE DISTRICT 45' },
+						templateId: 'lower_third',
+					},
+				],
+			},
+			{
+				candidates: [
+					{ called: '', name: 'Amish Shah', party: 'D', pct: '30.0%', votes: '2368978' },
+					{ called: '', name: 'Jay Feely', party: 'R', pct: '70.0%', votes: '493809' },
+				],
+				pctIn: '45% IN',
+				raceHeading: 'AZ U.S. HOUSE',
+			},
+		);
+		const observations = await extractFrame(FRAME, 0, { client, ...RECROP_DEPS });
+		expect(observations[0]!.raceKey).toBe('AZ U.S. HOUSE');
+		expect(observations[0]!.extractedFields?.race_heading).toBe('AZ U.S. HOUSE');
+	});
+
+	it('drops an item whose only recovery read failed, but keeps the rest of the frame', async () => {
+		// Pass 1 filed Arizona under fullscreen; the fullscreen crop is empty, the ticker
+		// crop (already read for the VA item) doesn't match, and the lower-third crop
+		// read throws. The VA ticker still lands; Arizona is dropped, not fatal.
+		const client: LlmClient = {
+			call: async (request) => {
+				if (request.tool?.name !== 'report_crop')
+					return {
+						body: {
+							templates: [
+								{
+									candidates: [
+										{ name: 'Amish Shah', party: 'D', pct: '30.0%', votes: '2368978' },
+										{ name: 'Jay Feely', party: 'R', pct: '70.0%', votes: '493809' },
+									],
+									singletons: { pct_in: '45% IN', race_heading: 'AZ U.S. HOUSE' },
+									templateId: 'fullscreen_results',
+								},
+								{
+									candidates: [
+										{ name: 'Abigail Spanberger', party: 'D', pct: '57.7%', votes: '1976857' },
+										{ name: 'Winsome Earle-Sears', party: 'R', pct: '42.3%', votes: '1449586' },
+									],
+									singletons: { pct_in: '>95% IN', race_heading: 'VA GOVERNOR' },
+									templateId: 'ticker_v1',
+								},
+							],
+						},
+						model: 'claude-haiku-4-5',
+					};
+				const region = Buffer.from(request.image!.base64, 'base64').toString();
+				if (region === 'region:lower_third') throw new Error('400 image exceeds 10 MB maximum');
+				const body =
+					region === 'region:ticker_v1'
+						? {
+								candidates: [
+									{ called: '', name: 'Abigail', party: 'D', pct: '57.7%', votes: '1,976,857' },
+									{ called: '', name: 'Winsome', party: 'R', pct: '42.3%', votes: '1,449,586' },
+								],
+								pctIn: '>95% IN',
+								raceHeading: 'VA | GOVERNOR',
+							}
+						: { candidates: [], pctIn: '', raceHeading: '' };
+				return { body, model: 'claude-sonnet-4-6' };
+			},
+		};
+		const recropRegion = async (_png: Buffer, region: { y: number }): Promise<Buffer> =>
+			Buffer.from(
+				region.y > 0.8
+					? 'region:ticker_v1'
+					: region.y > 0.5
+						? 'region:lower_third'
+						: 'region:fullscreen',
+			);
+		const observations = await extractFrame(FRAME, 0, { client, recallPass: true, recropRegion });
+		expect(observations.map((o) => o.raceKey)).toEqual(['VA GOVERNOR']);
+	});
+
+	it('rejects the frame when no region could be read at all', async () => {
+		const client = twoPassClient(
+			{
+				templates: [
+					{
+						candidates: [
+							{ name: 'Abigail Spanberger', party: 'D', pct: '57.7%', votes: '1976857' },
+							{ name: 'Winsome Earle-Sears', party: 'R', pct: '42.3%', votes: '1449586' },
+						],
+						singletons: { pct_in: '>95% IN', race_heading: 'VA GOVERNOR' },
+						templateId: 'ticker_v1',
+					},
+				],
+			},
+			undefined,
+		);
+		const failing: LlmClient = {
+			call: async (request) => {
+				if (request.tool?.name === 'report_crop') throw new Error('529 overloaded');
+				return client.call(request);
+			},
+		};
+		await expect(extractFrame(FRAME, 0, { client: failing, ...RECROP_DEPS })).rejects.toThrow(
+			'529 overloaded',
+		);
+	});
+
+	it('drops an observation whose crop read shares no candidate with pass 1', async () => {
+		// Pass 1 filed a lower-third roster under ticker_v1; the ticker crop shows a
+		// different race entirely, so nothing read from it belongs to this roster.
+		const client = twoPassClient(
+			{
+				templates: [
+					{
+						candidates: [
+							{ called: '', name: 'Mary Peltola', party: 'D', pct: '87.0%', votes: '448293' },
+							{ called: '', name: 'Dan Sullivan', party: 'R', pct: '13.0%', votes: '22453' },
+						],
+						singletons: { pct_in: '43% IN', race_heading: 'AK U.S. SENATE' },
+						templateId: 'ticker_v1',
+					},
+				],
+			},
+			{
+				candidates: [
+					{ called: 'called', name: 'Ken Paxton', party: 'R', pct: '63.8%', votes: '885,949' },
+					{ called: '', name: 'John Cornyn', party: 'R', pct: '36.2%', votes: '501,725' },
+				],
+				pctIn: '>95%',
+			},
+		);
+		const observations = await extractFrame(FRAME, 0, { client, ...RECROP_DEPS });
+		expect(observations).toEqual([]);
 	});
 
 	it('re-crop pass clears a pass-1 false-positive call when the crop sees no ✓', async () => {

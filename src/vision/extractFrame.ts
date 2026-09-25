@@ -63,13 +63,13 @@ const buildPrompt = (registry: readonly TemplateSpec[]): string => {
 		'',
 		'Rules:',
 		'- Report each distinct results graphic EXACTLY ONCE. If only one ticker is on screen, return exactly one ticker entry — never repeat it.',
-		'- Only report graphics that actually show candidate vote results. IGNORE news headlines, breaking-news banners, story chyrons, and lower-thirds that contain only a headline or topic and no candidate vote numbers.',
-		'- For each results graphic: read its singleton fields (e.g. race_heading, pct_in) and one entry per candidate shown, in reading order (left-to-right for rows, top-to-bottom for columns).',
-		'- Report EVERY candidate the graphic displays, including trailing and losing candidates and any with low or zero votes. Never stop after the leader — if two candidates are shown, return two entries; if five are shown, return five.',
-		'- ALWAYS fill race_heading with the race title exactly as printed (e.g. "TX U.S. SENATE (R)") and pct_in with the "X% IN" reporting figure. These are required for every results graphic — never leave them blank.',
-		'- Read vote totals and percentages exactly as printed.',
-		'- "name" is the candidate\'s personal name ONLY. The single party letter on the color chip (D, R, L, I, G…) goes in "party", NEVER in "name". For a chip "R" beside "MAYES MIDDLETON", return name "Mayes Middleton" and party "R" — never name "R Mayes Middleton".',
-		'- Set "called" to "called" only when the candidate has a check mark or is clearly the winner; otherwise "".',
+		'- Only report graphics that actually show candidate vote results. IGNORE headline chyrons ("DEVELOPING STORY", "BREAKING NEWS"), name supers, show promos, and "FOR MORE INFO" bars — they contain no candidate vote numbers.',
+		'- For each results graphic: read its singleton fields (race_heading, pct_in) and one entry per candidate shown, in reading order left-to-right.',
+		'- Report EVERY candidate the graphic displays — this package always shows exactly TWO per race, including the trailing one. Never stop after the leader.',
+		'- ALWAYS fill race_heading with the race title exactly as printed — state, office, the party in parentheses when shown, and the district line when shown, joined with spaces (e.g. "TX | U.S. SENATE (D)", "WI | U.S. HOUSE (D) DISTRICT 7", "AL-2 U.S. HOUSE", "KS GOVERNOR"). ALWAYS fill pct_in with the "X% IN" reporting figure INCLUDING any ">" prefix (">95% IN"). Both are required for every results graphic — never leave them blank.',
+		'- Read vote totals and percentages exactly as printed (totals may or may not have thousands separators).',
+		'- "name" is the candidate\'s personal name ONLY: first name and surname as printed on the two stacked lines. The single party letter on the color chip (D, R, L, I, G…) goes in "party", NEVER in "name". For a chip "D" beside "JAMES TALARICO", return name "James Talarico" and party "D" — never name "D James Talarico".',
+		'- Set "called" to "called" only when a gold/yellow ✓ check mark sits beside that candidate\'s surname; otherwise "". A "PROJECTION" banner is NOT a call.',
 		'',
 		'Report via the report_templates tool. If no results graphics are present, return an empty list.',
 	].join('\n');
@@ -165,6 +165,16 @@ const toPct = (raw: string | undefined): number => {
 	return cleaned.length === 0 || Number.isNaN(value) ? 0 : value;
 };
 
+// The reporting badge prints ">95% IN" once a race is nearly complete; the number
+// is then a floor, and the reconciler must not demand a point match against it.
+const isMinimumPct = (raw: string | undefined): boolean => (raw ?? '').trim().startsWith('>');
+
+// The badge is always supposed to be on screen; a read with no digit in it means the
+// graphic didn't render one (a display bug the reconciler alerts on), not "0% in".
+const pctInMissing = (raw: string | undefined): boolean => !/\d/.test(raw ?? '');
+const missingFieldsFor = (pctInRaw: string | undefined): { missingFields?: string[] } =>
+	pctInMissing(pctInRaw) ? { missingFields: ['pct_in'] } : {};
+
 // Second pass — re-read the small-text fields from an UPSCALED crop. On the full
 // 1920-wide frame, pass 1 nails the template/race/party/% but MISREADS small ticker
 // digits (vote totals: 459,609→459,009, measured) and the tiny gold ✓ glyph (~60%).
@@ -187,11 +197,12 @@ const recropTool: LlmTool = {
 					properties: {
 						called: {
 							description:
-								'Exactly "called" if a yellow/gold check mark (✓) is next to this candidate; else "".',
+								'Exactly "called" if a gold/yellow check mark (✓) sits beside this candidate\'s surname; else "". A "PROJECTION" banner is not a call.',
 							type: 'string',
 						},
 						name: {
-							description: 'Candidate personal name ONLY — never the party letter.',
+							description:
+								'The candidate\'s FULL personal name — both stacked lines, first name then surname (e.g. "James Talarico") — never the party letter.',
 							type: 'string',
 						},
 						party: {
@@ -200,7 +211,8 @@ const recropTool: LlmTool = {
 						},
 						pct: { type: 'string' },
 						votes: {
-							description: 'Vote total exactly as printed (read every digit carefully).',
+							description:
+								'Vote total exactly as printed (read every digit carefully; may or may not have thousands separators).',
 							type: 'string',
 						},
 					},
@@ -209,9 +221,18 @@ const recropTool: LlmTool = {
 				},
 				type: 'array',
 			},
-			pctIn: { description: 'The "X% IN" reporting figure as printed.', type: 'string' },
+			pctIn: {
+				description:
+					'The "X% IN" reporting figure as printed, including any ">" prefix (e.g. ">95%").',
+				type: 'string',
+			},
+			raceHeading: {
+				description:
+					'The race heading exactly as printed: state, office, the party in parentheses if shown, and a DISTRICT line if shown (e.g. "TX | U.S. SENATE (D)", "AL-2 U.S. HOUSE"). Never include the "X% IN" figure — it is not a district.',
+				type: 'string',
+			},
 		},
-		required: ['candidates', 'pctIn'],
+		required: ['candidates', 'pctIn', 'raceHeading'],
 		type: 'object',
 	},
 	name: RECROP_TOOL,
@@ -227,15 +248,17 @@ const recropCandidateSchema = z.object({
 const recropBodySchema = z.object({
 	candidates: z.array(recropCandidateSchema),
 	pctIn: z.string(),
+	raceHeading: z.string().optional(),
 });
+type RecropCandidate = z.infer<typeof recropCandidateSchema>;
 type RecropRead = z.infer<typeof recropBodySchema>;
 
-const recropPrompt = (raceHeading: string): string =>
+const recropPrompt = (): string =>
 	[
-		`This is a zoomed-in crop of one on-air election result graphic (${raceHeading}).`,
-		'Read EVERY candidate exactly as printed: personal name (NOT the party letter), party letter from the color chip, vote total (read each digit carefully — these are small), and percentage.',
-		'A candidate is "called" if a small yellow/gold check mark (✓) sits next to their name, chip, or percentage — zero, one, or more may be called (top-two races commonly show two). Set "called" to "called" for each that has the mark, else "".',
-		'Also read the "X% IN" reporting figure. Report via the report_crop tool.',
+		'This is a zoomed-in crop of one on-air election result graphic.',
+		'Read EVERY candidate exactly as printed: the FULL personal name from both stacked lines (first name, then surname — e.g. "James Talarico"; never the party letter), the party letter from the color chip, the vote total (read each digit carefully — these are small), and the percentage.',
+		'A candidate is "called" if a small gold/yellow check mark (✓) sits immediately beside their SURNAME — left of it on the ticker and lower-third, right of it on the fullscreen board. Set "called" to "called" for each candidate that has the mark, else "". A "PROJECTION" banner is not a call.',
+		'Also read the race heading exactly as printed (state, office, party in parentheses if shown, a DISTRICT line if shown — never the "X% IN" figure, which is not a district) and the "X% IN" reporting figure exactly as printed, including any ">" prefix. Report via the report_crop tool.',
 	].join('\n');
 
 // One crop read. `extra.vote` varies the prompt-hash per vote so each is recorded/
@@ -244,7 +267,6 @@ const recropPrompt = (raceHeading: string): string =>
 // read wins (they agree — measured 4/4 — and a single Sonnet read is reliable).
 const recropReadOnce = async (
 	cropPng: Buffer,
-	raceHeading: string,
 	vote: number,
 	deps: ExtractFrameDeps,
 ): Promise<RecropRead> => {
@@ -253,7 +275,7 @@ const recropReadOnce = async (
 		frameHash: createHash('sha256').update(cropPng).digest('hex'),
 		image: { base64: cropPng.toString('base64'), mediaType: 'image/png' },
 		model: deps.recallModel ?? deps.model ?? DEFAULT_RECALL_MODEL,
-		prompt: recropPrompt(raceHeading),
+		prompt: recropPrompt(),
 		tool: recropTool,
 		toolChoice: RECROP_TOOL,
 	});
@@ -284,7 +306,14 @@ export type ExtractFrameDeps = {
 // We can't reconcile a partial roster, so treat any race whose candidates aren't all
 // full "First Last" names as a missed capture and drop it rather than emit bad data.
 const isMissedCapture = (observation: RaceObservation): boolean =>
-	observation.candidates.some((candidate) => candidate.name.trim().split(/\s+/).length < 2);
+	observation.raceKey.trim().length === 0 ||
+	observation.candidates.some(
+		(candidate) =>
+			candidate.name.trim().split(/\s+/).length < 2 ||
+			// A nonzero share with zero votes is impossible — it's the mid-flip signature
+			// (the crop read couldn't make out the sliced vote total).
+			(candidate.pct > 0 && candidate.votes === 0),
+	);
 
 export const extractFrame = async (
 	framePng: Buffer,
@@ -352,7 +381,9 @@ export const extractFrame = async (
 				candidates,
 				extractedFields: item.singletons,
 				observedAt,
+				...missingFieldsFor(item.singletons.pct_in),
 				pctIn: toPct(item.singletons.pct_in),
+				...(isMinimumPct(item.singletons.pct_in) ? { pctInIsMinimum: true } : {}),
 				raceKey: spec.bind.raceKeyFrom(item.singletons),
 				reportedAt: null,
 				source: 'air',
@@ -367,64 +398,145 @@ export const extractFrame = async (
 		return observations.filter((observation) => !isMissedCapture(observation));
 	const recrop = deps.recropRegion ?? cropAndUpscaleRegion;
 	const votes = deps.recallVotes ?? DEFAULT_RECALL_VOTES;
+	const specsWithRegion = registry.filter((spec) => spec.captureRegion !== undefined);
 
-	// For each detected template with a captureRegion, re-read its candidates + pct_in
-	// from the upscaled crop and override pass 1 (the crop reads small digits + the ✓
-	// reliably where the full frame doesn't). Pass 1 keeps the template id + raceKey.
+	// One set of crop reads per template REGION, read lazily and shared by every
+	// pass-1 item on the frame. Pass 1 occasionally swaps the two strip labels (files
+	// the lower-third as the ticker and vice versa); matching each roster against the
+	// regions' reads — its own first — recovers the right template from reads the
+	// frame already paid for, instead of dropping both.
+	const readsByTemplate = new Map<string, Promise<RecropRead[]>>();
+	const readRegion = (spec: TemplateSpec, region: Rect): Promise<RecropRead[]> => {
+		const cached = readsByTemplate.get(spec.id);
+		if (cached !== undefined) return cached;
+		const pending = recrop(framePng, region).then((cropPng) =>
+			Promise.all(
+				Array.from({ length: votes }, (_unused, index) => recropReadOnce(cropPng, index, deps)),
+			),
+		);
+		readsByTemplate.set(spec.id, pending);
+		return pending;
+	};
+
+	// Pass 1 owns the roster (names/keys — it reads full names reliably); the crop
+	// read owns the small print (votes, pct, ✓). The crop read tends to return only
+	// one of the two stacked name lines, so match its rows back to pass 1's by
+	// position first, then by partial name.
+	const cropName = (c: RecropCandidate): string => stripPartyPrefix(c.name, c.party);
+	const cropRowsFor = (
+		primary: RecropRead,
+		roster: CandidateState[],
+	): (RecropCandidate | undefined)[] =>
+		roster.map((passOne, index) => {
+			const byIndex = primary.candidates[index];
+			if (byIndex !== undefined && namesMatch(cropName(byIndex), passOne.name)) return byIndex;
+			return primary.candidates.find((c) => namesMatch(cropName(c), passOne.name));
+		});
+
+	type MatchState = { attempted: number; errors: unknown[] };
+	type RegionMatch = {
+		cropRows: (RecropCandidate | undefined)[];
+		reads: RecropRead[];
+		spec: TemplateSpec;
+	};
+	// Own label first; after a miss, regions the frame has already read (another
+	// item's, in the swap case) before paying for a fresh crop. First region whose
+	// crop shows any of the roster wins.
+	const matchRegion = async (
+		roster: CandidateState[],
+		own: TemplateSpec | undefined,
+		remaining: TemplateSpec[],
+		state: MatchState,
+	): Promise<RegionMatch | undefined> => {
+		const spec =
+			own ?? remaining.find((candidate) => readsByTemplate.has(candidate.id)) ?? remaining[0];
+		if (spec?.captureRegion === undefined) {
+			// Nothing matched. Surface an API failure rather than silently dropping —
+			// but only when no region could be read at all; a failed *fallback* read
+			// while other reads succeeded just means no recovery for this item.
+			if (state.errors.length > 0 && state.errors.length === state.attempted) throw state.errors[0];
+			return undefined;
+		}
+		const reads = await readRegion(spec, spec.captureRegion).catch((error: unknown) => {
+			state.errors.push(error);
+			return undefined;
+		});
+		const cropRows = reads === undefined ? [] : cropRowsFor(reads[0]!, roster);
+		if (reads !== undefined && cropRows.some((row) => row !== undefined))
+			return { cropRows, reads, spec };
+		return matchRegion(
+			roster,
+			undefined,
+			remaining.filter((candidate) => candidate.id !== spec.id),
+			{ attempted: state.attempted + 1, errors: state.errors },
+		);
+	};
+
 	const recropped = await Promise.all(
-		observations.map(async (observation): Promise<RaceObservation> => {
-			const spec = findTemplate(observation.templateId ?? '');
-			if (spec?.captureRegion === undefined) return observation;
-			const cropPng = await recrop(framePng, spec.captureRegion);
-			const heading = observation.extractedFields?.race_heading ?? observation.raceKey;
-			const reads = await Promise.all(
-				Array.from({ length: votes }, (_unused, index) =>
-					recropReadOnce(cropPng, heading, index, deps),
-				),
+		observations.map(async (observation): Promise<null | RaceObservation> => {
+			const own = findTemplate(observation.templateId ?? '');
+			if (own?.captureRegion === undefined) return observation;
+			const match = await matchRegion(
+				observation.candidates,
+				own,
+				specsWithRegion.filter((spec) => spec.id !== own.id),
+				{ attempted: 0, errors: [] },
 			);
+			// The roster is in no region's crop: nothing read from the frame belongs to
+			// it (a mid-flip slice, or a graphic that isn't where any template lives).
+			if (match === undefined) return null;
+			const { cropRows, reads, spec } = match;
 			const primary = reads[0]!; // numeric fields: first read (they agree)
 
-			// Union the called set across votes (a ✓ seen by any vote counts), matched by
-			// name so it lines up with the rebuilt candidate list.
+			// Union the called set across votes (a ✓ seen by any vote counts).
 			const calledNames = new Set(
-				reads.flatMap((read) =>
-					read.candidates
-						.filter((c) => c.called === 'called')
-						.map((c) => stripPartyPrefix(c.name, c.party)),
-				),
+				reads.flatMap((read) => read.candidates.filter((c) => c.called === 'called').map(cropName)),
 			);
-
-			const recordFor = (c: z.infer<typeof recropCandidateSchema>): Record<string, string> => ({
-				called: c.called,
-				name: stripPartyPrefix(c.name, c.party),
-				party: c.party,
-				pct: c.pct,
-				votes: c.votes,
+			const candidates: CandidateState[] = observation.candidates.map((passOne, index) => {
+				const cropRow = cropRows[index];
+				if (cropRow === undefined) return passOne; // crop didn't clearly see this row
+				return {
+					...passOne,
+					party: cropRow.party.length > 0 ? cropRow.party : passOne.party,
+					pct: toPct(cropRow.pct),
+					votes: toInt(cropRow.votes),
+				};
 			});
-			const candidates: CandidateState[] = primary.candidates.map((c) => ({
-				key: spec.bind.candidateKeyFrom(recordFor(c)),
-				name: stripPartyPrefix(c.name, c.party),
-				party: c.party,
-				pct: toPct(c.pct),
-				votes: toInt(c.votes),
-			}));
-			const calledFor = primary.candidates
-				.filter((c) =>
-					Array.from(calledNames).some((called) =>
-						namesMatch(stripPartyPrefix(c.name, c.party), called),
-					),
-				)
-				.map((c) => spec.bind.candidateKeyFrom(recordFor(c)));
+			const calledFor = candidates
+				.filter((c) => Array.from(calledNames).some((called) => namesMatch(c.name, called)))
+				.map((c) => c.key);
 
+			// Pass 2 is authoritative for pct_in (value, ">N" floor, presence) and — when it
+			// read one — for the heading: the zoomed crop is where the stronger model reads,
+			// and pass 1 sometimes folds the badge or a phantom district into the heading.
+			// A swapped label is corrected to the template whose region held the roster.
+			const {
+				missingFields: _passOneMissing,
+				pctInIsMinimum: _passOneFloor,
+				...rest
+			} = observation;
+			const cropHeading = primary.raceHeading?.trim() ?? '';
+			const extractedFields = {
+				...(observation.extractedFields ?? {}),
+				...(cropHeading.length > 0 ? { race_heading: cropHeading } : {}),
+			};
 			return {
-				...observation,
+				...rest,
 				calledFor,
 				candidates,
+				extractedFields,
+				...missingFieldsFor(primary.pctIn),
 				pctIn: toPct(primary.pctIn),
+				...(isMinimumPct(primary.pctIn) ? { pctInIsMinimum: true } : {}),
+				raceKey: spec.bind.raceKeyFrom(extractedFields),
+				templateId: spec.id,
 			};
 		}),
 	);
-	return recropped.filter((observation) => !isMissedCapture(observation));
+	return recropped.filter(
+		(observation): observation is RaceObservation =>
+			observation !== null && !isMissedCapture(observation),
+	);
 };
 
 export type { Rect };

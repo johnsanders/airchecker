@@ -1,0 +1,173 @@
+{
+  "frame": "../reference-frames/fs-fl-governor.png",
+  "goldens": [
+    {
+      "frameSha256": "03fe8f339523ad39187e2b9c2a942ee60d6479f0ebda4e1d53179025fa2e7591",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "fullscreen_results",
+            "singletons": {
+              "race_heading": "FL GOVERNOR",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "David Jolly",
+                "party": "D",
+                "pct": "62.0%",
+                "votes": "3783929"
+              },
+              {
+                "name": "Byron Donalds",
+                "party": "R",
+                "pct": "48.0%",
+                "votes": "2729283"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "MN GOVERNOR (R)",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Lisa Demuth",
+                "party": "R",
+                "pct": "43.4%",
+                "votes": "179,714",
+                "called": "called"
+              },
+              {
+                "name": "Mike Lindell",
+                "party": "R",
+                "pct": "32.5%",
+                "votes": "134,326"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "5832497869a1eb84975661b2eb34ae47ba4e5136d9f0c036176edc3736833f6f",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "MN | GOVERNOR (R)",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Lisa Demuth",
+            "party": "R",
+            "votes": "179,714",
+            "pct": "43.4%",
+            "called": "called"
+          },
+          {
+            "name": "Mike Lindell",
+            "party": "R",
+            "votes": "134,326",
+            "pct": "32.5%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "228d1cfacd87b485e15d19e27880bdca76fb6469528e8a1a0c8b7b08fce53d56",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "FL GOVERNOR",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "David Jolly",
+            "party": "D",
+            "votes": "3783929",
+            "pct": "62.0%",
+            "called": ""
+          },
+          {
+            "name": "Byron Donalds",
+            "party": "R",
+            "votes": "2729283",
+            "pct": "48.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "fs_fl_governor",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "David Jolly",
+          "name": "David Jolly",
+          "party": "D",
+          "pct": 62,
+          "votes": 3783929
+        },
+        {
+          "key": "Byron Donalds",
+          "name": "Byron Donalds",
+          "party": "R",
+          "pct": 48,
+          "votes": 2729283
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "FL GOVERNOR",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "FL GOVERNOR",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results",
+      "pctInIsMinimum": true
+    },
+    {
+      "calledFor": [
+        "Lisa Demuth"
+      ],
+      "candidates": [
+        {
+          "key": "Lisa Demuth",
+          "name": "Lisa Demuth",
+          "party": "R",
+          "pct": 43.4,
+          "votes": 179714
+        },
+        {
+          "key": "Mike Lindell",
+          "name": "Mike Lindell",
+          "party": "R",
+          "pct": 32.5,
+          "votes": 134326
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "MN | GOVERNOR (R)",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "MN GOVERNOR (R)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "fs-fl-governor.png"
+}

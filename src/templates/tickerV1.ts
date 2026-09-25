@@ -1,15 +1,19 @@
 import type { TemplateSpec } from './types.js';
 
+import { headingRaceKey } from './headingKey.js';
+
 // Persistent results ticker — a thin strip along the very bottom that FLIPS
-// between races (no scroll), one race per flip. captureRegion bounds that strip;
-// the VLM reads the heading, "% in", and the candidate entries from the crop.
+// between races (no scroll), one race per flip, ~10 s per race. captureRegion
+// bounds that strip with slack above it (the real graphics can sit a few pixels
+// off the reference frames); the VLM reads the heading, "% in", and the two
+// candidate blocks from the crop.
 const tickerV1: TemplateSpec = {
 	bind: {
 		candidateKeyFrom: (candidate) => candidate.name ?? '',
-		raceKeyFrom: (singletons) => (singletons.race_heading ?? '').trim().toUpperCase(),
+		raceKeyFrom: headingRaceKey,
 	},
 	candidateList: {
-		expectMax: 4,
+		expectMax: 2,
 		fields: [
 			{ format: { kind: 'partyLabel' }, name: 'party', required: true },
 			{ format: { kind: 'candidateName' }, name: 'name', required: true },
@@ -19,7 +23,7 @@ const tickerV1: TemplateSpec = {
 		],
 		layout: 'row',
 	},
-	captureRegion: { h: 0.15, w: 1, x: 0, y: 0.85 },
+	captureRegion: { h: 0.13, w: 1, x: 0, y: 0.87 },
 	dataPath: 'vendor',
 	displayName: 'Persistent results ticker',
 	id: 'ticker_v1',
@@ -29,7 +33,7 @@ const tickerV1: TemplateSpec = {
 	],
 	surface: 'ticker',
 	vlmPromptHint:
-		'Thin results strip across the very bottom: a race heading on the left (state box + office + party in parentheses), an "X% IN" badge, then one race\'s candidate entries — each with a party-color chip and letter, the candidate name, a percent, a vote total, and a yellow check mark when called. One race per flip; colors reflect party.',
+		'Thin LIGHT-GRAY strip along the very BOTTOM edge of the frame (always on air during coverage). Left: a dark-blue race heading — the state abbreviation, a thin vertical divider, then the office, with the party letter in parentheses for primaries (e.g. "TX | U.S. SENATE (D)", "VA | GOVERNOR"); House races add a smaller second line such as "DISTRICT 7". Then a small dark-blue badge with the reporting figure ("84% IN", or ">95% IN" once nearly complete). Then exactly TWO candidate blocks filled with the party color (blue = D, red = R): a white party-letter chip, the first name in small type stacked above the SURNAME in large type, and the percent (large) over the vote total (small, with thousands separators) right-aligned. A gold ✓ sits immediately LEFT of the surname of a called candidate. The strip flips between races; a frame caught mid-flip shows two races sliced together.',
 };
 
 export default tickerV1;

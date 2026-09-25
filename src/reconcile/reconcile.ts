@@ -18,7 +18,9 @@ export type AnomalyType =
 	| 'air_ahead_of_upstream'
 	| 'call_mismatch'
 	| 'cross_surface_mismatch'
+	| 'field_missing'
 	| 'missing_call'
+	| 'multiple_winners'
 	| 'name_mismatch'
 	| 'pct_in_mismatch'
 	| 'premature_call'
@@ -39,8 +41,13 @@ export type RaceObservation = {
 	calledFor: string[]; // candidate keys called/advancing; empty = none. Multiple for top-2 races.
 	candidates: CandidateState[];
 	extractedFields?: Record<string, string>;
+	// Air only: required on-screen fields the graphic did not show (e.g. 'pct_in').
+	// The numeric field is left at 0 and the reconciler alerts instead of comparing.
+	missingFields?: string[];
 	observedAt: number;
 	pctIn: number;
+	// Air only: the graphic printed ">N% IN", so pctIn is a floor, not a point value.
+	pctInIsMinimum?: boolean;
 	raceKey: string; // canonical reconciliation bucket key
 	reportedAt: null | number;
 	source: SourceName;
@@ -216,15 +223,18 @@ const checkPctIn = (
 	const toTime = airObservation.observedAt - thresholds.vendorToAirLagMs + thresholds.lagSlackMs;
 	const window = observationsInWindow(vendorHistory, fromTime, toTime);
 	if (window.length === 0) return [];
-	const sawMatch = window.some(
-		(vendorObservation) =>
-			Math.abs(vendorObservation.pctIn - airObservation.pctIn) <= thresholds.pctInTolerance,
+	// A ">95% IN" badge is a floor: any vendor figure at or above it (minus tolerance) agrees.
+	const sawMatch = window.some((vendorObservation) =>
+		airObservation.pctInIsMinimum === true
+			? vendorObservation.pctIn >= airObservation.pctIn - thresholds.pctInTolerance
+			: Math.abs(vendorObservation.pctIn - airObservation.pctIn) <= thresholds.pctInTolerance,
 	);
 	if (sawMatch) return [];
 	const mostRecentVendor = window[window.length - 1]!;
+	const airShown = `${airObservation.pctInIsMinimum === true ? '>' : ''}${airObservation.pctIn}`;
 	return [
 		{
-			detail: `Air pct_in ${airObservation.pctIn} not within ${thresholds.pctInTolerance} of any vendor snapshot in lag window (vendor latest: ${mostRecentVendor.pctIn})`,
+			detail: `Air pct_in ${airShown} not within ${thresholds.pctInTolerance} of any vendor snapshot in lag window (vendor latest: ${mostRecentVendor.pctIn})`,
 			involves: { air: [airObservation], vendor: mostRecentVendor },
 			observedAt: airObservation.observedAt,
 			owner: 'us',
@@ -422,6 +432,48 @@ const checkCrossSurface = (
 	return anomalies;
 };
 
+// A required field the graphic failed to render is a display bug in its own right,
+// and the 0 the extractor leaves behind must not be compared against upstream.
+const checkFieldMissing = (raceKey: string, airObservation: RaceObservation): Anomaly[] =>
+	(airObservation.missingFields ?? []).map((field) => ({
+		detail: `On-air graphic (${airObservation.templateId ?? 'unknown template'}) is missing its ${field}`,
+		involves: { air: [airObservation] },
+		observedAt: airObservation.observedAt,
+		owner: 'us' as const,
+		raceKey,
+		severity: 'medium' as const,
+		type: 'field_missing' as const,
+	}));
+
+// More winners than the cycle allows (one, for a general election) is an error
+// wherever it appears: a display bug on air, a data bug upstream.
+const checkMultipleWinners = (
+	raceKey: string,
+	observation: RaceObservation,
+	source: SourceName,
+	thresholds: Thresholds,
+): Anomaly[] => {
+	if (observation.calledFor.length <= thresholds.maxWinners) return [];
+	const involves: Anomaly['involves'] =
+		source === 'air'
+			? { air: [observation] }
+			: source === 'DDHQ'
+				? { provider: observation }
+				: { vendor: observation };
+	const owner: Owner = source === 'air' ? 'us' : source === 'DDHQ' ? 'provider' : 'vendor';
+	return [
+		{
+			detail: `${source} shows ${observation.calledFor.length} winners ("${calledCandidateNames(observation).join(', ')}") in a race that allows ${thresholds.maxWinners}`,
+			involves,
+			observedAt: observation.observedAt,
+			owner,
+			raceKey,
+			severity: 'high',
+			type: 'multiple_winners',
+		},
+	];
+};
+
 const reconcile = (input: ReconcileInput): Anomaly[] => {
 	const { airHistory, now, providerHistory, raceKey, thresholds, vendorHistory } = input;
 	const anomalies: Anomaly[] = [];
@@ -429,6 +481,18 @@ const reconcile = (input: ReconcileInput): Anomaly[] => {
 	const latestAir = latest(airHistory);
 	const latestProvider = latest(providerHistory);
 	const latestVendor = latest(vendorHistory);
+
+	if (latestAir !== undefined) {
+		anomalies.push(
+			...checkFieldMissing(raceKey, latestAir),
+			...checkMultipleWinners(raceKey, latestAir, 'air', thresholds),
+		);
+	}
+	if (latestProvider !== undefined)
+		anomalies.push(...checkMultipleWinners(raceKey, latestProvider, 'DDHQ', thresholds));
+	if (latestVendor !== undefined)
+		anomalies.push(...checkMultipleWinners(raceKey, latestVendor, 'Ross', thresholds));
+	const airPctInMissing = latestAir?.missingFields?.includes('pct_in') === true;
 
 	if (latestAir !== undefined && latestProvider !== undefined) {
 		anomalies.push(
@@ -441,7 +505,7 @@ const reconcile = (input: ReconcileInput): Anomaly[] => {
 	if (latestAir !== undefined && latestVendor !== undefined) {
 		anomalies.push(
 			...checkVotesMatchInLagWindow(raceKey, latestAir, vendorHistory, thresholds),
-			...checkPctIn(raceKey, latestAir, vendorHistory, thresholds),
+			...(airPctInMissing ? [] : checkPctIn(raceKey, latestAir, vendorHistory, thresholds)),
 		);
 	}
 
@@ -461,6 +525,8 @@ export {
 	checkAirBehindOrAhead,
 	checkCallConsistency,
 	checkCrossSurface,
+	checkFieldMissing,
+	checkMultipleWinners,
 	checkNameAgreement,
 	checkPctIn,
 	checkVoteDrop,

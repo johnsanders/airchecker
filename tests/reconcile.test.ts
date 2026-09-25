@@ -25,7 +25,9 @@ type ObservationInit = {
 	at: number;
 	calledFor?: string | string[]; // string convenience → wrapped to a one-element set
 	candidates: CandidateInit[];
+	missingFields?: string[];
 	pctIn?: number;
+	pctInIsMinimum?: boolean;
 	reportedAt?: null | number;
 	source: SourceName;
 	templateId?: string;
@@ -39,6 +41,8 @@ const observation = (init: ObservationInit): RaceObservation => ({
 	candidates: init.candidates.map(candidate),
 	observedAt: init.at,
 	pctIn: init.pctIn ?? 50,
+	...(init.pctInIsMinimum === true ? { pctInIsMinimum: true } : {}),
+	...(init.missingFields === undefined ? {} : { missingFields: init.missingFields }),
 	raceKey: RACE,
 	reportedAt: init.reportedAt ?? null,
 	source: init.source,
@@ -489,5 +493,112 @@ describe('air ahead of upstream', () => {
 			}),
 		);
 		expect(result.find((a) => a.type === 'air_ahead_of_upstream')).toBeDefined();
+	});
+});
+
+describe('pct_in floor (">95% IN")', () => {
+	const air = observation({
+		at: 1_000_000,
+		candidates: [{ key: 'a', votes: 100 }],
+		pctIn: 95,
+		pctInIsMinimum: true,
+		source: 'air',
+	});
+	const vendorAt = (pctIn: number): RaceObservation =>
+		observation({
+			at: 1_000_000 - defaultThresholds.vendorToAirLagMs,
+			candidates: [{ key: 'a', votes: 100 }],
+			pctIn,
+			source: 'Ross',
+		});
+
+	it('accepts any vendor figure at or above the floor', () => {
+		[95, 98, 100].forEach((pctIn) => {
+			const result = reconcile(baseInput({ airHistory: [air], vendorHistory: [vendorAt(pctIn)] }));
+			expect(result.filter((a) => a.type === 'pct_in_mismatch')).toHaveLength(0);
+		});
+	});
+
+	it('still flags a vendor figure below the floor', () => {
+		const result = reconcile(baseInput({ airHistory: [air], vendorHistory: [vendorAt(90)] }));
+		const mismatches = result.filter((a) => a.type === 'pct_in_mismatch');
+		expect(mismatches).toHaveLength(1);
+		expect(mismatches[0]!.detail).toContain('>95');
+	});
+});
+
+describe('multiple winners (single-winner cycle)', () => {
+	const twoCalled = (source: SourceName): RaceObservation =>
+		observation({
+			at: 1_000_000,
+			calledFor: ['a', 'b'],
+			candidates: [
+				{ key: 'a', name: 'Darline Graham', votes: 109_881 },
+				{ key: 'b', name: 'Ralph Norman', votes: 82_628 },
+			],
+			source,
+		});
+
+	it('flags two ✓ on air as a display bug owned by us', () => {
+		const result = reconcile(baseInput({ airHistory: [twoCalled('air')] }));
+		const hits = result.filter((a) => a.type === 'multiple_winners');
+		expect(hits).toHaveLength(1);
+		expect(hits[0]!.owner).toBe('us');
+		expect(hits[0]!.severity).toBe('high');
+		expect(hits[0]!.detail).toContain('Darline Graham, Ralph Norman');
+	});
+
+	it("flags two called candidates upstream as that source's bug", () => {
+		const provider = reconcile(baseInput({ providerHistory: [twoCalled('DDHQ')] }));
+		expect(provider.filter((a) => a.type === 'multiple_winners')[0]!.owner).toBe('provider');
+		const vendor = reconcile(baseInput({ vendorHistory: [twoCalled('Ross')] }));
+		expect(vendor.filter((a) => a.type === 'multiple_winners')[0]!.owner).toBe('vendor');
+	});
+
+	it('is silent for one winner, and for two when the cycle allows two', () => {
+		const one = observation({
+			at: 1_000_000,
+			calledFor: 'a',
+			candidates: [
+				{ key: 'a', votes: 10 },
+				{ key: 'b', votes: 5 },
+			],
+			source: 'air',
+		});
+		expect(
+			reconcile(baseInput({ airHistory: [one] })).filter((a) => a.type === 'multiple_winners'),
+		).toHaveLength(0);
+		const topTwo = {
+			...baseInput({ airHistory: [twoCalled('air')] }),
+			thresholds: { ...defaultThresholds, maxWinners: 2 },
+		};
+		expect(reconcile(topTwo).filter((a) => a.type === 'multiple_winners')).toHaveLength(0);
+	});
+});
+
+describe('required field missing on air', () => {
+	const air = observation({
+		at: 1_000_000,
+		candidates: [{ key: 'a', votes: 100 }],
+		missingFields: ['pct_in'],
+		pctIn: 0,
+		source: 'air',
+		templateId: 'fullscreen_results',
+	});
+	const vendor = observation({
+		at: 1_000_000 - defaultThresholds.vendorToAirLagMs,
+		candidates: [{ key: 'a', votes: 100 }],
+		pctIn: 68,
+		source: 'Ross',
+	});
+
+	it('emits field_missing and suppresses the pct_in comparison against the placeholder 0', () => {
+		const result = reconcile(baseInput({ airHistory: [air], vendorHistory: [vendor] }));
+		const missing = result.filter((a) => a.type === 'field_missing');
+		expect(missing).toHaveLength(1);
+		expect(missing[0]!.owner).toBe('us');
+		expect(missing[0]!.detail).toContain('fullscreen_results');
+		expect(missing[0]!.detail).toContain('pct_in');
+		expect(result.filter((a) => a.type === 'pct_in_mismatch')).toHaveLength(0);
 	});
 });

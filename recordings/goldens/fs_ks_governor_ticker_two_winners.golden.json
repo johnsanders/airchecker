@@ -1,0 +1,174 @@
+{
+  "frame": "../reference-frames/fs-ks-governor.png",
+  "goldens": [
+    {
+      "frameSha256": "239f48bd29316f34efb8a037621eab1e87eeb05dd35e5fcc3388d552011adfe7",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "fullscreen_results",
+            "singletons": {
+              "race_heading": "KS GOVERNOR",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Cindy Holscher",
+                "party": "D",
+                "pct": "62.0%",
+                "votes": "3783929"
+              },
+              {
+                "name": "Ty Masterson",
+                "party": "R",
+                "pct": "48.0%",
+                "votes": "2729283"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "SC | U.S. SENATE (R)",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Darline Graham",
+                "party": "R",
+                "pct": "33.0%",
+                "votes": "109,881",
+                "called": "called"
+              },
+              {
+                "name": "Ralph Norman",
+                "party": "R",
+                "pct": "24.8%",
+                "votes": "82,628"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "f4a3c10e7d1d08b69ca8f931b63f083d6582eeb75c77f4d559ba29f18e85c2d6",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "SC | U.S. SENATE (R)",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Darline Graham",
+            "party": "R",
+            "votes": "109,881",
+            "pct": "33.0%",
+            "called": "called"
+          },
+          {
+            "name": "Ralph Norman",
+            "party": "R",
+            "votes": "82,628",
+            "pct": "24.8%",
+            "called": "called"
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "ee3a8dc33f35c0b6bed1933fd8cd2b56f4e6e6010d5f15d4798c630a1f7f4bad",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "KS GOVERNOR",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Cindy Holscher",
+            "party": "D",
+            "votes": "3783929",
+            "pct": "62.0%",
+            "called": ""
+          },
+          {
+            "name": "Ty Masterson",
+            "party": "R",
+            "votes": "2729283",
+            "pct": "48.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "fs_ks_governor_ticker_two_winners",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Cindy Holscher",
+          "name": "Cindy Holscher",
+          "party": "D",
+          "pct": 62,
+          "votes": 3783929
+        },
+        {
+          "key": "Ty Masterson",
+          "name": "Ty Masterson",
+          "party": "R",
+          "pct": 48,
+          "votes": 2729283
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "KS GOVERNOR",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "KS GOVERNOR",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results",
+      "pctInIsMinimum": true
+    },
+    {
+      "calledFor": [
+        "Darline Graham",
+        "Ralph Norman"
+      ],
+      "candidates": [
+        {
+          "key": "Darline Graham",
+          "name": "Darline Graham",
+          "party": "R",
+          "pct": 33,
+          "votes": 109881
+        },
+        {
+          "key": "Ralph Norman",
+          "name": "Ralph Norman",
+          "party": "R",
+          "pct": 24.8,
+          "votes": 82628
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "SC | U.S. SENATE (R)",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "SC U.S. SENATE (R)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "fs-ks-governor.png"
+}

@@ -1,0 +1,174 @@
+{
+  "frame": "../reference-frames/fs-me-senate.png",
+  "goldens": [
+    {
+      "frameSha256": "2b8160fde353cdda3a2d23cfc0f1c97464390152dfe302d04c26e34547ecb1ae",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "fullscreen_results",
+            "singletons": {
+              "race_heading": "ME U.S. SENATE",
+              "pct_in": "68% IN"
+            },
+            "candidates": [
+              {
+                "name": "Troy Jackson",
+                "party": "D",
+                "pct": "51.0%",
+                "votes": "37923",
+                "called": ""
+              },
+              {
+                "name": "Susan Collins",
+                "party": "R",
+                "pct": "49.0%",
+                "votes": "36784",
+                "called": ""
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "CT | GOVERNOR (D)",
+              "pct_in": "87% IN"
+            },
+            "candidates": [
+              {
+                "name": "Ned Lamont",
+                "party": "D",
+                "pct": "67.8%",
+                "votes": "126,078",
+                "called": "called"
+              },
+              {
+                "name": "Josh Elliott",
+                "party": "D",
+                "pct": "32.2%",
+                "votes": "59,980",
+                "called": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "bbb369c7d9a0b2fe881bfaa164d6ab9788f12a00f8754e04e88dea631434aa55",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "CT | GOVERNOR (D)",
+        "pctIn": "87% IN",
+        "candidates": [
+          {
+            "name": "Ned Lamont",
+            "party": "D",
+            "votes": "126,078",
+            "pct": "67.8%",
+            "called": "called"
+          },
+          {
+            "name": "Josh Elliott",
+            "party": "D",
+            "votes": "59,980",
+            "pct": "32.2%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "8d4cf9b8e5e7c0521b26a8869ba7ecda65ea3281692aae5812afa4bd50c55add",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "ME U.S. SENATE",
+        "pctIn": "68% IN",
+        "candidates": [
+          {
+            "name": "Troy Jackson",
+            "party": "D",
+            "votes": "37923",
+            "pct": "51.0%",
+            "called": ""
+          },
+          {
+            "name": "Susan Collins",
+            "party": "R",
+            "votes": "36784",
+            "pct": "49.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "fs_me_senate",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Troy Jackson",
+          "name": "Troy Jackson",
+          "party": "D",
+          "pct": 51,
+          "votes": 37923
+        },
+        {
+          "key": "Susan Collins",
+          "name": "Susan Collins",
+          "party": "R",
+          "pct": 49,
+          "votes": 36784
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "ME U.S. SENATE",
+        "pct_in": "68% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 68,
+      "raceKey": "ME U.S. SENATE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results"
+    },
+    {
+      "calledFor": [
+        "Ned Lamont"
+      ],
+      "candidates": [
+        {
+          "key": "Ned Lamont",
+          "name": "Ned Lamont",
+          "party": "D",
+          "pct": 67.8,
+          "votes": 126078
+        },
+        {
+          "key": "Josh Elliott",
+          "name": "Josh Elliott",
+          "party": "D",
+          "pct": 32.2,
+          "votes": 59980
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "CT | GOVERNOR (D)",
+        "pct_in": "87% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 87,
+      "raceKey": "CT GOVERNOR (D)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1"
+    }
+  ],
+  "sourceFrame": "fs-me-senate.png"
+}

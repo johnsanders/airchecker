@@ -1,0 +1,171 @@
+{
+  "frame": "../reference-frames/l3-ar-senate.png",
+  "goldens": [
+    {
+      "frameSha256": "d384796d51d6f5aa3e0d4ed82432944b1ab0dd4b09ce1139573f6bd7cce8a6c9",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "lower_third",
+            "singletons": {
+              "race_heading": "AR U.S. SENATE",
+              "pct_in": "34 IN"
+            },
+            "candidates": [
+              {
+                "name": "Hallie Shoffner",
+                "party": "D",
+                "pct": "60.5%",
+                "votes": "292309"
+              },
+              {
+                "name": "Tom Cotton",
+                "party": "R",
+                "pct": "40.2%",
+                "votes": "424234"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "CT U.S. HOUSE (D) DISTRICT 1",
+              "pct_in": "84% IN"
+            },
+            "candidates": [
+              {
+                "name": "Luke Bronin",
+                "party": "D",
+                "pct": "54.3%",
+                "votes": "29658",
+                "called": "called"
+              },
+              {
+                "name": "John Larson",
+                "party": "D",
+                "pct": "32.8%",
+                "votes": "17933"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "8b8cdb1637a9f397db7bd71ad7d05616dd53e6c4b3644d757285bdb8f68174ae",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "AR U.S. SENATE",
+        "pctIn": "34% IN",
+        "candidates": [
+          {
+            "name": "Hallie Shoffner",
+            "party": "D",
+            "votes": "292309",
+            "pct": "60.5%",
+            "called": ""
+          },
+          {
+            "name": "Tom Cotton",
+            "party": "R",
+            "votes": "424234",
+            "pct": "40.2%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "dac6d6c2cca083e7769f25277f1f00440ab54acdce0c4eb0326ff11078015ace",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "CT | U.S. HOUSE (D) DISTRICT 1",
+        "pctIn": "84% IN",
+        "candidates": [
+          {
+            "name": "Luke Bronin",
+            "party": "D",
+            "votes": "29,658",
+            "pct": "54.3%",
+            "called": "called"
+          },
+          {
+            "name": "John Larson",
+            "party": "D",
+            "votes": "17,933",
+            "pct": "32.8%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "l3_ar_senate",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Hallie Shoffner",
+          "name": "Hallie Shoffner",
+          "party": "D",
+          "pct": 60.5,
+          "votes": 292309
+        },
+        {
+          "key": "Tom Cotton",
+          "name": "Tom Cotton",
+          "party": "R",
+          "pct": 40.2,
+          "votes": 424234
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "AR U.S. SENATE",
+        "pct_in": "34 IN"
+      },
+      "observedAt": 0,
+      "pctIn": 34,
+      "raceKey": "AR U.S. SENATE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "lower_third"
+    },
+    {
+      "calledFor": [
+        "Luke Bronin"
+      ],
+      "candidates": [
+        {
+          "key": "Luke Bronin",
+          "name": "Luke Bronin",
+          "party": "D",
+          "pct": 54.3,
+          "votes": 29658
+        },
+        {
+          "key": "John Larson",
+          "name": "John Larson",
+          "party": "D",
+          "pct": 32.8,
+          "votes": 17933
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "CT | U.S. HOUSE (D) DISTRICT 1",
+        "pct_in": "84% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 84,
+      "raceKey": "CT U.S. HOUSE (D) DISTRICT 1",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1"
+    }
+  ],
+  "sourceFrame": "l3-ar-senate.png"
+}

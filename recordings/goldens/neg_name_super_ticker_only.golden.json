@@ -1,0 +1,98 @@
+{
+  "frame": "../reference-frames/neg-name-super-chyron.png",
+  "goldens": [
+    {
+      "frameSha256": "1b30eb10f60f1ab36ef16805a3674fe9596e78ffb89dc0253489d750fffb6d9e",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "TX | U.S. SENATE (R)",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Ken Paxton",
+                "party": "R",
+                "pct": "63.8%",
+                "votes": "885,949",
+                "called": "called"
+              },
+              {
+                "name": "John Cornyn",
+                "party": "R",
+                "pct": "36.2%",
+                "votes": "501,725",
+                "called": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "258fdea6c0280628e5270a4ba487398ad76e85c2072dd4c2a5a345e354430930",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "TX | U.S. SENATE (R)",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Ken Paxton",
+            "party": "R",
+            "votes": "885,949",
+            "pct": "63.8%",
+            "called": "called"
+          },
+          {
+            "name": "John Cornyn",
+            "party": "R",
+            "votes": "501,725",
+            "pct": "36.2%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "neg_name_super_ticker_only",
+  "observations": [
+    {
+      "calledFor": [
+        "Ken Paxton"
+      ],
+      "candidates": [
+        {
+          "key": "Ken Paxton",
+          "name": "Ken Paxton",
+          "party": "R",
+          "pct": 63.8,
+          "votes": 885949
+        },
+        {
+          "key": "John Cornyn",
+          "name": "John Cornyn",
+          "party": "R",
+          "pct": 36.2,
+          "votes": 501725
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "TX | U.S. SENATE (R)",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "TX U.S. SENATE (R)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "neg-name-super-chyron.png"
+}

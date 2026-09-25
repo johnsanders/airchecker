@@ -1,0 +1,98 @@
+{
+  "frame": "../reference-frames/ticker-va-governor.png",
+  "goldens": [
+    {
+      "frameSha256": "c449b2a19dfb327c5e800add27ea7608c14f9602943689a7bd5fdb7572f12c8a",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "VA | GOVERNOR",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Abigail Spanberger",
+                "party": "D",
+                "pct": "57.7%",
+                "votes": "1,976,857",
+                "called": "called"
+              },
+              {
+                "name": "Winsome Earle-Sears",
+                "party": "R",
+                "pct": "42.3%",
+                "votes": "1,449,586",
+                "called": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "9589cef02a180109fc6264c91e514905cdeaaa6dbc99777f34a55779f25ff4ed",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "VA | GOVERNOR",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Abigail Spanberger",
+            "party": "D",
+            "votes": "1,976,857",
+            "pct": "57.7%",
+            "called": "called"
+          },
+          {
+            "name": "Winsome Earle-Sears",
+            "party": "R",
+            "votes": "1,449,586",
+            "pct": "42.3%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "ticker_va_governor_called",
+  "observations": [
+    {
+      "calledFor": [
+        "Abigail Spanberger"
+      ],
+      "candidates": [
+        {
+          "key": "Abigail Spanberger",
+          "name": "Abigail Spanberger",
+          "party": "D",
+          "pct": 57.7,
+          "votes": 1976857
+        },
+        {
+          "key": "Winsome Earle-Sears",
+          "name": "Winsome Earle-Sears",
+          "party": "R",
+          "pct": 42.3,
+          "votes": 1449586
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "VA | GOVERNOR",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "VA GOVERNOR",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "ticker-va-governor.png"
+}

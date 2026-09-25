@@ -1,0 +1,172 @@
+{
+  "frame": "../reference-frames/l3-ak-senate.png",
+  "goldens": [
+    {
+      "frameSha256": "54954147be91ef89f9ae0fcbc202ef9712763f8d0516e265fa72e5272f8a1ccb",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "lower_third",
+            "singletons": {
+              "race_heading": "AK U.S. SENATE",
+              "pct_in": "43 IN"
+            },
+            "candidates": [
+              {
+                "name": "Mary Peltola",
+                "party": "D",
+                "pct": "87.0%",
+                "votes": "448293"
+              },
+              {
+                "name": "Dan Sullivan",
+                "party": "R",
+                "pct": "13.0%",
+                "votes": "22453"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "TX | U.S. SENATE (R)",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Ken Paxton",
+                "party": "R",
+                "pct": "63.8%",
+                "votes": "885949",
+                "called": "called"
+              },
+              {
+                "name": "John Cornyn",
+                "party": "R",
+                "pct": "36.2%",
+                "votes": "501725"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "c6c91549259e30423fc482878b704d9822a583bbc5ca0c46831ae047e37fb302",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "TX | U.S. SENATE (R)",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Ken Paxton",
+            "party": "R",
+            "votes": "885,949",
+            "pct": "63.8%",
+            "called": "called"
+          },
+          {
+            "name": "John Cornyn",
+            "party": "R",
+            "votes": "501,725",
+            "pct": "36.2%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "44ba9978026463df485caa5026ce62b386fff8b4230a3d106aa22e4c75b77dd3",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "AK | U.S. SENATE",
+        "pctIn": "43% IN",
+        "candidates": [
+          {
+            "name": "Mary Peltola",
+            "party": "D",
+            "votes": "448293",
+            "pct": "87.0%",
+            "called": ""
+          },
+          {
+            "name": "Dan Sullivan",
+            "party": "R",
+            "votes": "22453",
+            "pct": "13.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "l3_ak_senate",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Mary Peltola",
+          "name": "Mary Peltola",
+          "party": "D",
+          "pct": 87,
+          "votes": 448293
+        },
+        {
+          "key": "Dan Sullivan",
+          "name": "Dan Sullivan",
+          "party": "R",
+          "pct": 13,
+          "votes": 22453
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "AK | U.S. SENATE",
+        "pct_in": "43 IN"
+      },
+      "observedAt": 0,
+      "pctIn": 43,
+      "raceKey": "AK U.S. SENATE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "lower_third"
+    },
+    {
+      "calledFor": [
+        "Ken Paxton"
+      ],
+      "candidates": [
+        {
+          "key": "Ken Paxton",
+          "name": "Ken Paxton",
+          "party": "R",
+          "pct": 63.8,
+          "votes": 885949
+        },
+        {
+          "key": "John Cornyn",
+          "name": "John Cornyn",
+          "party": "R",
+          "pct": 36.2,
+          "votes": 501725
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "TX | U.S. SENATE (R)",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "TX U.S. SENATE (R)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "l3-ak-senate.png"
+}

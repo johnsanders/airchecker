@@ -1,0 +1,97 @@
+{
+  "frame": "../reference-frames/ticker-ct-house-d-1.png",
+  "goldens": [
+    {
+      "frameSha256": "c39458be7782db3bbff030777edd3cb84af829efceedf0f2dd7c24ad6097272e",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "CT | U.S. HOUSE (D) DISTRICT 1",
+              "pct_in": "84% IN"
+            },
+            "candidates": [
+              {
+                "name": "Luke Bronin",
+                "party": "D",
+                "pct": "54.3%",
+                "votes": "29,658",
+                "called": "called"
+              },
+              {
+                "name": "John Larson",
+                "party": "D",
+                "pct": "32.8%",
+                "votes": "17,933",
+                "called": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "dc93525caba6bfe77c1b94c5d25c91072dcd507492dff7143258c525814a6cc1",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "CT | U.S. HOUSE (D) DISTRICT 1",
+        "pctIn": "84% IN",
+        "candidates": [
+          {
+            "name": "Luke Bronin",
+            "party": "D",
+            "votes": "29,658",
+            "pct": "54.3%",
+            "called": "called"
+          },
+          {
+            "name": "John Larson",
+            "party": "D",
+            "votes": "17,933",
+            "pct": "32.8%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "ticker_ct_house_d_1",
+  "observations": [
+    {
+      "calledFor": [
+        "Luke Bronin"
+      ],
+      "candidates": [
+        {
+          "key": "Luke Bronin",
+          "name": "Luke Bronin",
+          "party": "D",
+          "pct": 54.3,
+          "votes": 29658
+        },
+        {
+          "key": "John Larson",
+          "name": "John Larson",
+          "party": "D",
+          "pct": 32.8,
+          "votes": 17933
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "CT | U.S. HOUSE (D) DISTRICT 1",
+        "pct_in": "84% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 84,
+      "raceKey": "CT U.S. HOUSE (D) DISTRICT 1",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1"
+    }
+  ],
+  "sourceFrame": "ticker-ct-house-d-1.png"
+}

@@ -4,23 +4,34 @@ import type { Rect } from '../templates/types.js';
 
 import { scaleRectToFrame } from '../templates/geometry.js';
 
-// Crops a frame to a template's captureRegion and upscales it. The on-air "called"
-// check mark is a tiny gold glyph that the model misses ~40% of the time on a full
-// frame but reads 20/20 on an upscaled crop (measured) — this is what makes the
-// re-call pass reliable.
+// Crops a frame to a template's captureRegion and sizes the crop for the API. The
+// on-air "called" check mark is a tiny gold glyph the model misses ~40% of the
+// time on a full frame but reads 20/20 from the region crop (measured) — the win
+// is isolation (the model's attention and visual tokens go to the graphic alone),
+// not magnification.
 //
-// Upscale aims for DEFAULT_UPSCALE× but is CAPPED so the encoded PNG can't exceed
-// the API's 10 MB image limit. A small region (ticker/slab/lower-third) gets the
-// full 3×; a full-frame region (fullscreen_results' captureRegion is the whole
-// canvas) would 3× to ~5760px and blow the cap, so it's clamped down. Without the
-// cap, fullscreen frames 400 ("image exceeds 10 MB maximum").
-const DEFAULT_UPSCALE = 3;
-const MAX_UPSCALED_WIDTH = 4000;
+// Sizing follows the standard resolution tier the crop reader runs on (Haiku 4.5,
+// Sonnet 4.6): the API downsizes anything over a 1568 px long edge or 1568 visual
+// tokens (28×28 patches) before the model sees it. Sending more pixels than that
+// only bloats the upload — a 3× upscale of a wide region blew the 10 MB image limit
+// on photo-heavy frames — so the crop is scaled to fit those limits exactly and
+// never enlarged past MAX_UPSCALE.
+const MAX_UPSCALE = 3;
+const MAX_LONG_EDGE_PX = 1568;
+const MAX_VISUAL_TOKENS = 1568;
+const PATCH_PX = 28;
+
+export const fitScale = (width: number, height: number, maxUpscale: number = MAX_UPSCALE): number =>
+	Math.min(
+		maxUpscale,
+		MAX_LONG_EDGE_PX / Math.max(width, height),
+		Math.sqrt((MAX_VISUAL_TOKENS * PATCH_PX * PATCH_PX) / (width * height)),
+	);
 
 export const cropAndUpscaleRegion = async (
 	framePng: Buffer,
 	region: Rect,
-	upscale: number = DEFAULT_UPSCALE,
+	maxUpscale: number = MAX_UPSCALE,
 ): Promise<Buffer> => {
 	// Decode to get true pixel dimensions — metadata() is unreliable on some PNGs.
 	const decoded = await sharp(framePng).raw().toBuffer({ resolveWithObject: true });
@@ -33,7 +44,7 @@ export const cropAndUpscaleRegion = async (
 	const width = Math.min(frameWidth - left, px.w);
 	const height = Math.min(frameHeight - top, px.h);
 
-	const targetWidth = Math.min(Math.round(width * upscale), MAX_UPSCALED_WIDTH);
+	const targetWidth = Math.round(width * fitScale(width, height, maxUpscale));
 	return sharp(framePng)
 		.extract({ height, left, top, width })
 		.resize({ width: targetWidth })

@@ -1,0 +1,98 @@
+{
+  "frame": "../reference-frames/ticker-wi-house-d-7.png",
+  "goldens": [
+    {
+      "frameSha256": "e2594ad429165a9e898a1b1fd52cd5d07dc468571a18326b18f3e257f6c121e3",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "WI | U.S. HOUSE (D) DISTRICT 7",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Fred Clark",
+                "party": "D",
+                "pct": "37.7%",
+                "votes": "25,492",
+                "called": "called"
+              },
+              {
+                "name": "Ginger Murray",
+                "party": "D",
+                "pct": "31.9%",
+                "votes": "21,603",
+                "called": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "cde4b53d31b6cfc59d3d2dd2dab43c614010c138ff73880c60fbb0e3df256755",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "WI | U.S. HOUSE (D) DISTRICT 7",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Fred Clark",
+            "party": "D",
+            "votes": "25,492",
+            "pct": "37.7%",
+            "called": "called"
+          },
+          {
+            "name": "Ginger Murray",
+            "party": "D",
+            "votes": "21,603",
+            "pct": "31.9%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "ticker_wi_house_d_7",
+  "observations": [
+    {
+      "calledFor": [
+        "Fred Clark"
+      ],
+      "candidates": [
+        {
+          "key": "Fred Clark",
+          "name": "Fred Clark",
+          "party": "D",
+          "pct": 37.7,
+          "votes": 25492
+        },
+        {
+          "key": "Ginger Murray",
+          "name": "Ginger Murray",
+          "party": "D",
+          "pct": 31.9,
+          "votes": 21603
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "WI | U.S. HOUSE (D) DISTRICT 7",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "WI U.S. HOUSE (D) DISTRICT 7",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "ticker-wi-house-d-7.png"
+}

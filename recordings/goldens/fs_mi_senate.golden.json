@@ -1,0 +1,172 @@
+{
+  "frame": "../reference-frames/fs-mi-senate.png",
+  "goldens": [
+    {
+      "frameSha256": "1acb31f69203c02b645525b6e867e87bcfd8a7afed1987c1190603d0481b8ad4",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "fullscreen_results",
+            "singletons": {
+              "race_heading": "MI U.S. SENATE",
+              "pct_in": "68% IN"
+            },
+            "candidates": [
+              {
+                "name": "Abdul El-Sayed",
+                "party": "D",
+                "pct": "51.0%",
+                "votes": "37923"
+              },
+              {
+                "name": "Mike Rogers",
+                "party": "R",
+                "pct": "49.0%",
+                "votes": "36784"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "WI | U.S. HOUSE (D) DISTRICT 7",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Fred Clark",
+                "party": "D",
+                "pct": "37.7%",
+                "votes": "25,492",
+                "called": "called"
+              },
+              {
+                "name": "Ginger Murray",
+                "party": "D",
+                "pct": "31.9%",
+                "votes": "21,603"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "48deb2af12aafbe816511e3fc9c599d5af0fff8ef2b491f94c8654cd6335cb1c",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "WI | U.S. HOUSE (D) DISTRICT 7",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Fred Clark",
+            "party": "D",
+            "votes": "25,492",
+            "pct": "37.7%",
+            "called": "called"
+          },
+          {
+            "name": "Ginger Murray",
+            "party": "D",
+            "votes": "21,603",
+            "pct": "31.9%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "8c4955f212b77e2645ee439f6efeaea8d4771e8974a5708e60fcd170a22db071",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "MI U.S. SENATE",
+        "pctIn": "68% IN",
+        "candidates": [
+          {
+            "name": "Abdul El-Sayed",
+            "party": "D",
+            "votes": "37923",
+            "pct": "51.0%",
+            "called": ""
+          },
+          {
+            "name": "Mike Rogers",
+            "party": "R",
+            "votes": "36784",
+            "pct": "49.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "fs_mi_senate",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Abdul El-Sayed",
+          "name": "Abdul El-Sayed",
+          "party": "D",
+          "pct": 51,
+          "votes": 37923
+        },
+        {
+          "key": "Mike Rogers",
+          "name": "Mike Rogers",
+          "party": "R",
+          "pct": 49,
+          "votes": 36784
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "MI U.S. SENATE",
+        "pct_in": "68% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 68,
+      "raceKey": "MI U.S. SENATE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results"
+    },
+    {
+      "calledFor": [
+        "Fred Clark"
+      ],
+      "candidates": [
+        {
+          "key": "Fred Clark",
+          "name": "Fred Clark",
+          "party": "D",
+          "pct": 37.7,
+          "votes": 25492
+        },
+        {
+          "key": "Ginger Murray",
+          "name": "Ginger Murray",
+          "party": "D",
+          "pct": 31.9,
+          "votes": 21603
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "WI | U.S. HOUSE (D) DISTRICT 7",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "WI U.S. HOUSE (D) DISTRICT 7",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "fs-mi-senate.png"
+}

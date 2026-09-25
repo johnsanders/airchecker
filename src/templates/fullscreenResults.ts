@@ -1,23 +1,21 @@
 import type { TemplateSpec } from './types.js';
 
+import { headingRaceKey } from './headingKey.js';
+
 // Full-screen results board. Pass 1 sees the whole frame; captureRegion is used
-// ONLY by the recall (call-detection) pass. It's the top ~74% — the board itself,
-// excluding the bottom strip where a ticker/lower-third can coexist (see
-// multi.png). Cropping the recall image above that strip keeps a simultaneous
-// ticker's check mark out of the fullscreen call read by construction, instead of
-// relying on name-matching to filter it out. Verified: all candidate cards + ✓'s
-// (even the 5-card layout) fit above y=0.74. The VLM reads the heading, "% in",
-// and the 2–5 reflowing cards. Party-agnostic — cards recolor per party.
+// ONLY by the recall (call-detection) pass. It stops at 70% of frame height — the
+// cards end near 66% — so the headline chyron, the optional "DDHQ PROJECTION"
+// band, and the ticker beneath stay out of the recall crop by construction.
 const fullscreenResults: TemplateSpec = {
 	bind: {
 		candidateKeyFrom: (candidate) => candidate.name ?? '',
-		// Air reads state/office/party (and district) from the heading; year and
-		// contest type are session constants. The air adapter composes the canonical
-		// composeRaceKey from these parts + that session context.
-		raceKeyFrom: (singletons) => (singletons.race_heading ?? '').trim().toUpperCase(),
+		// Air reads state/office (and district, party) from the heading; year and
+		// contest type are session constants. The identity resolver links this raw
+		// key to the DDHQ canonical race.
+		raceKeyFrom: headingRaceKey,
 	},
 	candidateList: {
-		expectMax: 8,
+		expectMax: 2,
 		fields: [
 			{ format: { kind: 'partyLabel' }, name: 'party', required: true },
 			{ format: { kind: 'candidateName' }, name: 'name', required: true },
@@ -27,7 +25,7 @@ const fullscreenResults: TemplateSpec = {
 		],
 		layout: 'row',
 	},
-	captureRegion: { h: 0.74, w: 1, x: 0, y: 0 },
+	captureRegion: { h: 0.7, w: 1, x: 0, y: 0 },
 	dataPath: 'vendor',
 	displayName: 'Fullscreen results board',
 	id: 'fullscreen_results',
@@ -37,7 +35,7 @@ const fullscreenResults: TemplateSpec = {
 	],
 	surface: 'fullscreen',
 	vlmPromptHint:
-		'Full-screen results board: race heading top-left (state + office + party in parentheses), a yellow "X% IN" badge top-right, and a horizontal row of 2–5 candidate cards over a faded-stars background. Each card has a party-colored header chip with the party letter, a headshot, the candidate name, a large percent, a vote total, and a yellow check mark when the candidate is called/advancing.',
+		'Full-screen results board filling the top two-thirds of the frame over a faded-stars background. A light header bar across the top: a state icon, the state abbreviation in blue and the office in black ("MI U.S. SENATE", "FL-22 U.S. HOUSE", "KS GOVERNOR"), a faint repeating state-name watermark, and at top-right a yellow reporting badge ("68% IN", ">95% IN") above a DD26 bug. Below: exactly TWO large candidate cards side by side — a big headshot on a party-colored panel (blue = D, red = R) with a white party-letter chip, a floating box with the percent (large) over the vote total (small), and a white name plate with the first name in small type above the SURNAME in large black type. A gold ✓ sits immediately RIGHT of the surname of a called candidate. A "Decision Desk HQ PROJECTION" band and/or a headline chyron may appear beneath the cards; neither is part of the race data and neither means a candidate was called.',
 };
 
 export default fullscreenResults;

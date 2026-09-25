@@ -1,0 +1,96 @@
+{
+  "frame": "../reference-frames/fs-ma-senate-called.png",
+  "goldens": [
+    {
+      "frameSha256": "659c7d6adceeb03cd52f38a4dcf73c28c191931c11a5ff3ad5e6ba4643334cab",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "fullscreen_results",
+            "singletons": {
+              "race_heading": "MA U.S. SENATE",
+              "pct_in": "68% IN"
+            },
+            "candidates": [
+              {
+                "name": "Edward Markey",
+                "party": "D",
+                "pct": "51.0%",
+                "votes": "37923",
+                "called": "called"
+              },
+              {
+                "name": "John Deaton",
+                "party": "R",
+                "pct": "49.0%",
+                "votes": "36784"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "11856ce38aece9db5649196442490357511947484395cccc769c6e7e0d6f3154",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "MA U.S. SENATE",
+        "pctIn": "68% IN",
+        "candidates": [
+          {
+            "name": "Edward Markey",
+            "party": "D",
+            "votes": "37923",
+            "pct": "51.0%",
+            "called": "called"
+          },
+          {
+            "name": "John Deaton",
+            "party": "R",
+            "votes": "36784",
+            "pct": "49.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "fs_ma_senate_called",
+  "observations": [
+    {
+      "calledFor": [
+        "Edward Markey"
+      ],
+      "candidates": [
+        {
+          "key": "Edward Markey",
+          "name": "Edward Markey",
+          "party": "D",
+          "pct": 51,
+          "votes": 37923
+        },
+        {
+          "key": "John Deaton",
+          "name": "John Deaton",
+          "party": "R",
+          "pct": 49,
+          "votes": 36784
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "MA U.S. SENATE",
+        "pct_in": "68% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 68,
+      "raceKey": "MA U.S. SENATE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results"
+    }
+  ],
+  "sourceFrame": "fs-ma-senate-called.png"
+}

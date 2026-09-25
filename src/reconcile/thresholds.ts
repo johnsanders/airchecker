@@ -2,6 +2,9 @@ export type Thresholds = {
 	airHysteresisN: number;
 	inBreakSilenceMs: number;
 	lagSlackMs: number;
+	// Winners a single race may legitimately call. 1 for a general election; raise
+	// to 2 for a top-two primary cycle.
+	maxWinners: number;
 	pctInTolerance: number;
 	providerToVendorLagMaxMs: number;
 	providerToVendorLagMs: number;
@@ -17,6 +20,7 @@ const defaultThresholds: Thresholds = {
 	airHysteresisN: 3,
 	inBreakSilenceMs: 20_000,
 	lagSlackMs: 5_000,
+	maxWinners: 1,
 	pctInTolerance: 1,
 	providerToVendorLagMaxMs: 180_000,
 	providerToVendorLagMs: 90_000,

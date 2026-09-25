@@ -1,0 +1,176 @@
+{
+  "frame": "../reference-frames/fs-fl22-house-no-pctin.png",
+  "goldens": [
+    {
+      "frameSha256": "4a0f6accb0ceda7f35c0ad7e36e2df0f99dab445f211b8b6f168305bb0ee8eeb",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "fullscreen_results",
+            "singletons": {
+              "race_heading": "FL-22 U.S. HOUSE",
+              "pct_in": "<UNKNOWN>"
+            },
+            "candidates": [
+              {
+                "name": "Pia Dandiya",
+                "party": "D",
+                "pct": "32.0%",
+                "votes": "373632"
+              },
+              {
+                "name": "Casey Askar",
+                "party": "R",
+                "pct": "66.0%",
+                "votes": "827282",
+                "called": "called"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "WI | GOVERNOR (R)",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Tom Tiffany",
+                "party": "R",
+                "pct": "95.4%",
+                "votes": "467745",
+                "called": "called"
+              },
+              {
+                "name": "Andy Manske",
+                "party": "R",
+                "pct": "4.6%",
+                "votes": "22546"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "e0e0fb0475137bc62972ad67f546e2420a8dc79ea8feb1c6e4da81253c8e4202",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "WI | GOVERNOR (R)",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Tom Tiffany",
+            "party": "R",
+            "votes": "467,745",
+            "pct": "95.4%",
+            "called": "called"
+          },
+          {
+            "name": "Andy Manske",
+            "party": "R",
+            "votes": "22,546",
+            "pct": "4.6%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "7c3f8e37be83355ecc1b1ded192bb2c45c95bf9b174cdbd734babe6a55d03062",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "FL-22 U.S. HOUSE",
+        "pctIn": "<UNKNOWN>",
+        "candidates": [
+          {
+            "name": "Pia Dandiya",
+            "party": "D",
+            "votes": "373632",
+            "pct": "32.0%",
+            "called": ""
+          },
+          {
+            "name": "Casey Askar",
+            "party": "R",
+            "votes": "827282",
+            "pct": "66.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "fs_fl22_house_pctin_missing",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Pia Dandiya",
+          "name": "Pia Dandiya",
+          "party": "D",
+          "pct": 32,
+          "votes": 373632
+        },
+        {
+          "key": "Casey Askar",
+          "name": "Casey Askar",
+          "party": "R",
+          "pct": 66,
+          "votes": 827282
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "FL-22 U.S. HOUSE",
+        "pct_in": "<UNKNOWN>"
+      },
+      "observedAt": 0,
+      "pctIn": 0,
+      "raceKey": "FL-22 U.S. HOUSE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results",
+      "missingFields": [
+        "pct_in"
+      ]
+    },
+    {
+      "calledFor": [
+        "Tom Tiffany"
+      ],
+      "candidates": [
+        {
+          "key": "Tom Tiffany",
+          "name": "Tom Tiffany",
+          "party": "R",
+          "pct": 95.4,
+          "votes": 467745
+        },
+        {
+          "key": "Andy Manske",
+          "name": "Andy Manske",
+          "party": "R",
+          "pct": 4.6,
+          "votes": 22546
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "WI | GOVERNOR (R)",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "WI GOVERNOR (R)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "fs-fl22-house-no-pctin.png"
+}

@@ -8,7 +8,8 @@ import { redactError } from '../vision/redact.js';
 // against a frame and count how often calledFor matches an expected value.
 // Independent of any golden — answers "does it read the check mark" honestly.
 //
-//   npm run measure-call -- <framePng> <expectedCalledForLowercase> [runs]
+//   npm run measure-call -- <framePng> <expectedCalledForLowercase> [runs] [--template <id>]
+//     --template picks which observation to score on a multi-surface frame (default: first)
 
 const flagValue = (flag: string): string | undefined => {
 	const index = process.argv.indexOf(flag);
@@ -23,6 +24,7 @@ const run = async (): Promise<void> => {
 			? 20
 			: Number(process.argv[4]);
 	const model = flagValue('--model');
+	const template = flagValue('--template');
 	const recallModel = flagValue('--recall-model');
 	const votesFlag = flagValue('--votes');
 	const votes = votesFlag === undefined ? undefined : Number(votesFlag);
@@ -53,7 +55,11 @@ const run = async (): Promise<void> => {
 
 	for (let attempt = 1; attempt <= runs; attempt++) {
 		const observed = await extractFrame(png, 0, deps);
-		const calledFor = observed[0]?.calledFor ?? [];
+		const target =
+			template === undefined
+				? observed[0]
+				: observed.find((observation) => observation.templateId === template);
+		const calledFor = target?.calledFor ?? [];
 		const key =
 			calledFor.length === 0
 				? '<none>'

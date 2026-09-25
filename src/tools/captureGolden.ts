@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 
 import type { Player } from '../replay/player.js';
 import type { Golden } from '../vision/goldenClient.js';
@@ -9,6 +9,7 @@ import type { LlmClient } from '../vision/llmClient.js';
 import makePlayer from '../replay/player.js';
 import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
 import { extractFrame } from '../vision/extractFrame.js';
+import { makeGoldenClient } from '../vision/goldenClient.js';
 import { hashPrompt } from '../vision/llmClient.js';
 import { redactError } from '../vision/redact.js';
 
@@ -22,6 +23,11 @@ import { redactError } from '../vision/redact.js';
 //   npm run capture-golden -- --from-session <sessionId> <frameHash> <goldenName>
 //     promote an already-recorded session frame: responses come from the session's
 //     llm_calls table — zero API cost, no key needed
+//
+//   npm run capture-golden -- --refreeze <golden.json> [...more]
+//     recompute a golden's observations from its own recorded responses — no API —
+//     after a deterministic post-processing change (key normalization, merge rules).
+//     Prompts must be unchanged; a prompt change means a live re-capture.
 //
 // Writes recordings/goldens/<goldenName>.golden.json and copies the frame in.
 
@@ -65,9 +71,14 @@ const makeSessionStubClient = (player: Player): LlmClient => ({
 
 type CaptureMode =
 	| { frameHash: string; goldenName: string; kind: 'session'; sessionId: string }
-	| { framePath: string; goldenName: string; kind: 'live' };
+	| { framePath: string; goldenName: string; kind: 'live' }
+	| { goldenPaths: string[]; kind: 'refreeze' };
 
 const parseMode = (args: string[]): CaptureMode | undefined => {
+	if (args[0] === '--refreeze') {
+		const goldenPaths = args.slice(1);
+		return goldenPaths.length === 0 ? undefined : { goldenPaths, kind: 'refreeze' };
+	}
 	if (args[0] === '--from-session') {
 		const [, sessionId, frameHash, goldenName] = args;
 		if (sessionId === undefined || frameHash === undefined || goldenName === undefined)
@@ -79,6 +90,22 @@ const parseMode = (args: string[]): CaptureMode | undefined => {
 	return { framePath, goldenName, kind: 'live' };
 };
 
+type GoldenDoc = {
+	frame: string;
+	goldens: Golden[];
+	name: string;
+	observations: unknown;
+	sourceFrame: string;
+};
+
+const refreeze = async (goldenPath: string): Promise<void> => {
+	const doc = JSON.parse(readFileSync(goldenPath, 'utf8')) as GoldenDoc;
+	const png = readFileSync(join(dirname(goldenPath), doc.frame));
+	const observations = await extractFrame(png, 0, { client: makeGoldenClient(doc.goldens) });
+	writeFileSync(goldenPath, `${JSON.stringify({ ...doc, observations }, null, 2)}\n`);
+	console.log(`refroze ${doc.name}: ${observations.length} observation(s)`);
+};
+
 const run = async (): Promise<void> => {
 	const mode = parseMode(process.argv.slice(2));
 	if (mode === undefined) {
@@ -87,9 +114,17 @@ const run = async (): Promise<void> => {
 				'Usage:',
 				'  npm run capture-golden -- <framePng> <goldenName>',
 				'  npm run capture-golden -- --from-session <sessionId> <frameHash> <goldenName>',
+				'  npm run capture-golden -- --refreeze <golden.json> [...more]',
 			].join('\n'),
 		);
 		process.exit(1);
+	}
+	if (mode.kind === 'refreeze') {
+		await mode.goldenPaths.reduce(
+			(chain, goldenPath) => chain.then(() => refreeze(goldenPath)),
+			Promise.resolve(),
+		);
+		return;
 	}
 	if (mode.kind === 'live' && process.env.ANTHROPIC_API_KEY === undefined) {
 		console.error('ANTHROPIC_API_KEY is not set — capturing a live golden requires a real call.');
@@ -122,8 +157,15 @@ const run = async (): Promise<void> => {
 
 	const outDir = 'recordings/goldens';
 	mkdirSync(outDir, { recursive: true });
-	const frameFile = `${goldenName}.png`;
-	copyFileSync(framePath, join(outDir, frameFile));
+	// Committed reference frames are referenced in place (a relative path from the
+	// goldens dir) instead of duplicating megabytes of PNG; anything else — a
+	// session frame is gitignored — is copied in so the golden stays self-contained.
+	const referenceFramesDir = resolve('recordings', 'reference-frames');
+	const isReferenceFrame = resolve(framePath).startsWith(`${referenceFramesDir}/`);
+	const frameFile = isReferenceFrame
+		? relative(resolve(outDir), resolve(framePath))
+		: `${goldenName}.png`;
+	if (!isReferenceFrame) copyFileSync(framePath, join(outDir, frameFile));
 
 	const goldenDoc = {
 		frame: frameFile,

@@ -1,0 +1,190 @@
+{
+  "frame": "../reference-frames/l3-al-senate.png",
+  "goldens": [
+    {
+      "frameSha256": "161d48a295a9f43b0e4fd34120e31fef4052e16d7975f14f252733064a105b4d",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "AL | U.S. SENATE",
+              "pct_in": "84% IN"
+            },
+            "candidates": [
+              {
+                "name": "Everett Wess",
+                "party": "D",
+                "pct": "45.1%",
+                "votes": "19223"
+              },
+              {
+                "name": "Barry Moore",
+                "party": "R",
+                "pct": "55.8%",
+                "votes": "33212"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "WI | GOVERNOR (D)",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "David Crowley",
+                "party": "D",
+                "pct": "39.8%",
+                "votes": "315474",
+                "called": "called"
+              },
+              {
+                "name": "Francesca Hong",
+                "party": "D",
+                "pct": "39.3%",
+                "votes": "311616"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "748efcbc12490c1a7a5c64d1d2ed06ceb8f5f3dc994dfe7c7eb4b3cdfadcd604",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "WI | GOVERNOR (D)",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "David Crowley",
+            "party": "D",
+            "votes": "315,474",
+            "pct": "39.8%",
+            "called": "called"
+          },
+          {
+            "name": "Francesca Hong",
+            "party": "D",
+            "votes": "311,616",
+            "pct": "39.3%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "0240c35bcab1ea0840c248dc82c60af0843649dfff36ab72c54cf16b6be0a3dc",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "<UNKNOWN>",
+        "pctIn": "<UNKNOWN>",
+        "candidates": [
+          {
+            "name": "<UNKNOWN>",
+            "party": "<UNKNOWN>",
+            "votes": "<UNKNOWN>",
+            "pct": "<UNKNOWN>",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "38b7b9ea4eaa0847f5b398c1ab092b15d714659d149bb8641bbbe7c54252b22f",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "AL U.S. SENATE",
+        "pctIn": "84% IN",
+        "candidates": [
+          {
+            "name": "Everett Wess",
+            "party": "D",
+            "votes": "19223",
+            "pct": "45.1%",
+            "called": ""
+          },
+          {
+            "name": "Barry Moore",
+            "party": "R",
+            "votes": "33212",
+            "pct": "55.8%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "l3_al_senate",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Everett Wess",
+          "name": "Everett Wess",
+          "party": "D",
+          "pct": 45.1,
+          "votes": 19223
+        },
+        {
+          "key": "Barry Moore",
+          "name": "Barry Moore",
+          "party": "R",
+          "pct": 55.8,
+          "votes": 33212
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "AL U.S. SENATE",
+        "pct_in": "84% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 84,
+      "raceKey": "AL U.S. SENATE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "lower_third"
+    },
+    {
+      "calledFor": [
+        "David Crowley"
+      ],
+      "candidates": [
+        {
+          "key": "David Crowley",
+          "name": "David Crowley",
+          "party": "D",
+          "pct": 39.8,
+          "votes": 315474
+        },
+        {
+          "key": "Francesca Hong",
+          "name": "Francesca Hong",
+          "party": "D",
+          "pct": 39.3,
+          "votes": 311616
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "WI | GOVERNOR (D)",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "WI GOVERNOR (D)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "l3-al-senate.png"
+}

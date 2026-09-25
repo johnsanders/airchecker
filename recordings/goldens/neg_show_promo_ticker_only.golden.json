@@ -1,0 +1,97 @@
+{
+  "frame": "../reference-frames/neg-promo-chyron-the-hill.png",
+  "goldens": [
+    {
+      "frameSha256": "a72781a71ed27f6c0ae8300d3a5c445e0c60bffa0c18f8f69e7c578268a78bb4",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "CT | GOVERNOR (D)",
+              "pct_in": "87% IN"
+            },
+            "candidates": [
+              {
+                "name": "Ned Lamont",
+                "party": "D",
+                "pct": "67.8%",
+                "votes": "126,078",
+                "called": "called"
+              },
+              {
+                "name": "Josh Elliott",
+                "party": "D",
+                "pct": "32.2%",
+                "votes": "59,980",
+                "called": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "62549c4bd213064ab607ce86ca1ccba74307a129067423abd230b73fde58b8b0",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "CT | GOVERNOR (D)",
+        "pctIn": "87% IN",
+        "candidates": [
+          {
+            "name": "Ned Lamont",
+            "party": "D",
+            "votes": "126,078",
+            "pct": "67.8%",
+            "called": "called"
+          },
+          {
+            "name": "Josh Elliott",
+            "party": "D",
+            "votes": "59,980",
+            "pct": "32.2%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "neg_show_promo_ticker_only",
+  "observations": [
+    {
+      "calledFor": [
+        "Ned Lamont"
+      ],
+      "candidates": [
+        {
+          "key": "Ned Lamont",
+          "name": "Ned Lamont",
+          "party": "D",
+          "pct": 67.8,
+          "votes": 126078
+        },
+        {
+          "key": "Josh Elliott",
+          "name": "Josh Elliott",
+          "party": "D",
+          "pct": 32.2,
+          "votes": 59980
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "CT | GOVERNOR (D)",
+        "pct_in": "87% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 87,
+      "raceKey": "CT GOVERNOR (D)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1"
+    }
+  ],
+  "sourceFrame": "neg-promo-chyron-the-hill.png"
+}

@@ -1,7 +1,6 @@
-// Result templates render a variable, reflowing list of candidate cards
-// (fullscreen/ticker/lower-third across; sideSlab stacked). extract() hands the
-// crop to the VLM, which returns one entry per card, so the spec is agnostic to
-// how many candidates are shown.
+// Result templates render a reflowing list of candidate cards. extract() hands
+// the crop to the VLM, which returns one entry per card, so the spec is agnostic
+// to how many candidates are shown (the current package always shows two).
 export type CandidateField = 'called' | 'name' | 'party' | 'pct' | 'votes';
 
 export type CandidateFieldSpec = {
@@ -63,10 +62,4 @@ export type TemplateSpec = {
 	vlmPromptHint: string;
 };
 
-export type TemplateSurface =
-	| 'corner_bug'
-	| 'fullscreen'
-	| 'lower_third'
-	| 'magic_wall'
-	| 'side_slab'
-	| 'ticker';
+export type TemplateSurface = 'corner_bug' | 'fullscreen' | 'lower_third' | 'magic_wall' | 'ticker';

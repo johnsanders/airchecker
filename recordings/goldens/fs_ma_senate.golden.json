@@ -1,0 +1,175 @@
+{
+  "frame": "../reference-frames/fs-ma-senate.png",
+  "goldens": [
+    {
+      "frameSha256": "27cd5a34055b80333e7d4e9036262eed0cdabde1cd19e4ecf87311037001fab6",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "fullscreen_results",
+            "singletons": {
+              "race_heading": "MA U.S. SENATE",
+              "pct_in": "68% IN"
+            },
+            "candidates": [
+              {
+                "name": "Edward Markey",
+                "party": "D",
+                "pct": "51.0%",
+                "votes": "37923",
+                "called": ""
+              },
+              {
+                "name": "John Deaton",
+                "party": "R",
+                "pct": "49.0%",
+                "votes": "36784",
+                "called": ""
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "MN | U.S. SENATE (D)",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Peggy Flanagan",
+                "party": "D",
+                "pct": "59.0%",
+                "votes": "411,797",
+                "called": "called"
+              },
+              {
+                "name": "Angie Craig",
+                "party": "D",
+                "pct": "39.4%",
+                "votes": "274,891",
+                "called": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "ea29b3cb13a0bcb8018613d7bd265139498b523eff431e5a5a21a4f18b750e17",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "MN | U.S. SENATE (D)",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Peggy Flanagan",
+            "party": "D",
+            "votes": "411,797",
+            "pct": "59.0%",
+            "called": "called"
+          },
+          {
+            "name": "Angie Craig",
+            "party": "D",
+            "votes": "274,891",
+            "pct": "39.4%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "b31c9170874d4d8a714d1e003be088b7c6e7f9f9a958f69d3c785c1ebb56c395",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "MA U.S. SENATE",
+        "pctIn": "68% IN",
+        "candidates": [
+          {
+            "name": "Edward Markey",
+            "party": "D",
+            "votes": "37923",
+            "pct": "51.0%",
+            "called": ""
+          },
+          {
+            "name": "John Deaton",
+            "party": "R",
+            "votes": "36784",
+            "pct": "49.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "fs_ma_senate",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Edward Markey",
+          "name": "Edward Markey",
+          "party": "D",
+          "pct": 51,
+          "votes": 37923
+        },
+        {
+          "key": "John Deaton",
+          "name": "John Deaton",
+          "party": "R",
+          "pct": 49,
+          "votes": 36784
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "MA U.S. SENATE",
+        "pct_in": "68% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 68,
+      "raceKey": "MA U.S. SENATE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results"
+    },
+    {
+      "calledFor": [
+        "Peggy Flanagan"
+      ],
+      "candidates": [
+        {
+          "key": "Peggy Flanagan",
+          "name": "Peggy Flanagan",
+          "party": "D",
+          "pct": 59,
+          "votes": 411797
+        },
+        {
+          "key": "Angie Craig",
+          "name": "Angie Craig",
+          "party": "D",
+          "pct": 39.4,
+          "votes": 274891
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "MN | U.S. SENATE (D)",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "MN U.S. SENATE (D)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "fs-ma-senate.png"
+}

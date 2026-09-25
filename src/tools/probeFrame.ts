@@ -44,8 +44,11 @@ const run = async (): Promise<void> => {
 
 	console.log(`\n${observations.length} template(s) detected:\n`);
 	observations.forEach((observation) => {
+		const pctIn = observation.missingFields?.includes('pct_in')
+			? 'MISSING'
+			: `${observation.pctInIsMinimum ? '>' : ''}${observation.pctIn}`;
 		console.log(
-			`  [${observation.templateId}] raceKey=${observation.raceKey} pctIn=${observation.pctIn} calledFor=${observation.calledFor ?? '—'}`,
+			`  [${observation.templateId}] raceKey=${observation.raceKey} pctIn=${pctIn} calledFor=${observation.calledFor.join('+') || '—'}`,
 		);
 		observation.candidates.forEach((candidate) => {
 			console.log(

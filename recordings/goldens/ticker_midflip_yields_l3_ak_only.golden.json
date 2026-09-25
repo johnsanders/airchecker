@@ -1,0 +1,139 @@
+{
+  "frame": "../reference-frames/ticker-midflip.png",
+  "goldens": [
+    {
+      "frameSha256": "a04e57c9b4332480b2548cff915b976d29e52ebb2a9c642eab4994001b82230d",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "lower_third",
+            "singletons": {
+              "race_heading": "AK U.S. SENATE",
+              "pct_in": "43% IN"
+            },
+            "candidates": [
+              {
+                "name": "Mary Peltola",
+                "party": "D",
+                "pct": "87.0%",
+                "votes": "448293"
+              },
+              {
+                "name": "Dan Sullivan",
+                "party": "R",
+                "pct": "13.0%",
+                "votes": "22453"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "TX U.S. SENATE (R)",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Ken Paxton",
+                "party": "R",
+                "pct": "63.8%",
+                "votes": ""
+              },
+              {
+                "name": "John Cornyn",
+                "party": "R",
+                "pct": "36.2%",
+                "votes": ""
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "eb4d20bdab5e9b2fe405f6e2d57dc8ad7e488db6327917b9f3f75cfbb9d33e7d",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "AK | U.S. SENATE",
+        "pctIn": "43% IN",
+        "candidates": [
+          {
+            "name": "Mary Peltola",
+            "party": "D",
+            "votes": "448293",
+            "pct": "87.0%",
+            "called": ""
+          },
+          {
+            "name": "Dan Sullivan",
+            "party": "R",
+            "votes": "22453",
+            "pct": "13.0%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "a6dd6d149fdcc0b59cbeee9da0dd95fe70b2e4a94b5aaf55dc0869c279b04f5e",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "TX | U.S. SENATE (R)",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Ken Paxton",
+            "party": "R",
+            "votes": "",
+            "pct": "63.8%",
+            "called": ""
+          },
+          {
+            "name": "John Cornyn",
+            "party": "R",
+            "votes": "",
+            "pct": "36.2%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "ticker_midflip_yields_l3_ak_only",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Mary Peltola",
+          "name": "Mary Peltola",
+          "party": "D",
+          "pct": 87,
+          "votes": 448293
+        },
+        {
+          "key": "Dan Sullivan",
+          "name": "Dan Sullivan",
+          "party": "R",
+          "pct": 13,
+          "votes": 22453
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "AK | U.S. SENATE",
+        "pct_in": "43% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 43,
+      "raceKey": "AK U.S. SENATE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "lower_third"
+    }
+  ],
+  "sourceFrame": "ticker-midflip.png"
+}

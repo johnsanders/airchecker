@@ -1,0 +1,190 @@
+{
+  "frame": "../reference-frames/l3-az-house.png",
+  "goldens": [
+    {
+      "frameSha256": "6cd37f159c57cbdd7303c7e9419361cf5c1796d04f03e512acefbf6093024f26",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "AZ | U.S. HOUSE 45 IN",
+              "pct_in": "45.IN"
+            },
+            "candidates": [
+              {
+                "name": "Amish Shah",
+                "party": "D",
+                "pct": "30.0%",
+                "votes": "2368978"
+              },
+              {
+                "name": "Jay Feely",
+                "party": "R",
+                "pct": "70.0%",
+                "votes": "493809"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "VA | GOVERNOR",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Abigail Spanberger",
+                "party": "D",
+                "pct": "57.7%",
+                "votes": "1976857",
+                "called": "called"
+              },
+              {
+                "name": "Winsome Earle-Sears",
+                "party": "R",
+                "pct": "42.3%",
+                "votes": "1449586"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "1996881cfe302bf272dd5d6a6e2009363ce78be5a377f58410064723a316edf9",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "VA | GOVERNOR",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Abigail Spanberger",
+            "party": "D",
+            "votes": "1,976,857",
+            "pct": "57.7%",
+            "called": "called"
+          },
+          {
+            "name": "Winsome Earle-Sears",
+            "party": "R",
+            "votes": "1,449,586",
+            "pct": "42.3%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "f82fd16c4b4cd1f15abbc7df5f922cf3b5212a43604a5cc7fb030b58adbab465",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "<UNKNOWN>",
+        "pctIn": "<UNKNOWN>",
+        "candidates": [
+          {
+            "name": "<UNKNOWN>",
+            "party": "<UNKNOWN>",
+            "votes": "<UNKNOWN>",
+            "pct": "<UNKNOWN>",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "87d34fdedb1cec5c7c3b21c832beadcbcea920904aa233a27c10997926cedb0f",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "AZ U.S. HOUSE",
+        "pctIn": "45% IN",
+        "candidates": [
+          {
+            "name": "Amish Shah",
+            "party": "D",
+            "votes": "2368978",
+            "pct": "30.0%",
+            "called": ""
+          },
+          {
+            "name": "Jay Feely",
+            "party": "R",
+            "votes": "493809",
+            "pct": "70.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "l3_az_house",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Amish Shah",
+          "name": "Amish Shah",
+          "party": "D",
+          "pct": 30,
+          "votes": 2368978
+        },
+        {
+          "key": "Jay Feely",
+          "name": "Jay Feely",
+          "party": "R",
+          "pct": 70,
+          "votes": 493809
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "AZ U.S. HOUSE",
+        "pct_in": "45.IN"
+      },
+      "observedAt": 0,
+      "pctIn": 45,
+      "raceKey": "AZ U.S. HOUSE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "lower_third"
+    },
+    {
+      "calledFor": [
+        "Abigail Spanberger"
+      ],
+      "candidates": [
+        {
+          "key": "Abigail Spanberger",
+          "name": "Abigail Spanberger",
+          "party": "D",
+          "pct": 57.7,
+          "votes": 1976857
+        },
+        {
+          "key": "Winsome Earle-Sears",
+          "name": "Winsome Earle-Sears",
+          "party": "R",
+          "pct": 42.3,
+          "votes": 1449586
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "VA | GOVERNOR",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "VA GOVERNOR",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "l3-az-house.png"
+}

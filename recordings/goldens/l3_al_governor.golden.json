@@ -1,0 +1,172 @@
+{
+  "frame": "../reference-frames/l3-al-governor.png",
+  "goldens": [
+    {
+      "frameSha256": "43e28879e180110dd6d0df90d6e273a71480a1d4574402e7fa2a2eeeb6e3c4eb",
+      "model": "claude-haiku-4-5-20251001",
+      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "response": {
+        "templates": [
+          {
+            "templateId": "lower_third",
+            "singletons": {
+              "race_heading": "AL GOVERNOR",
+              "pct_in": "76.IN"
+            },
+            "candidates": [
+              {
+                "name": "Doug Jones",
+                "party": "D",
+                "pct": "45.0%",
+                "votes": "289982"
+              },
+              {
+                "name": "Tommy Tuberville",
+                "party": "R",
+                "pct": "54.0%",
+                "votes": "393720"
+              }
+            ]
+          },
+          {
+            "templateId": "ticker_v1",
+            "singletons": {
+              "race_heading": "VA | ATTORNEY GENERAL",
+              "pct_in": ">95% IN"
+            },
+            "candidates": [
+              {
+                "name": "Jay Jones",
+                "party": "D",
+                "pct": "53.4%",
+                "votes": "1,804,940",
+                "called": "called"
+              },
+              {
+                "name": "Jason Miyares",
+                "party": "R",
+                "pct": "46.6%",
+                "votes": "1,577,843"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "46e3203782ec4bba79ea596766135114e7f2473962199623c6da95c568310753",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "VA | ATTORNEY GENERAL",
+        "pctIn": ">95% IN",
+        "candidates": [
+          {
+            "name": "Jay Jones",
+            "party": "D",
+            "votes": "1,804,940",
+            "pct": "53.4%",
+            "called": "called"
+          },
+          {
+            "name": "Jason Miyares",
+            "party": "R",
+            "votes": "1,577,843",
+            "pct": "46.6%",
+            "called": ""
+          }
+        ]
+      }
+    },
+    {
+      "frameSha256": "74c8e42a43e035f57a0ae54d40822623903922522ddcff1934d740b9927e3d93",
+      "model": "claude-sonnet-4-6",
+      "promptHash": "c8ee5af4dad128026fcd90b27bf515ea0d1db8fbda8c471a762b6346180424e8",
+      "response": {
+        "raceHeading": "AL GOVERNOR",
+        "pctIn": "76% IN",
+        "candidates": [
+          {
+            "name": "Doug Jones",
+            "party": "D",
+            "votes": "289982",
+            "pct": "45.0%",
+            "called": ""
+          },
+          {
+            "name": "Tommy Tuberville",
+            "party": "R",
+            "votes": "393720",
+            "pct": "54.0%",
+            "called": ""
+          }
+        ]
+      }
+    }
+  ],
+  "name": "l3_al_governor",
+  "observations": [
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "Doug Jones",
+          "name": "Doug Jones",
+          "party": "D",
+          "pct": 45,
+          "votes": 289982
+        },
+        {
+          "key": "Tommy Tuberville",
+          "name": "Tommy Tuberville",
+          "party": "R",
+          "pct": 54,
+          "votes": 393720
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "AL GOVERNOR",
+        "pct_in": "76.IN"
+      },
+      "observedAt": 0,
+      "pctIn": 76,
+      "raceKey": "AL GOVERNOR",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "lower_third"
+    },
+    {
+      "calledFor": [
+        "Jay Jones"
+      ],
+      "candidates": [
+        {
+          "key": "Jay Jones",
+          "name": "Jay Jones",
+          "party": "D",
+          "pct": 53.4,
+          "votes": 1804940
+        },
+        {
+          "key": "Jason Miyares",
+          "name": "Jason Miyares",
+          "party": "R",
+          "pct": 46.6,
+          "votes": 1577843
+        }
+      ],
+      "extractedFields": {
+        "race_heading": "VA | ATTORNEY GENERAL",
+        "pct_in": ">95% IN"
+      },
+      "observedAt": 0,
+      "pctIn": 95,
+      "raceKey": "VA ATTORNEY GENERAL",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1",
+      "pctInIsMinimum": true
+    }
+  ],
+  "sourceFrame": "l3-al-governor.png"
+}
