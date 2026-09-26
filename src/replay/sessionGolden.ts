@@ -25,6 +25,8 @@ export type FrozenAnomaly = {
 	type: AnomalyType;
 };
 
+export type ObservationBatch = { observations: RaceObservation[]; ts: number };
+
 export type SessionExpectations = {
 	alertEvents: { cleared: number; raised: number };
 	distinctAnomalies: FrozenAnomaly[];
@@ -57,7 +59,9 @@ export type SessionTimelineInputs = {
 
 export type TimedIdentityEvent = { event: RaceIdentityEvent; ts: number };
 
-type ObservationBatch = { observations: RaceObservation[]; ts: number };
+export type TimelineItem =
+	| { batch: ObservationBatch; kind: 'batch'; ts: number }
+	| { event: TimedIdentityEvent; kind: 'event'; ts: number };
 
 const toFrozenAnomaly = (anomaly: Anomaly): FrozenAnomaly => ({
 	detail: anomaly.detail,
@@ -89,7 +93,7 @@ const countBy = <T>(items: T[], keyOf: (item: T) => string): Record<string, numb
 
 // Sources stamp one observedAt per poll/capture, so grouping by identical
 // observedAt recovers the original ingest batches.
-const batchByObservedAt = (observations: RaceObservation[]): ObservationBatch[] =>
+export const batchByObservedAt = (observations: RaceObservation[]): ObservationBatch[] =>
 	Array.from(
 		observations
 			.reduce<Map<number, RaceObservation[]>>((batches, observation) => {
@@ -99,6 +103,19 @@ const batchByObservedAt = (observations: RaceObservation[]): ObservationBatch[] 
 			}, new Map())
 			.entries(),
 	).map(([ts, batched]) => ({ observations: batched, ts }));
+
+// The session's observation batches and identity events in time order. Stable
+// merge; on a ts tie the observation batch is processed before events. Shared by
+// the golden freeze and the live replay so both batch a session identically.
+export const buildTimeline = (inputs: SessionTimelineInputs): TimelineItem[] =>
+	[
+		...batchByObservedAt(inputs.observations).map(
+			(batch): TimelineItem => ({ batch, kind: 'batch', ts: batch.ts }),
+		),
+		...inputs.identityEvents.map(
+			(timed): TimelineItem => ({ event: timed, kind: 'event', ts: timed.ts }),
+		),
+	].sort((a, b) => a.ts - b.ts || (a.kind === 'batch' ? 0 : 1) - (b.kind === 'batch' ? 0 : 1));
 
 export const replaySessionTimeline = (inputs: SessionTimelineInputs): SessionExpectations => {
 	const composition = makeComposition();
@@ -140,21 +157,7 @@ export const replaySessionTimeline = (inputs: SessionTimelineInputs): SessionExp
 		reconcileKeys([...result.fromRaceKeys, result.toRaceKey], timed.ts);
 	};
 
-	// Stable merge; on a ts tie the observation batch is processed before events.
-	const timeline = [
-		...batchByObservedAt(inputs.observations).map((batch) => ({
-			batch,
-			kind: 'batch' as const,
-			ts: batch.ts,
-		})),
-		...inputs.identityEvents.map((timed) => ({
-			event: timed,
-			kind: 'event' as const,
-			ts: timed.ts,
-		})),
-	].sort((a, b) => a.ts - b.ts || (a.kind === 'batch' ? 0 : 1) - (b.kind === 'batch' ? 0 : 1));
-
-	timeline.forEach((item) => {
+	buildTimeline(inputs).forEach((item) => {
 		if (item.kind === 'batch') applyBatch(item.batch);
 		else applyIdentityEvent(item.event);
 	});
