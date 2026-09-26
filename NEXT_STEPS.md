@@ -18,7 +18,7 @@ Done since the July hand-off, in order:
 ## Next moves (priority order)
 
 1. **Rehearsal session with all three sources** against the new package (needs the VPN for Chameleon and DDHQ queries for the Nov 3 races). Promote 1–2 real frames with `capture-golden -- --from-session`, freeze a second full session golden, and confirm the identity resolver links the new air headings (proposal-driven; a human accepts in the `RaceLinks` panel).
-2. **Rule: votes up while pct_in down** (plan 2.3, user's call). Catches upstream inflation at onset instead of at correction.
+2. ~~Rule: votes up while pct_in down~~ — **dropped**: on statewide/high-profile races `% IN` is a share of estimated turnout and legitimately falls when the estimate is revised up mid-count. Only revisit gated on DDHQ `reporting_type` (precinct-based races).
 3. **Fixtures** — a Chameleon General-election contest sample and a DDHQ statewide (Senate/Governor) sample in the repo root; widen the schema tests.
 4. **Web-view auth** (`WEB_TOKEN`) only if the view leaves localhost.
 5. Deferred, unchanged: magic wall (`provider_direct` path), `judge()`, Slack/paging sinks, EC votes, county-level.
