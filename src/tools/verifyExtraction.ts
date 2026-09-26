@@ -1,18 +1,22 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { CandidateState, RaceObservation } from '../reconcile/reconcile.js';
 
-import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
-import { extractFrame } from '../vision/extractFrame.js';
+import { DEFAULT_MODEL, DEFAULT_RECALL_MODEL, extractFrame } from '../vision/extractFrame.js';
+import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { redactError } from '../vision/redact.js';
+import { formatUsage, makeUsageMeter } from './usageMeter.js';
 
-// Repeatability check: run the live extractor N times against a golden's frame
-// and report how many runs reproduce the golden's data EXACTLY (names compared
-// case-insensitively, since the model varies casing). On any drift, print the
-// field that differed so we see whether it's a real misread or just casing.
+// Repeatability check: run the live extractor N times against each golden's
+// frame and report how many runs reproduce the golden's data EXACTLY (names
+// compared case-insensitively, since the model varies casing). On any drift,
+// print the field that differed so we see whether it's a real misread or just
+// casing. Over several goldens (or `all`) it also tallies drifts by field and
+// totals what the run cost per model — this is the model-comparison harness.
 //
-//   npm run verify -- <goldenName> [runs]
+//   npm run verify -- <goldenName...|all> [runs] [--model X] [--recall-model Y] [--reasoning E]
+//     model IDs with a slash (google/gemini-3.8-flash) go to OpenRouter, others to Anthropic
 
 type GoldenDoc = { frame: string; observations: RaceObservation[] };
 
@@ -82,51 +86,132 @@ const diff = (expected: RaceObservation[], actual: RaceObservation[]): string[] 
 	return lines;
 };
 
+const DRIFT_KINDS: readonly [string, string][] = [
+	['error', 'error:'],
+	['calledFor', 'calledFor:'],
+	['pctIn', 'pctIn:'],
+	['votes', ' votes:'],
+	['pct', ' pct:'],
+	['name', ' name:'],
+	['party', ' party:'],
+	['raceKey', 'raceKey:'],
+	['templateId', 'templateId:'],
+];
+
+const driftKind = (line: string): string =>
+	DRIFT_KINDS.find(([, needle]) => line.includes(needle))?.[0] ?? 'structure';
+
+const FLAGS_WITH_VALUE = new Set(['--model', '--reasoning', '--recall-model']);
+
+const flagValue = (flag: string): string | undefined => {
+	const index = process.argv.indexOf(flag);
+	return index === -1 ? undefined : process.argv[index + 1];
+};
+
+const positionals = (): string[] =>
+	process.argv
+		.slice(2)
+		.filter(
+			(arg, index, all) => !arg.startsWith('--') && !FLAGS_WITH_VALUE.has(all[index - 1] ?? ''),
+		);
+
+const GOLDEN_SUFFIX = '.golden.json';
+
 const run = async (): Promise<void> => {
-	const goldenName = process.argv[2];
-	const runs = process.argv[3] === undefined ? 10 : Number(process.argv[3]);
-	if (goldenName === undefined) {
-		console.error('Usage: npm run verify -- <goldenName> [runs]');
+	const args = positionals();
+	const runsArg = args.find((arg) => /^\d+$/.test(arg));
+	const runs = runsArg === undefined ? 10 : Number(runsArg);
+	const requested = args.filter((arg) => arg !== runsArg);
+	if (requested.length === 0) {
+		console.error(
+			'Usage: npm run verify -- <goldenName...|all> [runs] [--model X] [--recall-model Y] [--reasoning E]',
+		);
 		process.exit(1);
 	}
-	if (process.env.ANTHROPIC_API_KEY === undefined) {
-		console.error('ANTHROPIC_API_KEY is not set — verification makes live calls.');
+	const model = flagValue('--model');
+	const recallModel = flagValue('--recall-model');
+	const missingKeys = missingLiveKeys([
+		model ?? DEFAULT_MODEL,
+		recallModel ?? DEFAULT_RECALL_MODEL,
+	]);
+	if (missingKeys.length > 0) {
+		console.error(`${missingKeys.join(', ')} not set — verification makes live calls.`);
 		process.exit(1);
 	}
-
 	const goldensDir = 'recordings/goldens';
-	const doc = JSON.parse(
-		readFileSync(join(goldensDir, `${goldenName}.golden.json`), 'utf8'),
-	) as GoldenDoc;
-	const png = readFileSync(join(goldensDir, doc.frame));
-	const expectedCanon = canonFrame(doc.observations);
-
-	const client = makeAnthropicLlmClient();
-	let exact = 0;
-	const driftCounts = new Map<string, number>();
-
-	for (let attempt = 1; attempt <= runs; attempt++) {
-		const observed = await extractFrame(png, 0, { client });
-		if (canonFrame(observed) === expectedCanon) {
-			exact += 1;
-			process.stdout.write('.');
-		} else {
-			process.stdout.write('X');
-			diff(doc.observations, observed).forEach((line) =>
-				driftCounts.set(line, (driftCounts.get(line) ?? 0) + 1),
-			);
-		}
-	}
-
+	const names = requested.includes('all')
+		? readdirSync(goldensDir)
+				.filter((file) => file.endsWith(GOLDEN_SUFFIX))
+				.map((file) => file.slice(0, -GOLDEN_SUFFIX.length))
+		: requested;
+	const reasoning = flagValue('--reasoning');
 	console.log(
-		`\n\n${goldenName}: ${exact}/${runs} runs reproduced the golden exactly (names case-insensitive).`,
+		`model=${model ?? 'haiku (default)'} recallModel=${recallModel ?? 'sonnet (default)'} reasoning=${reasoning ?? 'low (client default)'} runs=${runs} goldens=${names.length}\n`,
 	);
-	if (driftCounts.size > 0) {
-		console.log('\nField drifts observed (line → # of runs):');
+
+	const meter = makeUsageMeter(
+		makeLiveLlmClient(reasoning === undefined ? {} : { reasoningEffort: reasoning }),
+	);
+	const deps = {
+		client: meter.client,
+		...(model === undefined ? {} : { model }),
+		...(recallModel === undefined ? {} : { recallModel }),
+	};
+	const kindTotals = new Map<string, number>();
+	let totalExact = 0;
+	let errors = 0;
+
+	for (const name of names) {
+		const doc = JSON.parse(
+			readFileSync(join(goldensDir, `${name}${GOLDEN_SUFFIX}`), 'utf8'),
+		) as GoldenDoc;
+		const png = readFileSync(join(goldensDir, doc.frame));
+		const expectedCanon = canonFrame(doc.observations);
+		let exact = 0;
+		const driftCounts = new Map<string, number>();
+		process.stdout.write(`${name} `);
+		for (let attempt = 1; attempt <= runs; attempt++) {
+			try {
+				const observed = await extractFrame(png, 0, deps);
+				if (canonFrame(observed) === expectedCanon) {
+					exact += 1;
+					process.stdout.write('.');
+				} else {
+					process.stdout.write('X');
+					diff(doc.observations, observed).forEach((line) =>
+						driftCounts.set(line, (driftCounts.get(line) ?? 0) + 1),
+					);
+				}
+			} catch (error) {
+				errors += 1;
+				process.stdout.write('E');
+				const line = `error: ${redactError(error).split('\n')[0] ?? ''}`;
+				driftCounts.set(line, (driftCounts.get(line) ?? 0) + 1);
+			}
+		}
+		console.log(`  ${exact}/${runs}`);
 		Array.from(driftCounts.entries())
 			.sort((a, b) => b[1] - a[1])
-			.forEach(([line, count]) => console.log(`  ${count}×  ${line}`));
+			.forEach(([line, count]) => {
+				console.log(`    ${count}×  ${line}`);
+				const kind = driftKind(line);
+				kindTotals.set(kind, (kindTotals.get(kind) ?? 0) + count);
+			});
+		totalExact += exact;
 	}
+
+	const totalRuns = names.length * runs;
+	console.log(
+		`\nexact: ${totalExact}/${totalRuns} across ${names.length} goldens × ${runs} runs${errors > 0 ? `, ${errors} errored` : ''}`,
+	);
+	if (kindTotals.size > 0) {
+		console.log('drift by field (# of drift lines):');
+		Array.from(kindTotals.entries())
+			.sort((a, b) => b[1] - a[1])
+			.forEach(([kind, count]) => console.log(`  ${count}×  ${kind}`));
+	}
+	console.log('usage:');
+	formatUsage(meter.totals(), totalRuns).forEach((line) => console.log(`  ${line}`));
 };
 
 run().catch((error: unknown) => {

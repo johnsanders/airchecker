@@ -35,27 +35,27 @@
     },
     {
       "frameSha256": "93535b3100b39dd95061fcb4c8555f2c7527d51a2ba1244956e3ffcc41feb542",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "WI | U.S. HOUSE (D) DISTRICT 7",
         "pctIn": ">95% IN",
+        "raceHeading": "WI | U.S. HOUSE (D)\nDISTRICT 7",
         "candidates": [
           {
             "firstName": "FRED",
+            "pct": "37.7%",
             "surname": "CLARK",
             "party": "D",
             "votes": "25,492",
-            "pct": "37.7%",
             "called": "called"
           },
           {
-            "firstName": "GINGER",
+            "pct": "31.9%",
+            "called": "",
             "surname": "MURRAY",
             "party": "D",
             "votes": "21,603",
-            "pct": "31.9%",
-            "called": ""
+            "firstName": "GINGER"
           }
         ]
       }
@@ -84,7 +84,7 @@
         }
       ],
       "extractedFields": {
-        "race_heading": "WI | U.S. HOUSE (D) DISTRICT 7",
+        "race_heading": "WI | U.S. HOUSE (D)\nDISTRICT 7",
         "pct_in": ">95% IN"
       },
       "observedAt": 0,

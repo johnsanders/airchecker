@@ -35,26 +35,26 @@
     },
     {
       "frameSha256": "effde74a08f66cfc9404ef70c298251f0121321e2a05a2a6513950b31201c54b",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
         "raceHeading": "VA | GOVERNOR",
         "pctIn": ">95% IN",
         "candidates": [
           {
             "firstName": "ABIGAIL",
-            "surname": "SPANBERGER",
+            "called": "",
             "party": "D",
-            "votes": "1,976,857",
             "pct": "57.7%",
-            "called": ""
+            "surname": "SPANBERGER",
+            "votes": "1,976,857"
           },
           {
-            "firstName": "WINSOME",
             "surname": "EARLE-SEARS",
-            "party": "R",
-            "votes": "1,449,586",
             "pct": "42.3%",
+            "party": "R",
+            "firstName": "WINSOME",
+            "votes": "1,449,586",
             "called": ""
           }
         ]

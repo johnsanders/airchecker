@@ -11,22 +11,20 @@
             "templateId": "ticker_v1",
             "singletons": {
               "race_heading": "AR U.S. SENATE",
-              "pct_in": "34% IN"
+              "pct_in": "34 IN"
             },
             "candidates": [
               {
                 "name": "Hallie Shoffner",
                 "party": "D",
                 "pct": "60.5%",
-                "votes": "292309",
-                "called": ""
+                "votes": "292309"
               },
               {
                 "name": "Tom Cotton",
                 "party": "R",
                 "pct": "40.2%",
-                "votes": "424234",
-                "called": ""
+                "votes": "424234"
               }
             ]
           },
@@ -48,8 +46,7 @@
                 "name": "John Larson",
                 "party": "D",
                 "pct": "32.8%",
-                "votes": "17933",
-                "called": ""
+                "votes": "17933"
               }
             ]
           }
@@ -58,73 +55,64 @@
     },
     {
       "frameSha256": "dac6d6c2cca083e7769f25277f1f00440ab54acdce0c4eb0326ff11078015ace",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
+        "pctIn": "84%",
         "raceHeading": "CT | U.S. HOUSE (D) DISTRICT 1",
-        "pctIn": "84% IN",
         "candidates": [
           {
-            "firstName": "LUKE",
             "surname": "BRONIN",
             "party": "D",
+            "called": "called",
             "votes": "29,658",
-            "pct": "54.3%",
-            "called": "called"
+            "firstName": "LUKE",
+            "pct": "54.3%"
           },
           {
+            "pct": "32.8%",
             "firstName": "JOHN",
-            "surname": "LARSON",
+            "called": "",
             "party": "D",
             "votes": "17,933",
-            "pct": "32.8%",
-            "called": ""
+            "surname": "LARSON"
           }
         ]
       }
     },
     {
       "frameSha256": "93c79dfc4a8704f33a8d54849de557b24e4806061b58a44dbe6d48486b233e38",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "<UNKNOWN>",
-        "pctIn": "<UNKNOWN>",
-        "candidates": [
-          {
-            "firstName": "<UNKNOWN>",
-            "surname": "<UNKNOWN>",
-            "party": "<UNKNOWN>",
-            "votes": "<UNKNOWN>",
-            "pct": "<UNKNOWN>",
-            "called": ""
-          }
-        ]
+        "pctIn": "",
+        "raceHeading": "",
+        "candidates": []
       }
     },
     {
       "frameSha256": "8b8cdb1637a9f397db7bd71ad7d05616dd53e6c4b3644d757285bdb8f68174ae",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
         "raceHeading": "AR U.S. SENATE",
         "pctIn": "34% IN",
         "candidates": [
           {
+            "called": "",
             "firstName": "HALLIE",
             "surname": "SHOFFNER",
-            "party": "D",
-            "votes": "292309",
             "pct": "60.5%",
-            "called": ""
+            "votes": "292309",
+            "party": "D"
           },
           {
             "firstName": "TOM",
+            "called": "",
             "surname": "COTTON",
             "party": "R",
             "votes": "424234",
-            "pct": "40.2%",
-            "called": ""
+            "pct": "40.2%"
           }
         ]
       }
@@ -152,7 +140,7 @@
       ],
       "extractedFields": {
         "race_heading": "AR U.S. SENATE",
-        "pct_in": "34% IN"
+        "pct_in": "34 IN"
       },
       "observedAt": 0,
       "pctIn": 34,

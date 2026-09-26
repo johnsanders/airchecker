@@ -35,26 +35,26 @@
     },
     {
       "frameSha256": "691ca3ac8554755581e77031cf48c64d3431f8ae30e4afcea97643d0877237c5",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "TX | U.S. SENATE (D)",
         "pctIn": ">95% IN",
+        "raceHeading": "TX | U.S. SENATE (D)",
         "candidates": [
           {
-            "firstName": "JAMES",
             "surname": "TALARICO",
+            "called": "called",
             "party": "D",
-            "votes": "1,216,412",
+            "firstName": "JAMES",
             "pct": "52.4%",
-            "called": "called"
+            "votes": "1,216,412"
           },
           {
             "firstName": "JASMINE",
+            "pct": "46.2%",
             "surname": "CROCKETT",
             "party": "D",
             "votes": "1,071,900",
-            "pct": "46.2%",
             "called": ""
           }
         ]

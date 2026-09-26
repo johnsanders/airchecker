@@ -54,53 +54,53 @@
     },
     {
       "frameSha256": "a6dd6d149fdcc0b59cbeee9da0dd95fe70b2e4a94b5aaf55dc0869c279b04f5e",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
         "raceHeading": "TX | U.S. SENATE (R)",
         "pctIn": ">95% IN",
         "candidates": [
           {
+            "called": "called",
             "firstName": "KEN",
-            "surname": "PAXTON",
             "party": "R",
             "votes": "",
-            "pct": "63.8%",
-            "called": ""
+            "surname": "PAXTON",
+            "pct": "63.8%"
           },
           {
             "firstName": "JOHN",
-            "surname": "CORNYN",
-            "party": "R",
-            "votes": "",
             "pct": "36.2%",
-            "called": ""
+            "votes": "",
+            "called": "",
+            "party": "R",
+            "surname": "CORNYN"
           }
         ]
       }
     },
     {
       "frameSha256": "eb4d20bdab5e9b2fe405f6e2d57dc8ad7e488db6327917b9f3f75cfbb9d33e7d",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
         "raceHeading": "AK U.S. SENATE",
-        "pctIn": "43% IN",
+        "pctIn": "43%",
         "candidates": [
           {
             "firstName": "MARY",
+            "called": "",
             "surname": "PELTOLA",
-            "party": "D",
-            "votes": "448293",
             "pct": "87.0%",
-            "called": ""
+            "party": "D",
+            "votes": "448293"
           },
           {
+            "pct": "13.0%",
+            "votes": "22453",
+            "party": "R",
             "firstName": "DAN",
             "surname": "SULLIVAN",
-            "party": "R",
-            "votes": "22453",
-            "pct": "13.0%",
             "called": ""
           }
         ]

@@ -11,7 +11,7 @@
             "templateId": "lower_third",
             "singletons": {
               "race_heading": "AL-2 U.S. HOUSE",
-              "pct_in": "76 IN"
+              "pct_in": "76.IN"
             },
             "candidates": [
               {
@@ -24,7 +24,7 @@
                 "name": "Rhett Marques",
                 "party": "R",
                 "pct": "66.0%",
-                "votes": "4233432",
+                "votes": "423432",
                 "called": "called"
               }
             ]
@@ -56,52 +56,52 @@
     },
     {
       "frameSha256": "50b437d7b10774e0205792d15058988b4f06aa03b97151222f4c08ad132eecda",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "TX | U.S. SENATE (D)",
-        "pctIn": ">95% IN",
+        "pctIn": ">95%",
         "candidates": [
           {
-            "firstName": "JAMES",
-            "surname": "TALARICO",
-            "party": "D",
             "votes": "1,216,412",
+            "surname": "TALARICO",
+            "firstName": "JAMES",
+            "party": "D",
             "pct": "52.4%",
             "called": "called"
           },
           {
-            "firstName": "JASMINE",
-            "surname": "CROCKETT",
-            "party": "D",
-            "votes": "1,071,900",
             "pct": "46.2%",
-            "called": ""
+            "called": "",
+            "surname": "CROCKETT",
+            "votes": "1,071,900",
+            "party": "D",
+            "firstName": "JASMINE"
           }
-        ]
+        ],
+        "raceHeading": "TX | U.S. SENATE (D)"
       }
     },
     {
       "frameSha256": "65a6da04b0b78e3ee649c192c43592affc12423dccc706d1a0127bbfb9a9ef7b",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
         "raceHeading": "AL-2 U.S. HOUSE",
         "pctIn": "76% IN",
         "candidates": [
           {
             "firstName": "SHOMARI",
-            "surname": "FIGURES",
+            "called": "",
+            "pct": "34.0%",
             "party": "D",
             "votes": "234234",
-            "pct": "34.0%",
-            "called": ""
+            "surname": "FIGURES"
           },
           {
-            "firstName": "RHETT",
             "surname": "MARQUES",
-            "party": "R",
             "votes": "4233432",
+            "party": "R",
+            "firstName": "RHETT",
             "pct": "66.0%",
             "called": "called"
           }
@@ -133,7 +133,7 @@
       ],
       "extractedFields": {
         "race_heading": "AL-2 U.S. HOUSE",
-        "pct_in": "76 IN"
+        "pct_in": "76.IN"
       },
       "observedAt": 0,
       "pctIn": 76,

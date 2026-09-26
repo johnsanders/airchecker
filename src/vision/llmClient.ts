@@ -24,12 +24,21 @@ export type LlmRequest = {
 export type LlmResponse = {
 	body: unknown;
 	model: string;
+	usage?: LlmUsage;
 };
 
 export type LlmTool = {
 	description: string;
 	inputSchema: Record<string, unknown>;
 	name: string;
+};
+
+// What the call billed, when the backend reports it. OpenRouter prices each
+// response in USD; Anthropic reports tokens only.
+export type LlmUsage = {
+	costUsd?: number;
+	inputTokens: number;
+	outputTokens: number;
 };
 
 // Keyed on what determines the response shape — NOT the image (that's keyed

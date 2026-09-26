@@ -22,6 +22,17 @@ describe('redactSecrets', () => {
 		);
 	});
 
+	it('scrubs OpenRouter keys the same way', () => {
+		process.env.OPENROUTER_API_KEY = 'sk-or-v1-livevalue';
+		try {
+			expect(redactSecrets('auth sk-or-v1-livevalue and sk-or-v1-abc_DEF-9')).toBe(
+				'auth [REDACTED] and [REDACTED]',
+			);
+		} finally {
+			delete process.env.OPENROUTER_API_KEY;
+		}
+	});
+
 	it('leaves non-secret text untouched', () => {
 		expect(redactSecrets('plain error, no secrets')).toBe('plain error, no secrets');
 	});

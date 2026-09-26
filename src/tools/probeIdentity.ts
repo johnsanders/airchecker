@@ -1,7 +1,7 @@
 import type { CandidateState, RaceObservation, SourceName } from '../reconcile/reconcile.js';
 
 import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
-import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
+import { makeLiveLlmClient } from '../vision/liveLlmClient.js';
 import { redactError } from '../vision/redact.js';
 
 // Live shakeout of the race-identity LLM reconcile against the REAL Haiku model —
@@ -102,7 +102,7 @@ const run = async (): Promise<void> => {
 	}
 
 	const resolver = makeRaceIdentityResolver({
-		llmClient: makeAnthropicLlmClient(),
+		llmClient: makeLiveLlmClient(),
 		onError: (error) => console.error('  [resolver error]', redactError(error)),
 	});
 

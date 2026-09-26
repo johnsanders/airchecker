@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 
-import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
-import { extractFrame } from '../vision/extractFrame.js';
+import { DEFAULT_MODEL, DEFAULT_RECALL_MODEL, extractFrame } from '../vision/extractFrame.js';
+import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { redactError } from '../vision/redact.js';
+import { formatUsage, makeUsageMeter } from './usageMeter.js';
 
 // Direct measurement of called/✓ detection: run the live extractor N times
 // against a frame and count how often calledFor matches an expected value.
@@ -10,6 +11,8 @@ import { redactError } from '../vision/redact.js';
 //
 //   npm run measure-call -- <framePng> <expectedCalledForLowercase> [runs] [--template <id>]
 //     --template picks which observation to score on a multi-surface frame (default: first)
+//     --model / --recall-model take Anthropic IDs or OpenRouter vendor/model IDs
+//     --reasoning sets OpenRouter's reasoning effort (none | minimal | low | medium | high)
 
 const flagValue = (flag: string): string | undefined => {
 	const index = process.argv.indexOf(flag);
@@ -26,26 +29,33 @@ const run = async (): Promise<void> => {
 	const model = flagValue('--model');
 	const template = flagValue('--template');
 	const recallModel = flagValue('--recall-model');
+	const reasoning = flagValue('--reasoning');
 	const votesFlag = flagValue('--votes');
 	const votes = votesFlag === undefined ? undefined : Number(votesFlag);
 	if (framePath === undefined || expected === undefined) {
 		console.error(
-			'Usage: npm run measure-call -- <framePng> <expectedCalledForLowercase> [runs] [--model X] [--votes N]',
+			'Usage: npm run measure-call -- <framePng> <expectedCalledForLowercase> [runs] [--template <id>] [--model X] [--recall-model Y] [--reasoning E] [--votes N]',
 		);
 		process.exit(1);
 	}
-	if (process.env.ANTHROPIC_API_KEY === undefined) {
-		console.error('ANTHROPIC_API_KEY is not set.');
+	const missingKeys = missingLiveKeys([
+		model ?? DEFAULT_MODEL,
+		recallModel ?? DEFAULT_RECALL_MODEL,
+	]);
+	if (missingKeys.length > 0) {
+		console.error(`${missingKeys.join(', ')} not set.`);
 		process.exit(1);
 	}
 
 	console.log(
-		`model=${model ?? 'haiku (default)'} recallModel=${recallModel ?? 'sonnet (default)'} recallVotes=${votes ?? '1 (default)'} runs=${runs}`,
+		`model=${model ?? 'haiku (default)'} recallModel=${recallModel ?? 'sonnet (default)'} reasoning=${reasoning ?? 'low (client default)'} recallVotes=${votes ?? '1 (default)'} runs=${runs}`,
 	);
 	const png = readFileSync(framePath);
-	const client = makeAnthropicLlmClient();
+	const meter = makeUsageMeter(
+		makeLiveLlmClient(reasoning === undefined ? {} : { reasoningEffort: reasoning }),
+	);
 	const deps = {
-		client,
+		client: meter.client,
 		...(model === undefined ? {} : { model }),
 		...(recallModel === undefined ? {} : { recallModel }),
 		...(votes === undefined ? {} : { recallVotes: votes }),
@@ -54,19 +64,24 @@ const run = async (): Promise<void> => {
 	const got = new Map<string, number>();
 
 	for (let attempt = 1; attempt <= runs; attempt++) {
-		const observed = await extractFrame(png, 0, deps);
-		const target =
-			template === undefined
-				? observed[0]
-				: observed.find((observation) => observation.templateId === template);
-		const calledFor = target?.calledFor ?? [];
-		const key =
-			calledFor.length === 0
-				? '<none>'
-				: calledFor
-						.map((value) => value.toLowerCase())
-						.sort()
-						.join('+');
+		let key: string;
+		try {
+			const observed = await extractFrame(png, 0, deps);
+			const target =
+				template === undefined
+					? observed[0]
+					: observed.find((observation) => observation.templateId === template);
+			const calledFor = target?.calledFor ?? [];
+			key =
+				calledFor.length === 0
+					? '<none>'
+					: calledFor
+							.map((value) => value.toLowerCase())
+							.sort()
+							.join('+');
+		} catch (error) {
+			key = `error: ${redactError(error).split('\n')[0] ?? ''}`;
+		}
 		got.set(key, (got.get(key) ?? 0) + 1);
 		if (key === expected) {
 			correct += 1;
@@ -81,6 +96,8 @@ const run = async (): Promise<void> => {
 	Array.from(got.entries())
 		.sort((a, b) => b[1] - a[1])
 		.forEach(([value, count]) => console.log(`  ${count}×  ${value}`));
+	console.log('usage:');
+	formatUsage(meter.totals(), runs).forEach((line) => console.log(`  ${line}`));
 };
 
 run().catch((error: unknown) => {

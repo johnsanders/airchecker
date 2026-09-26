@@ -12,7 +12,7 @@ import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import { makeProviderSource } from '../sources/provider/providerSource.js';
 import { makeQueryStore } from '../sources/provider/queryStore.js';
 import { makeVendorSource } from '../sources/vendor/vendorSource.js';
-import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
+import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { makeRecordingLlmClient } from '../vision/llmClient.js';
 import { makeChangeBus } from '../web/changeBus.js';
 import { makeWebServer } from '../web/server.js';
@@ -32,13 +32,20 @@ const readIntervalMs = (): number => {
 };
 
 const liveMain = async (): Promise<void> => {
+	const missingKeys = missingLiveKeys();
+	if (missingKeys.length > 0) {
+		console.error(
+			`${missingKeys.join(', ')} not set — live vision needs both (Haiku on Anthropic for pass 1, Gemini via OpenRouter for the crop read).`,
+		);
+		process.exit(1);
+	}
 	const sessionId = `live-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`;
 	const recorder = makeRecorder({ baseDir: 'recordings', sessionId });
 	const composition = makeComposition({ onRecord: recorder.recordObservation });
 
 	// Persistent config (survives restarts), separate from the session-scoped recorder DB.
 	const settings = makeSettingsStore('recordings/settings.sqlite');
-	const llmClient = makeRecordingLlmClient(makeAnthropicLlmClient(), recorder);
+	const llmClient = makeRecordingLlmClient(makeLiveLlmClient(), recorder);
 	const raceIdentity = makeRaceIdentityResolver({
 		llmClient,
 		onError: (error) => console.error('[identity] resolver error', error),

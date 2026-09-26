@@ -35,8 +35,8 @@
     },
     {
       "frameSha256": "62549c4bd213064ab607ce86ca1ccba74307a129067423abd230b73fde58b8b0",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
         "raceHeading": "CT | GOVERNOR (D)",
         "pctIn": "87% IN",
@@ -44,18 +44,18 @@
           {
             "firstName": "NED",
             "surname": "LAMONT",
-            "party": "D",
-            "votes": "126,078",
             "pct": "67.8%",
-            "called": "called"
+            "votes": "126,078",
+            "called": "called",
+            "party": "D"
           },
           {
-            "firstName": "JOSH",
             "surname": "ELLIOTT",
+            "called": "",
             "party": "D",
-            "votes": "59,980",
             "pct": "32.2%",
-            "called": ""
+            "firstName": "JOSH",
+            "votes": "59,980"
           }
         ]
       }

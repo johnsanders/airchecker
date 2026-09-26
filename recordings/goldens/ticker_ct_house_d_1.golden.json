@@ -35,27 +35,27 @@
     },
     {
       "frameSha256": "dc93525caba6bfe77c1b94c5d25c91072dcd507492dff7143258c525814a6cc1",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "CT | U.S. HOUSE (D) DISTRICT 1",
         "pctIn": "84% IN",
+        "raceHeading": "CT | U.S. HOUSE (D) DISTRICT 1",
         "candidates": [
           {
-            "firstName": "LUKE",
-            "surname": "BRONIN",
-            "party": "D",
-            "votes": "29,658",
             "pct": "54.3%",
-            "called": "called"
+            "surname": "BRONIN",
+            "called": "called",
+            "votes": "29,658",
+            "party": "D",
+            "firstName": "LUKE"
           },
           {
-            "firstName": "JOHN",
-            "surname": "LARSON",
-            "party": "D",
             "votes": "17,933",
+            "party": "D",
             "pct": "32.8%",
-            "called": ""
+            "called": "",
+            "firstName": "JOHN",
+            "surname": "LARSON"
           }
         ]
       }

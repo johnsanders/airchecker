@@ -7,9 +7,9 @@ import type { Golden } from '../vision/goldenClient.js';
 import type { LlmClient } from '../vision/llmClient.js';
 
 import makePlayer from '../replay/player.js';
-import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
 import { extractFrame } from '../vision/extractFrame.js';
 import { makeGoldenClient } from '../vision/goldenClient.js';
+import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { hashPrompt } from '../vision/llmClient.js';
 import { redactError } from '../vision/redact.js';
 
@@ -18,7 +18,7 @@ import { redactError } from '../vision/redact.js';
 // resulting observations, so a stubbed replay can assert against it with no API key.
 //
 //   npm run capture-golden -- <framePng> <goldenName>
-//     live mode: real VLM calls (needs ANTHROPIC_API_KEY)
+//     live mode: real VLM calls (needs ANTHROPIC_API_KEY + OPENROUTER_API_KEY)
 //
 //   npm run capture-golden -- --from-session <sessionId> <frameHash> <goldenName>
 //     promote an already-recorded session frame: responses come from the session's
@@ -126,8 +126,9 @@ const run = async (): Promise<void> => {
 		);
 		return;
 	}
-	if (mode.kind === 'live' && process.env.ANTHROPIC_API_KEY === undefined) {
-		console.error('ANTHROPIC_API_KEY is not set — capturing a live golden requires a real call.');
+	const missingKeys = mode.kind === 'live' ? missingLiveKeys() : [];
+	if (missingKeys.length > 0) {
+		console.error(`${missingKeys.join(', ')} not set — capturing a live golden makes real calls.`);
 		process.exit(1);
 	}
 
@@ -147,8 +148,7 @@ const run = async (): Promise<void> => {
 
 	const png = readFileSync(framePath);
 	const sink: Golden[] = [];
-	const underlying =
-		player === undefined ? makeAnthropicLlmClient() : makeSessionStubClient(player);
+	const underlying = player === undefined ? makeLiveLlmClient() : makeSessionStubClient(player);
 	const client = makeCapturingClient(underlying, sink);
 	const observations = await extractFrame(png, 0, { client });
 	player?.close();

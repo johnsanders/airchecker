@@ -6,8 +6,8 @@ import type { LlmClient } from '../../vision/llmClient.js';
 import type { BrowserCapturer } from './browserCapturer.js';
 import type { MatchStore } from './matchStore.js';
 
-import { makeAnthropicLlmClient } from '../../vision/anthropicClient.js';
 import { extractFrame } from '../../vision/extractFrame.js';
+import { makeLiveLlmClient } from '../../vision/liveLlmClient.js';
 import { makeBrowserCapturer } from './browserCapturer.js';
 import { makeMatchStore } from './matchStore.js';
 
@@ -44,7 +44,7 @@ export const makeAirSource = (config: AirSourceConfig): AirSource => {
 	// Starts on the Actus playback tab; switch it live from the web UI (no env).
 	const matchStore = config.matchStore ?? makeMatchStore('actus');
 	const capturer = config.capturer ?? makeBrowserCapturer({ urlMatch: matchStore.get });
-	const llmClient = config.llmClient ?? makeAnthropicLlmClient();
+	const llmClient = config.llmClient ?? makeLiveLlmClient();
 	let lastFrame: LastFrame | undefined;
 
 	return {

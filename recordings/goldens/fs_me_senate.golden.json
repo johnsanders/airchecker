@@ -18,22 +18,20 @@
                 "name": "Troy Jackson",
                 "party": "D",
                 "pct": "51.0%",
-                "votes": "37923",
-                "called": ""
+                "votes": "37923"
               },
               {
                 "name": "Susan Collins",
                 "party": "R",
                 "pct": "49.0%",
-                "votes": "36784",
-                "called": ""
+                "votes": "36784"
               }
             ]
           },
           {
             "templateId": "ticker_v1",
             "singletons": {
-              "race_heading": "CT GOVERNOR (D)",
+              "race_heading": "CT | GOVERNOR (D)",
               "pct_in": "87% IN"
             },
             "candidates": [
@@ -41,15 +39,14 @@
                 "name": "Ned Lamont",
                 "party": "D",
                 "pct": "67.8%",
-                "votes": "126078",
+                "votes": "126,078",
                 "called": "called"
               },
               {
                 "name": "Josh Elliott",
                 "party": "D",
                 "pct": "32.2%",
-                "votes": "59980",
-                "called": ""
+                "votes": "59,980"
               }
             ]
           }
@@ -58,56 +55,56 @@
     },
     {
       "frameSha256": "bbb369c7d9a0b2fe881bfaa164d6ab9788f12a00f8754e04e88dea631434aa55",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
         "raceHeading": "CT | GOVERNOR (D)",
-        "pctIn": "87% IN",
         "candidates": [
           {
-            "firstName": "NED",
-            "surname": "LAMONT",
-            "party": "D",
-            "votes": "126,078",
             "pct": "67.8%",
+            "surname": "LAMONT",
+            "firstName": "NED",
+            "votes": "126,078",
+            "party": "D",
             "called": "called"
           },
           {
-            "firstName": "JOSH",
             "surname": "ELLIOTT",
-            "party": "D",
-            "votes": "59,980",
+            "firstName": "JOSH",
             "pct": "32.2%",
-            "called": ""
+            "party": "D",
+            "called": "",
+            "votes": "59,980"
           }
-        ]
+        ],
+        "pctIn": "87%"
       }
     },
     {
       "frameSha256": "8d4cf9b8e5e7c0521b26a8869ba7ecda65ea3281692aae5812afa4bd50c55add",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "ME U.S. SENATE",
         "pctIn": "68% IN",
         "candidates": [
           {
-            "firstName": "Troy",
-            "surname": "JACKSON",
+            "firstName": "TROY",
             "party": "D",
+            "surname": "JACKSON",
             "votes": "37923",
             "pct": "51.0%",
             "called": ""
           },
           {
-            "firstName": "Susan",
-            "surname": "COLLINS",
-            "party": "R",
+            "called": "",
             "votes": "36784",
+            "firstName": "SUSAN",
             "pct": "49.0%",
-            "called": ""
+            "surname": "COLLINS",
+            "party": "R"
           }
-        ]
+        ],
+        "raceHeading": "ME U.S. SENATE"
       }
     }
   ],

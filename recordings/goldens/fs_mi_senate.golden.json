@@ -58,56 +58,56 @@
     },
     {
       "frameSha256": "48deb2af12aafbe816511e3fc9c599d5af0fff8ef2b491f94c8654cd6335cb1c",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "WI | U.S. HOUSE (D) DISTRICT 7",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "firstName": "FRED",
-            "surname": "CLARK",
             "party": "D",
             "votes": "25,492",
+            "firstName": "FRED",
+            "surname": "CLARK",
             "pct": "37.7%",
             "called": "called"
           },
           {
             "firstName": "GINGER",
-            "surname": "MURRAY",
+            "called": "",
             "party": "D",
             "votes": "21,603",
             "pct": "31.9%",
-            "called": ""
+            "surname": "MURRAY"
           }
-        ]
+        ],
+        "raceHeading": "WI | U.S. HOUSE (D) DISTRICT 7"
       }
     },
     {
       "frameSha256": "8c4955f212b77e2645ee439f6efeaea8d4771e8974a5708e60fcd170a22db071",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "MI U.S. SENATE",
-        "pctIn": "68% IN",
         "candidates": [
           {
-            "firstName": "ABDUL",
-            "surname": "EL-SAYED",
             "party": "D",
             "votes": "37923",
-            "pct": "51.0%",
-            "called": ""
+            "firstName": "ABDUL",
+            "called": "",
+            "surname": "EL-SAYED",
+            "pct": "51.0%"
           },
           {
             "firstName": "MIKE",
-            "surname": "ROGERS",
-            "party": "R",
-            "votes": "36784",
             "pct": "49.0%",
-            "called": ""
+            "votes": "36784",
+            "called": "",
+            "party": "R",
+            "surname": "ROGERS"
           }
-        ]
+        ],
+        "pctIn": "68% IN",
+        "raceHeading": "MI U.S. SENATE"
       }
     }
   ],

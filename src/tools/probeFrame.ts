@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import sharp from 'sharp';
 
-import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
 import { extractFrame } from '../vision/extractFrame.js';
+import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { redactError } from '../vision/redact.js';
 
 // One real Messages-API vision call against a single frame, printing the parsed
@@ -20,8 +20,9 @@ const run = async (): Promise<void> => {
 		console.error('Usage: npm run probe -- <framePng> [--maxwidth N]');
 		process.exit(1);
 	}
-	if (process.env.ANTHROPIC_API_KEY === undefined) {
-		console.error('ANTHROPIC_API_KEY is not set — live mode requires it.');
+	const missingKeys = missingLiveKeys();
+	if (missingKeys.length > 0) {
+		console.error(`${missingKeys.join(', ')} not set — live mode requires both.`);
 		process.exit(1);
 	}
 
@@ -39,7 +40,7 @@ const run = async (): Promise<void> => {
 	const meta = await sharp(png).metadata();
 	console.log(`frame ${framePath} → sending ${meta.width}×${meta.height}`);
 
-	const client = makeAnthropicLlmClient();
+	const client = makeLiveLlmClient();
 	const observations = await extractFrame(png, Date.now(), { client });
 
 	console.log(`\n${observations.length} template(s) detected:\n`);

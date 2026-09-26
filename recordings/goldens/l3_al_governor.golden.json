@@ -10,7 +10,7 @@
           {
             "templateId": "lower_third",
             "singletons": {
-              "race_heading": "AL GOVERNOR 76.IN",
+              "race_heading": "AL GOVERNOR",
               "pct_in": "76.IN"
             },
             "candidates": [
@@ -18,15 +18,13 @@
                 "name": "Doug Jones",
                 "party": "D",
                 "pct": "45.0%",
-                "votes": "289982",
-                "called": ""
+                "votes": "289982"
               },
               {
                 "name": "Tommy Tuberville",
                 "party": "R",
                 "pct": "54.0%",
-                "votes": "393720",
-                "called": ""
+                "votes": "393720"
               }
             ]
           },
@@ -48,8 +46,7 @@
                 "name": "Jason Miyares",
                 "party": "R",
                 "pct": "46.6%",
-                "votes": "1,577,843",
-                "called": ""
+                "votes": "1,577,843"
               }
             ]
           }
@@ -57,54 +54,54 @@
       }
     },
     {
-      "frameSha256": "46e3203782ec4bba79ea596766135114e7f2473962199623c6da95c568310753",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "frameSha256": "74c8e42a43e035f57a0ae54d40822623903922522ddcff1934d740b9927e3d93",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "VA | ATTORNEY GENERAL",
-        "pctIn": ">95% IN",
+        "pctIn": "76% IN",
+        "raceHeading": "AL GOVERNOR",
         "candidates": [
           {
-            "firstName": "JAY",
-            "surname": "JONES",
             "party": "D",
-            "votes": "1,804,940",
-            "pct": "53.4%",
-            "called": "called"
+            "pct": "45.0%",
+            "firstName": "DOUG",
+            "surname": "JONES",
+            "called": "",
+            "votes": "289982"
           },
           {
-            "firstName": "JASON",
-            "surname": "MIYARES",
+            "surname": "TUBERVILLE",
             "party": "R",
-            "votes": "1,577,843",
-            "pct": "46.6%",
-            "called": ""
+            "called": "",
+            "firstName": "TOMMY",
+            "pct": "54.0%",
+            "votes": "393720"
           }
         ]
       }
     },
     {
-      "frameSha256": "74c8e42a43e035f57a0ae54d40822623903922522ddcff1934d740b9927e3d93",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "frameSha256": "46e3203782ec4bba79ea596766135114e7f2473962199623c6da95c568310753",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "AL GOVERNOR",
-        "pctIn": "76% IN",
+        "raceHeading": "VA | ATTORNEY GENERAL",
+        "pctIn": ">95% IN",
         "candidates": [
           {
-            "firstName": "DOUG",
-            "surname": "JONES",
             "party": "D",
-            "votes": "289982",
-            "pct": "45.0%",
-            "called": ""
+            "firstName": "JAY",
+            "surname": "JONES",
+            "votes": "1,804,940",
+            "pct": "53.4%",
+            "called": "called"
           },
           {
-            "firstName": "TOMMY",
-            "surname": "TUBERVILLE",
             "party": "R",
-            "votes": "393720",
-            "pct": "54.0%",
+            "firstName": "JASON",
+            "pct": "46.6%",
+            "votes": "1,577,843",
+            "surname": "MIYARES",
             "called": ""
           }
         ]

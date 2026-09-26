@@ -40,12 +40,17 @@ const namesMatch = (a: string, b: string): boolean => {
 	return na === nb || na.includes(nb) || nb.includes(na);
 };
 
-// Pass 1 (full frame, bulk fields) is 30/30 on Haiku — cheap and sufficient.
-// The recall pass reads a tiny ✓ glyph; Sonnet reads it 20/20 single-shot on the
-// upscaled crop where Haiku needs ~3 votes, and the crop is small so the per-call
-// cost increase is modest. Different model per pass, each doing what it's best at.
-const DEFAULT_MODEL = 'claude-haiku-4-5';
-const DEFAULT_RECALL_MODEL = 'claude-sonnet-4-6';
+// Pass 1 (full frame, bulk fields) is 30/30 on Haiku — cheap and sufficient, and
+// nothing cheaper read the whole frame as reliably (Gemini folds the party chip
+// into the name, Flash-Lite drops boards). The recall pass reads a tiny ✓ glyph
+// on the upscaled crop; Haiku needs ~3 votes there. Measured 2026-09-26 on all 23
+// goldens ×2 and the 8 hardest ×20: Sonnet 4.6 160/160 at ≈ $14/h, Gemini 3.8
+// Flash at low reasoning 160/160 at ≈ $6/h. Sonnet 5 regressed (153/160). The
+// native `gemini-` ID goes straight to Google (see liveLlmClient); the
+// `google/gemini-3.8-flash` form runs the same model through OpenRouter. Sonnet
+// 4.6 remains the Anthropic-only fallback: pass `recallModel: 'claude-sonnet-4-6'`.
+export const DEFAULT_MODEL = 'claude-haiku-4-5';
+export const DEFAULT_RECALL_MODEL = 'gemini-3.8-flash';
 const TOOL_NAME = 'report_templates';
 
 // One VLM call per frame: full frame + the registry as a menu → an array of the

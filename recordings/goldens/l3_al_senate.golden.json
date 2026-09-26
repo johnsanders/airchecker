@@ -55,73 +55,64 @@
     },
     {
       "frameSha256": "748efcbc12490c1a7a5c64d1d2ed06ceb8f5f3dc994dfe7c7eb4b3cdfadcd604",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "WI | GOVERNOR (D)",
-        "pctIn": ">95% IN",
         "candidates": [
           {
-            "firstName": "DAVID",
-            "surname": "CROWLEY",
-            "party": "D",
+            "called": "called",
             "votes": "315,474",
+            "surname": "CROWLEY",
             "pct": "39.8%",
-            "called": "called"
+            "party": "D",
+            "firstName": "DAVID"
           },
           {
+            "pct": "39.3%",
             "firstName": "FRANCESCA",
             "surname": "HONG",
+            "called": "",
             "party": "D",
-            "votes": "311,616",
-            "pct": "39.3%",
-            "called": ""
+            "votes": "311,616"
           }
-        ]
+        ],
+        "pctIn": ">95% IN",
+        "raceHeading": "WI | GOVERNOR (D)"
       }
     },
     {
       "frameSha256": "0240c35bcab1ea0840c248dc82c60af0843649dfff36ab72c54cf16b6be0a3dc",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "<UNKNOWN>",
-        "pctIn": "<UNKNOWN>",
-        "candidates": [
-          {
-            "firstName": "<UNKNOWN>",
-            "surname": "<UNKNOWN>",
-            "party": "<UNKNOWN>",
-            "votes": "<UNKNOWN>",
-            "pct": "<UNKNOWN>",
-            "called": ""
-          }
-        ]
+        "candidates": [],
+        "raceHeading": "",
+        "pctIn": ""
       }
     },
     {
       "frameSha256": "38b7b9ea4eaa0847f5b398c1ab092b15d714659d149bb8641bbbe7c54252b22f",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
-        "raceHeading": "AL U.S. SENATE",
         "pctIn": "84% IN",
+        "raceHeading": "AL U.S. SENATE",
         "candidates": [
           {
-            "firstName": "EVERETT",
-            "surname": "WESS",
             "party": "D",
-            "votes": "19223",
             "pct": "45.1%",
-            "called": ""
+            "surname": "WESS",
+            "called": "",
+            "firstName": "EVERETT",
+            "votes": "19223"
           },
           {
-            "firstName": "BARRY",
-            "surname": "MOORE",
             "party": "R",
-            "votes": "33212",
+            "surname": "MOORE",
             "pct": "55.8%",
-            "called": ""
+            "called": "",
+            "firstName": "BARRY",
+            "votes": "33212"
           }
         ]
       }

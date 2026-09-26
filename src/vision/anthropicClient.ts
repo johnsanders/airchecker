@@ -53,7 +53,14 @@ export const makeAnthropicLlmClient = (options: AnthropicLlmClientOptions = {}):
 			const toolUse = response.content.find(
 				(block): block is Anthropic.ToolUseBlock => block.type === 'tool_use',
 			);
-			return { body: toolUse === undefined ? null : toolUse.input, model: response.model };
+			return {
+				body: toolUse === undefined ? null : toolUse.input,
+				model: response.model,
+				usage: {
+					inputTokens: response.usage.input_tokens,
+					outputTokens: response.usage.output_tokens,
+				},
+			};
 		},
 	};
 };

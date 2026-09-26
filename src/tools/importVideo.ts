@@ -3,8 +3,8 @@ import { mkdirSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
 import makeRecorder from '../replay/recorder.js';
-import { makeAnthropicLlmClient } from '../vision/anthropicClient.js';
 import { extractFrame } from '../vision/extractFrame.js';
+import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { makeRecordingLlmClient } from '../vision/llmClient.js';
 import { redactError } from '../vision/redact.js';
 
@@ -27,8 +27,9 @@ const run = async (): Promise<void> => {
 		console.error('Usage: npm run import-video -- <video> [fps]');
 		process.exit(1);
 	}
-	if (process.env.ANTHROPIC_API_KEY === undefined) {
-		console.error('ANTHROPIC_API_KEY is not set — the import makes live vision calls.');
+	const missingKeys = missingLiveKeys();
+	if (missingKeys.length > 0) {
+		console.error(`${missingKeys.join(', ')} not set — the import makes live vision calls.`);
 		process.exit(1);
 	}
 
@@ -39,7 +40,7 @@ const run = async (): Promise<void> => {
 		meta: { fps, kind: 'video-import', video: videoPath },
 		sessionId,
 	});
-	const client = makeRecordingLlmClient(makeAnthropicLlmClient(), recorder);
+	const client = makeRecordingLlmClient(makeLiveLlmClient(), recorder);
 
 	const sampleDir = join('recordings', sessionId, 'samples');
 	mkdirSync(sampleDir, { recursive: true });

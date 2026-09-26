@@ -10,23 +10,21 @@
           {
             "templateId": "ticker_v1",
             "singletons": {
-              "race_heading": "AZ | U.S. HOUSE 45.IN",
-              "pct_in": "<UNKNOWN>"
+              "race_heading": "AZ | U.S. HOUSE DISTRICT 45",
+              "pct_in": "45 IN"
             },
             "candidates": [
               {
                 "name": "Amish Shah",
                 "party": "D",
                 "pct": "30.0%",
-                "votes": "2368978",
-                "called": ""
+                "votes": "2368978"
               },
               {
                 "name": "Jay Feely",
                 "party": "R",
                 "pct": "70.0%",
-                "votes": "493809",
-                "called": ""
+                "votes": "493809"
               }
             ]
           },
@@ -41,15 +39,14 @@
                 "name": "Abigail Spanberger",
                 "party": "D",
                 "pct": "57.7%",
-                "votes": "1,976,857",
+                "votes": "1976857",
                 "called": "called"
               },
               {
                 "name": "Winsome Earle-Sears",
                 "party": "R",
                 "pct": "42.3%",
-                "votes": "1,449,586",
-                "called": ""
+                "votes": "1449586"
               }
             ]
           }
@@ -57,55 +54,55 @@
       }
     },
     {
+      "frameSha256": "87d34fdedb1cec5c7c3b21c832beadcbcea920904aa233a27c10997926cedb0f",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "response": {
+        "candidates": [
+          {
+            "firstName": "AMISH",
+            "surname": "SHAH",
+            "votes": "2368978",
+            "called": "",
+            "pct": "30.0%",
+            "party": "D"
+          },
+          {
+            "firstName": "JAY",
+            "votes": "493809",
+            "surname": "FEELY",
+            "called": "",
+            "pct": "70.0%",
+            "party": "R"
+          }
+        ],
+        "raceHeading": "AZ U.S. HOUSE",
+        "pctIn": "45% IN"
+      }
+    },
+    {
       "frameSha256": "1996881cfe302bf272dd5d6a6e2009363ce78be5a377f58410064723a316edf9",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
+      "model": "gemini-3.8-flash",
+      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
       "response": {
         "raceHeading": "VA | GOVERNOR",
         "pctIn": ">95% IN",
         "candidates": [
           {
-            "firstName": "ABIGAIL",
             "surname": "SPANBERGER",
-            "party": "D",
             "votes": "1,976,857",
+            "party": "D",
             "pct": "57.7%",
-            "called": "called"
+            "called": "called",
+            "firstName": "ABIGAIL"
           },
           {
-            "firstName": "WINSOME",
             "surname": "EARLE-SEARS",
+            "called": "",
+            "pct": "42.3%",
             "party": "R",
             "votes": "1,449,586",
-            "pct": "42.3%",
-            "called": ""
-          }
-        ]
-      }
-    },
-    {
-      "frameSha256": "87d34fdedb1cec5c7c3b21c832beadcbcea920904aa233a27c10997926cedb0f",
-      "model": "claude-sonnet-4-6",
-      "promptHash": "4d072367bab200d1faa68d51fbe7e5bef1b52660d55700fc40156bd9e1096794",
-      "response": {
-        "raceHeading": "AZ U.S. HOUSE",
-        "pctIn": "45% IN",
-        "candidates": [
-          {
-            "firstName": "AMISH",
-            "surname": "SHAH",
-            "party": "D",
-            "votes": "2368978",
-            "pct": "30.0%",
-            "called": ""
-          },
-          {
-            "firstName": "JAY",
-            "surname": "FEELY",
-            "party": "R",
-            "votes": "493809",
-            "pct": "70.0%",
-            "called": ""
+            "firstName": "WINSOME"
           }
         ]
       }
@@ -133,7 +130,7 @@
       ],
       "extractedFields": {
         "race_heading": "AZ U.S. HOUSE",
-        "pct_in": "<UNKNOWN>"
+        "pct_in": "45 IN"
       },
       "observedAt": 0,
       "pctIn": 45,
