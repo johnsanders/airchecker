@@ -137,8 +137,12 @@ const RaceDetail: React.FC<Props> = (props) => {
 					<Typography color="text.secondary" variant="caption">
 						{data.anomalies.length} anomaly(ies)
 					</Typography>
-					{data.anomalies.map((a, i) => (
-						<Typography key={i} sx={{ color: 'error.light' }} variant="body2">
+					{data.anomalies.map((a) => (
+						<Typography
+							key={`${a.type}|${a.subject ?? ''}|${a.detail}`}
+							sx={{ color: 'error.light' }}
+							variant="body2"
+						>
 							[{a.severity}] {a.type}: {a.detail}
 						</Typography>
 					))}

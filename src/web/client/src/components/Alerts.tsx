@@ -66,9 +66,9 @@ const Alerts: React.FC<Props> = (props) => {
 							</Typography>
 						</AccordionSummary>
 						<AccordionDetails>
-							{alerts.map((a, i) => (
+							{alerts.map((a) => (
 								<Box
-									key={i}
+									key={`${a.type}|${a.subject ?? ''}|${a.detail}`}
 									onClick={() => props.onSelectRace(raceKey)}
 									sx={{ cursor: 'pointer', mb: 1 }}
 								>

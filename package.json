@@ -16,6 +16,7 @@
 		"probe-identity": "node --env-file-if-exists=.env --import tsx src/tools/probeIdentity.ts",
 		"capture-golden": "node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts",
 		"freeze-session": "node --import tsx src/tools/freezeSessionGolden.ts",
+		"sessions": "node --import tsx src/tools/sessions.ts",
 		"replay": "node --import tsx src/runtime/replayMain.ts",
 		"import-video": "node --env-file-if-exists=.env --import tsx src/tools/importVideo.ts",
 		"verify": "node --env-file-if-exists=.env --import tsx src/tools/verifyExtraction.ts",

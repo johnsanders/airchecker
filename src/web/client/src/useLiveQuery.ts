@@ -40,6 +40,9 @@ export const useLiveQuery = <T>(
 		}
 	}, []);
 
+	// Callers pass primitives (the selected race key); a serialized key gives the
+	// effect a literal dependency list the linter can check.
+	const depsKey = JSON.stringify(deps);
 	React.useEffect(() => {
 		let debounce: ReturnType<typeof setTimeout> | undefined;
 		const trigger = (): void => {
@@ -54,7 +57,7 @@ export const useLiveQuery = <T>(
 			clearInterval(fallback);
 			unsubscribe();
 		};
-	}, deps);
+	}, [reload, depsKey]);
 
 	return { data, error, reload };
 };

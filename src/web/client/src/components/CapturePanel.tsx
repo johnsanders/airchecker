@@ -130,8 +130,8 @@ const CapturePanel: React.FC<Props> = (props) => {
 						captured {ago(props.lastFrame?.ts)} · {props.lastFrame?.observations.length ?? 0}{' '}
 						template(s) read
 					</Typography>
-					{props.lastFrame?.observations.map((o, i) => (
-						<Box key={i} sx={{ fontSize: 12, mt: 1 }}>
+					{props.lastFrame?.observations.map((o) => (
+						<Box key={`${o.templateId ?? '?'}|${o.raceKey}`} sx={{ fontSize: 12, mt: 1 }}>
 							<b>{o.templateId ?? '?'}</b> — {o.raceKey} · {pct(o.pctIn)}% in
 							{o.candidates.map((c) => (
 								<div key={c.key} style={{ color: '#9fb0d6' }}>

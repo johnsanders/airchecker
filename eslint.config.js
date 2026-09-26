@@ -9,7 +9,7 @@ const reactFiles = ['src/web/**/*.{ts,tsx,js,jsx,mjs,cjs}'];
 
 export default defineConfig(
 	{
-		ignores: ['node_modules/', 'dist/', 'recordings/', 'coverage/'],
+		ignores: ['node_modules/', '**/dist/', 'recordings/', 'coverage/'],
 	},
 	...tseslint.configs.recommended,
 	{

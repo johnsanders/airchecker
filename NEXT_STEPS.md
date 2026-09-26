@@ -20,10 +20,10 @@ Done since the July hand-off, in order:
 1. **Rehearsal session with all three sources** against the new package (needs the VPN for Chameleon and DDHQ queries for the Nov 3 races). Promote 1–2 real frames with `capture-golden -- --from-session`, freeze a second full session golden, and confirm the identity resolver links the new air headings (proposal-driven; a human accepts in the `RaceLinks` panel).
 2. **Rule: votes up while pct_in down** (plan 2.3, user's call). Catches upstream inflation at onset instead of at correction.
 3. **Fixtures** — a Chameleon General-election contest sample and a DDHQ statewide (Senate/Governor) sample in the repo root; widen the schema tests.
-4. **Operator runbook** (`docs/RUNBOOK.md`): launch order (`chrome:debug` → `live` → `:8787`), env vars, which tab, what each alert type means and who owns it, where recordings land, how to accept a race link. Add `WEB_TOKEN` auth only if the view leaves localhost.
-5. **Disk** — ~1 GB/hour of frame PNGs at the default cadence; a `prune-session` script or a documented `rm` for old `recordings/<session>/frames/`.
-6. **Lint warnings** — five real ones left (array-index keys in three components, one effect dependency).
-7. Deferred, unchanged: magic wall (`provider_direct` path), `judge()`, Slack/paging sinks, EC votes, county-level.
+4. **Web-view auth** (`WEB_TOKEN`) only if the view leaves localhost.
+5. Deferred, unchanged: magic wall (`provider_direct` path), `judge()`, Slack/paging sinks, EC votes, county-level.
+
+Done 2026-09-26 while waiting on better frames: replay audit of the June recordings under the new rules (no new noise); `npm run replay -- <id> --serve` plays a recorded session behind the real web view; `npm run sessions` lists recordings and `-- --prune-frames <id>` drops a session's PNGs; `docs/RUNBOOK.md` is the one-page operator sheet; lint is fully clean (built bundles ignored, the five warnings fixed).
 
 ## Useful commands
 
@@ -33,6 +33,8 @@ npm run typecheck && npm run lint
 npm run live                                          # full live system + web view (needs .env + VPN)
 npm run chrome:debug                                  # the DirecTV/Actus Chrome the air capturer attaches to (CDP :9222)
 npm run web:build                                     # build the React SPA
+npm run replay -- <sessionId> [--serve] [--speed=N]    # replay a session; --serve plays it behind the web view
+npm run sessions [-- --prune-frames <sessionId>]       # list recordings / drop a session's frame PNGs
 npm run import-video -- <mp4> [fps]                   # dry-run the air pipeline over a recording → a session (needs key)
 npm run freeze-session -- <sessionId> <goldenName>    # session golden → recordings/goldens/sessions/
 npm run freeze-session -- --refreeze <goldenFile>     # recompute expectations after an intentional rule change (review the diff)
