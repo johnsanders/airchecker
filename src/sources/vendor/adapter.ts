@@ -14,7 +14,7 @@ const extractStateCode = (nameShort: string): string =>
 const buildContestRaceKey = (contest: ChameleonContest): string =>
 	composeRaceKey({
 		contestType: contest.contestType,
-		district: contest.area.District ?? null,
+		district: contest.area.District ?? contest.area.district ?? null,
 		office: contest.officename,
 		party: contest.party,
 		state: extractStateCode(contest.area.nameShort),
@@ -45,13 +45,13 @@ const adaptContest = (
 	const calledFor = contest.choice
 		.filter((choice) => choice.elected)
 		.map((choice) => String(choice.id));
-	const reportedRaw = parseFloat(contest.polls.reportedPercent);
+	const pctInRaw = parseFloat(contest.dbVotesPercent);
 	const modifiedParsed = Date.parse(contest.modifiedDate);
 	return {
 		calledFor,
 		candidates,
 		observedAt,
-		pctIn: Number.isNaN(reportedRaw) ? 0 : reportedRaw,
+		pctIn: Number.isNaN(pctInRaw) ? 0 : pctInRaw,
 		raceKey,
 		reportedAt: Number.isNaN(modifiedParsed) ? fallbackReportedAt : modifiedParsed,
 		source: 'Ross',

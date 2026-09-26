@@ -102,7 +102,7 @@ describe('adaptRace', () => {
 		expect(observed.raceKey).toBe('2024-TX-US_House-2-NP-General_Election');
 		expect(observed.observedAt).toBe(1_700_000_000_000);
 		expect(observed.reportedAt).toBe(Date.parse('2026-04-10T17:28:48.504Z'));
-		expect(observed.pctIn).toBe(0);
+		expect(observed.pctIn).toBe(95); // estimated_votes.turnout_mid, not precincts.percent (0)
 		expect(observed.calledFor).toEqual(['85131']);
 		expect(observed.candidates).toHaveLength(2);
 
@@ -147,3 +147,61 @@ describe('adaptResponse', () => {
 const sampleRace = (): DdhqRace => ddhqResponseSchema.parse(sampleJson).data[0]!;
 
 const sampleCandidate = (): DdhqCandidate => sampleRace().candidates[0]!;
+
+// The September 2026 General sample (page 1 of race_date=2026-11-03&state=TX&
+// office_id=3, DDHQ test_data races): pre-election precinct counts are null.
+const generalPath = resolve(here, '..', 'ddhq_response_general_example.json');
+const generalJson = JSON.parse(readFileSync(generalPath, 'utf8')) as unknown;
+
+describe('DDHQ General Election sample', () => {
+	it('parses the pre-election response (null precinct percent) without errors', () => {
+		const parsed = ddhqResponseSchema.safeParse(generalJson);
+		if (!parsed.success) throw new Error(JSON.stringify(parsed.error.issues.slice(0, 3)));
+		expect(parsed.data.data).toHaveLength(10);
+		expect(parsed.data.data.some((race) => race.topline_results.precincts.percent === null)).toBe(
+			true,
+		);
+	});
+
+	it('adapts pre-election races (null precinct percent, turnout_mid 0) to pctIn 0', () => {
+		const response = ddhqResponseSchema.parse(generalJson);
+		const observations = adaptResponse(response, 1_000);
+		const nullPercent = response.data.filter(
+			(race) => race.topline_results.precincts.percent === null,
+		);
+		expect(nullPercent.length).toBeGreaterThan(0);
+		nullPercent.forEach((race) => {
+			const observation = observations.find((o) => o.raceKey === buildRaceKey(race));
+			expect(observation?.pctIn).toBe(0);
+		});
+	});
+
+	it('keys a General Election House race with NP party and the district', () => {
+		const response = ddhqResponseSchema.parse(generalJson);
+		const tx9 = response.data.find((race) => race.race_id === 295078);
+		expect(tx9 && buildRaceKey(tx9)).toBe('2026-TX-US_House-9-NP-General_Election');
+	});
+});
+
+describe('pctIn follows DDHQ reporting_type', () => {
+	it('uses estimated_votes.turnout_mid for estimated races (precincts.percent is 0 on the 2024 sample)', () => {
+		const race = ddhqResponseSchema.parse(sampleJson).data[1]!;
+		expect(race.reporting_type).toBe('estimated');
+		expect(race.topline_results.precincts.percent).toBe(0);
+		expect(race.topline_results.estimated_votes?.turnout_mid).toBe(95);
+		expect(adaptRace(race, 0).pctIn).toBe(95);
+	});
+
+	it('uses precincts.percent for precinct-reporting (municipal) races', () => {
+		const race = ddhqResponseSchema.parse(sampleJson).data[1]!;
+		const municipal: DdhqRace = {
+			...race,
+			reporting_type: 'precincts',
+			topline_results: {
+				...race.topline_results,
+				precincts: { percent: 42.5, reporting: 17, total: 40 },
+			},
+		};
+		expect(adaptRace(municipal, 0).pctIn).toBe(42.5);
+	});
+});

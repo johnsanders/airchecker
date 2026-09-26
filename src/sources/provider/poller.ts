@@ -28,6 +28,15 @@ export type ProviderPollerConfig = {
 	onObservations: (observations: RaceObservation[]) => Promise<unknown> | unknown;
 };
 
+// DDHQ's next_page_url has no scheme ('race-api.decisiondeskhq.com/api/v4/...')
+// and names a different host than the documented API; fetch can't parse it as
+// is. Re-base its path + query onto the configured baseUrl, which is also the
+// host the bearer token was issued for.
+export const rebaseNextPageUrl = (nextPageUrl: string, baseUrl: string): string => {
+	const pathStart = nextPageUrl.indexOf('/api/');
+	return pathStart === -1 ? nextPageUrl : `${baseUrl}${nextPageUrl.slice(pathStart)}`;
+};
+
 export const makeProviderPoller = (config: ProviderPollerConfig): ProviderPoller => {
 	const now = config.now ?? Date.now;
 
@@ -55,8 +64,11 @@ export const makeProviderPoller = (config: ProviderPollerConfig): ProviderPoller
 			const raw: unknown = await fetchPage(url);
 			const parsed = ddhqResponseSchema.parse(raw);
 			await config.onObservations(adaptResponse(parsed, observedAt));
-			// next_page_url is a full URL, '' (no more), or null.
-			url = parsed.next_page_url;
+			// next_page_url is a URL, '' (no more), or null.
+			url =
+				parsed.next_page_url === null || parsed.next_page_url.length === 0
+					? null
+					: rebaseNextPageUrl(parsed.next_page_url, config.baseUrl);
 		}
 	};
 

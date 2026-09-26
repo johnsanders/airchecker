@@ -214,6 +214,7 @@ describe('cross-source race key alignment', () => {
 							},
 						],
 						contestType: 'Runoff',
+						dbVotesPercent: '0',
 						event: { date: '2026-05-26T00:00:00', id: 1, name: 'TX Runoffs', type: 'Runoff' },
 						id: 1,
 						modifiedDate: '2026-05-26T20:00:00',
@@ -239,5 +240,65 @@ describe('cross-source race key alignment', () => {
 		const vendorObservation = adaptContest(chameleonContest, 0, 0);
 		expect(providerObservation.raceKey).toBe('2026-TX-US_House-18-Democratic-Runoff');
 		expect(vendorObservation.raceKey).toBe(providerObservation.raceKey);
+	});
+});
+
+// The September 2026 General playlist slice: area.State/District/County are
+// dynamic fields that are usually absent; lowercase state/district carry the data.
+const chameleonGeneralPath = resolve(here, '..', 'chameleon_response_general_example.json');
+const chameleonGeneralJson = JSON.parse(readFileSync(chameleonGeneralPath, 'utf8')) as unknown;
+const ddhqGeneralPath = resolve(here, '..', 'ddhq_response_general_example.json');
+const ddhqGeneralJson = JSON.parse(readFileSync(ddhqGeneralPath, 'utf8')) as unknown;
+
+describe('Chameleon General Election sample', () => {
+	it('parses every area shape on the General playlist without errors', () => {
+		const parsed = chameleonResponseSchema.safeParse(chameleonGeneralJson);
+		if (!parsed.success) throw new Error(JSON.stringify(parsed.error.issues.slice(0, 3)));
+		expect(parsed.data.ElectionPlaylist.contest).toHaveLength(13);
+	});
+
+	it('takes the district from the lowercase area.district when District is absent', () => {
+		const response = chameleonResponseSchema.parse(chameleonGeneralJson);
+		const tx9 = response.ElectionPlaylist.contest.find((contest) => contest.id === 90203);
+		expect(tx9?.area.District).toBeUndefined();
+		expect(tx9 && buildContestRaceKey(tx9)).toBe('2026-TX-US_House-9-NP-General_Election');
+	});
+
+	it('still honours area.District when only the dynamic field is set', () => {
+		const response = chameleonResponseSchema.parse(chameleonGeneralJson);
+		const az1 = response.ElectionPlaylist.contest.find((contest) => contest.id === 89847);
+		expect(az1?.area.district).toBeUndefined();
+		expect(az1 && buildContestRaceKey(az1)).toBe('2026-AZ-US_House-1-NP-General_Election');
+	});
+
+	it('keys a statewide General race as at-large when both district fields are blank', () => {
+		const response = chameleonResponseSchema.parse(chameleonGeneralJson);
+		const ks = response.ElectionPlaylist.contest.find((contest) => contest.id === 90362);
+		expect(ks && buildContestRaceKey(ks)).toBe('2026-KS-US_Senate-AL-NP-General_Election');
+	});
+});
+
+describe('cross-source race key alignment on the real General samples', () => {
+	it('gives DDHQ race 295078 and the Chameleon contest carrying raceID 295078 the same key', () => {
+		const ddhq = ddhqResponseSchema.parse(ddhqGeneralJson);
+		const chameleon = chameleonResponseSchema.parse(chameleonGeneralJson);
+		const ddhqRace = ddhq.data.find((race) => race.race_id === 295078);
+		const contest = chameleon.ElectionPlaylist.contest.find((c) => c.id === 90203);
+		expect(ddhqRace && contest).toBeTruthy();
+		const provider = adaptDdhqRace(ddhqRace!, 1_000);
+		const vendor = adaptContest(contest!, 1_000, 1_000);
+		expect(vendor.raceKey).toBe(provider.raceKey);
+		expect(provider.raceKey).toBe('2026-TX-US_House-9-NP-General_Election');
+	});
+});
+
+describe('pctIn comes from dbVotesPercent', () => {
+	it('reads the turnout-based dbVotesPercent, not the precinct-based polls.reportedPercent', () => {
+		const response = chameleonResponseSchema.parse(chameleonJson);
+		const contest = response.ElectionPlaylist.contest.find(
+			(candidate) => candidate.polls.reportedPercent === '100' && candidate.dbVotesPercent === '95',
+		);
+		expect(contest).toBeDefined();
+		expect(adaptContest(contest!, 0, 0).pctIn).toBe(95);
 	});
 });

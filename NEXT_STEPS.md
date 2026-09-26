@@ -4,7 +4,7 @@ A pick-up sheet for the next session. Full context: [`CLAUDE.md`](CLAUDE.md), th
 
 ## Where we left off (2026-09-25)
 
-The system is retargeted to the **September 2026 graphics package** and proven against it offline. **221 tests, typecheck and lint clean.** Working directory is `~/Developer/airchecker` (`.env`, `recordings/settings.sqlite`, and the June session recordings live here; `~/Developer/nn-airchecker-old` holds only leftovers and can be deleted).
+The system is retargeted to the **September 2026 graphics package** and proven against it offline. **237 tests, typecheck and lint clean.** Working directory is `~/Developer/airchecker` (`.env`, `recordings/settings.sqlite`, and the June session recordings live here; `~/Developer/nn-airchecker-old` holds only leftovers and can be deleted).
 
 Done since the July hand-off, in order:
 
@@ -19,16 +19,19 @@ Done since the July hand-off, in order:
 
 1. **Rehearsal session with all three sources** against the new package (needs the VPN for Chameleon and DDHQ queries for the Nov 3 races). Promote 1–2 real frames with `capture-golden -- --from-session`, freeze a second full session golden, and confirm the identity resolver links the new air headings (proposal-driven; a human accepts in the `RaceLinks` panel).
 2. ~~Rule: votes up while pct_in down~~ — **dropped**: on statewide/high-profile races `% IN` is a share of estimated turnout and legitimately falls when the estimate is revised up mid-count. Only revisit gated on DDHQ `reporting_type` (precinct-based races).
-3. **Fixtures** — a Chameleon General-election contest sample and a DDHQ statewide (Senate/Governor) sample in the repo root; widen the schema tests.
-4. **Web-view auth** (`WEB_TOKEN`) only if the view leaves localhost.
-5. Deferred, unchanged: magic wall (`provider_direct` path), `judge()`, Slack/paging sinks, EC votes, county-level.
+3. ~~Fixtures~~ — done 2026-09-26 (`*_general_example.json` in the repo root, see below).
+4. **Deterministic Ross→DDHQ linking.** Every Nov 3 Chameleon contest carries `raceID` = the DDHQ `race_id`. Reading it in the adapter and letting the identity resolver alias on it would remove the Haiku proposal + human accept step for vendor races entirely (air races still need it). Small change; decide before the rehearsal.
+5. **Web-view auth** (`WEB_TOKEN`) only if the view leaves localhost.
+6. Deferred, unchanged: magic wall (`provider_direct` path), `judge()`, Slack/paging sinks, EC votes, county-level.
+
+**Source check 2026-09-26 (DDHQ + Chameleon, live).** Both reachable and authenticating, and both broke the zod boundary on today's data — fixed and covered by tests: DDHQ `precincts.percent` is `null` pre-election (→ `pctIn` 0); DDHQ `next_page_url` is schemeless on another host, so pagination had never actually worked (only single-page `race_ids=` queries were ever used) — the poller now re-bases it onto `DDHQ_BASE_URL`; Chameleon's `area.State`/`District`/`County` are mostly absent on the General playlist (lowercase built-ins carry the data). After the fixes: a 38-race, 4-page Nov 3 query drains cleanly; the playlist has 135 contests, 119 of them for Nov 3 across 47 states (Senate, House, Governor, two specials, two ballot questions), and **119/119 Nov 3 contests key identically to the DDHQ races their `raceID` names**. DDHQ's Nov 3 races are flagged `test_data: true` today. The persisted DDHQ query list is still the June runoff `race_ids=` entry — replace it in the web view before the rehearsal. **`% IN` is `turnout_mid`:** per DDHQ's docs the DDHQ adapter now follows `reporting_type` (`estimated` → `estimated_votes.turnout_mid`, `precincts` → `precincts.percent`; everything in scope is `estimated`) and the Chameleon adapter reads `dbVotesPercent` (its copy of `turnout_mid`, the field the template renders) instead of the precinct-based `polls.reportedPercent`. The three `pct_in_mismatch` alerts in the June session golden were this field mismatch, not a graphics fault (the golden's frozen observations predate the change, so it still replays as recorded).
 
 Done 2026-09-26 while waiting on better frames: replay audit of the June recordings under the new rules (no new noise); `npm run replay -- <id> --serve` plays a recorded session behind the real web view; `npm run sessions` lists recordings and `-- --prune-frames <id>` drops a session's PNGs; `docs/RUNBOOK.md` is the one-page operator sheet; lint is fully clean (built bundles ignored, the five warnings fixed).
 
 ## Useful commands
 
 ```bash
-npm test                                              # 221 tests, hermetic (no API key)
+npm test                                              # 237 tests, hermetic (no API key)
 npm run typecheck && npm run lint
 npm run live                                          # full live system + web view (needs .env + VPN)
 npm run chrome:debug                                  # the DirecTV/Actus Chrome the air capturer attaches to (CDP :9222)

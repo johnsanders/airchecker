@@ -32,13 +32,19 @@ const pollsSchema = z.object({
 	total: z.number(),
 });
 
+// State/District/County are Chameleon "dynamic fields" — present only when set
+// on that area. The built-in lowercase state/district/county carry the same
+// data on the September 2026 General playlist; either may be absent.
 const areaSchema = z.object({
+	county: z.string().nullable().optional(),
 	County: z.string().nullable().optional(),
+	district: z.string().nullable().optional(),
 	District: z.string().nullable().optional(),
 	id: z.number(),
 	name: z.string(),
 	nameShort: z.string(),
-	State: z.string(),
+	state: z.string().nullable().optional(),
+	State: z.string().nullable().optional(),
 });
 
 const eventSchema = z.object({
@@ -57,6 +63,9 @@ const contestSchema = z.object({
 	area: areaSchema,
 	choice: z.array(choiceSchema),
 	contestType: z.string(),
+	// Chameleon's copy of DDHQ estimated_votes.turnout_mid — what the template
+	// renders as "% IN". polls.reportedPercent is the precinct figure.
+	dbVotesPercent: z.string(),
 	event: eventSchema,
 	id: z.number(),
 	modifiedDate: z.string(),

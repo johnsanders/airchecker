@@ -1,0 +1,2576 @@
+{
+  "generated": "2026-09-26T17:42:44.3730911Z",
+  "ElectionPlaylist": {
+    "id": 133,
+    "customId": "128",
+    "name": "DDHQ MAIN",
+    "contest": [
+      {
+        "id": 90271,
+        "event": {
+          "id": 372,
+          "date": "2026-03-03T00:00:00",
+          "name": "2026-03-03 Texas  US Senate",
+          "nameShort": "2026-03-03 Texas  US Senate",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-15T14:36:16-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11697,
+          "name": "U.S. Senate (D)",
+          "nameShort": "U.S. Senate (D)",
+          "notes": null,
+          "modifiedDate": "2026-09-15T14:44:55-04:00"
+        },
+        "area": {
+          "id": 13482,
+          "name": "Texas",
+          "nameShort": "TX",
+          "notes": null,
+          "code": "48",
+          "modifiedDate": "2026-09-15T13:59:54-04:00",
+          "state": "TX",
+          "stateName": "Texas",
+          "county": "",
+          "district": ""
+        },
+        "contestType": "Primary",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 6371,
+          "reported": 5745,
+          "reportedPercent": "90.17",
+          "closingTime": "21:00",
+          "isClosed": true
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "95",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-15T14:36:16-04:00",
+        "seatname": "",
+        "officename": "US Senate",
+        "party": "Democratic",
+        "raceID": "242466",
+        "estimatedVotes": "2319187",
+        "choice": [
+          {
+            "id": 204610,
+            "elected": true,
+            "name": "Talarico, James",
+            "name2": "James Talarico",
+            "firstName": "James",
+            "lastName": "Talarico",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-03-03 Texas  US Senate/Texas/U.S. Senate (D)/Talarico, James",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-15T14:36:16-04:00",
+            "votes": {
+              "total": 1216412,
+              "votePercent": 52.45
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204608,
+            "elected": false,
+            "name": "Crockett, Jasmine",
+            "name2": "Jasmine Crockett",
+            "firstName": "Jasmine",
+            "lastName": "Crockett",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-03-03 Texas  US Senate/Texas/U.S. Senate (D)/Crockett, Jasmine",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-15T14:36:16-04:00",
+            "votes": {
+              "total": 1071900,
+              "votePercent": 46.22
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204609,
+            "elected": false,
+            "name": "Hassan, Ahmad",
+            "name2": "Ahmad Hassan",
+            "firstName": "Ahmad",
+            "lastName": "Hassan",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-03-03 Texas  US Senate/Texas/U.S. Senate (D)/Hassan, Ahmad",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-15T14:36:16-04:00",
+            "votes": {
+              "total": 30875,
+              "votePercent": 1.33
+            },
+            "position": 3,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90272,
+        "event": {
+          "id": 373,
+          "date": "2026-05-26T00:00:00",
+          "name": "2026-05-26 Texas  US Senate",
+          "nameShort": "2026-05-26 Texas  US Senate",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-15T14:36:19-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11698,
+          "name": "U.S. Senate (R)",
+          "nameShort": "U.S. Senate (R)",
+          "notes": null,
+          "modifiedDate": "2026-09-15T14:45:37-04:00"
+        },
+        "area": {
+          "id": 13482,
+          "name": "Texas",
+          "nameShort": "TX",
+          "notes": null,
+          "code": "48",
+          "modifiedDate": "2026-09-15T13:59:54-04:00",
+          "state": "TX",
+          "stateName": "Texas",
+          "county": "",
+          "district": ""
+        },
+        "contestType": "Runoff",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 7205,
+          "reported": 4851,
+          "reportedPercent": "67.33",
+          "closingTime": "21:00",
+          "isClosed": true
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "95",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-15T14:36:19-04:00",
+        "seatname": "",
+        "officename": "US Senate",
+        "party": "Republican",
+        "raceID": "606242",
+        "estimatedVotes": "1387674",
+        "choice": [
+          {
+            "id": 204611,
+            "elected": true,
+            "name": "Paxton, Ken",
+            "name2": "Ken Paxton",
+            "firstName": "Ken",
+            "lastName": "Paxton",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-05-26 Texas  US Senate/Texas/U.S. Senate (R)/Paxton, Ken",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-15T14:36:19-04:00",
+            "votes": {
+              "total": 885949,
+              "votePercent": 63.84
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204612,
+            "elected": false,
+            "name": "Cornyn, John",
+            "name2": "John Cornyn",
+            "firstName": "John",
+            "lastName": "Cornyn",
+            "incumbent": true,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-05-26 Texas  US Senate/Texas/U.S. Senate (R)/Cornyn, John",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-15T14:36:19-04:00",
+            "votes": {
+              "total": 501725,
+              "votePercent": 36.16
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90357,
+        "event": {
+          "id": 383,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   US Senate",
+          "nameShort": "2026-11-03   US Senate",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-22T16:57:47-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11704,
+          "name": "U.S. Senate",
+          "nameShort": "U.S. Senate",
+          "notes": null,
+          "modifiedDate": "2026-09-22T17:01:11-04:00"
+        },
+        "area": {
+          "id": 13448,
+          "name": "Florida",
+          "nameShort": "FL",
+          "notes": null,
+          "code": "12",
+          "modifiedDate": "2026-08-13T15:22:56-04:00",
+          "state": "FL",
+          "stateName": "Florida",
+          "county": "",
+          "district": ""
+        },
+        "contestType": "Special Election General",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 10851608,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "20:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-26T13:30:44-04:00",
+        "seatname": "",
+        "officename": "US Senate",
+        "party": "",
+        "raceID": "294676",
+        "estimatedVotes": "10851608",
+        "choice": [
+          {
+            "id": 204872,
+            "elected": false,
+            "name": "Moody, Ashley",
+            "name2": "Ashley Moody",
+            "firstName": "Ashley",
+            "lastName": "Moody",
+            "incumbent": true,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US Senate/Florida/U.S. Senate/Moody, Ashley",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:01-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204871,
+            "elected": false,
+            "name": "Nixon, Angie",
+            "name2": "Angie Nixon",
+            "firstName": "Angie",
+            "lastName": "Nixon",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US Senate/Florida/U.S. Senate/Nixon, Angie",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:01-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90362,
+        "event": {
+          "id": 383,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   US Senate",
+          "nameShort": "2026-11-03   US Senate",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-22T16:57:47-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11704,
+          "name": "U.S. Senate",
+          "nameShort": "U.S. Senate",
+          "notes": null,
+          "modifiedDate": "2026-09-22T17:01:11-04:00"
+        },
+        "area": {
+          "id": 13434,
+          "name": "Kansas",
+          "nameShort": "KS",
+          "notes": null,
+          "code": "20",
+          "modifiedDate": "2026-07-15T12:28:03-04:00",
+          "District": "",
+          "County": "",
+          "state": "KS",
+          "stateName": "Kansas"
+        },
+        "contestType": "General Election",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 1312260,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "21:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-26T13:30:44-04:00",
+        "seatname": "",
+        "officename": "US Senate",
+        "party": "",
+        "raceID": "294681",
+        "estimatedVotes": "1312260",
+        "choice": [
+          {
+            "id": 204886,
+            "elected": false,
+            "name": "Hamilton, Adam",
+            "name2": "Adam Hamilton",
+            "firstName": "Adam",
+            "lastName": "Hamilton",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US Senate/Kansas/U.S. Senate/Hamilton, Adam",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:01-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204885,
+            "elected": false,
+            "name": "Marshall, Roger",
+            "name2": "Roger Marshall",
+            "firstName": "Roger",
+            "lastName": "Marshall",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US Senate/Kansas/U.S. Senate/Marshall, Roger",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:01-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90383,
+        "event": {
+          "id": 383,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   US Senate",
+          "nameShort": "2026-11-03   US Senate",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-22T16:57:47-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11704,
+          "name": "U.S. Senate",
+          "nameShort": "U.S. Senate",
+          "notes": null,
+          "modifiedDate": "2026-09-22T17:01:11-04:00"
+        },
+        "area": {
+          "id": 13482,
+          "name": "Texas",
+          "nameShort": "TX",
+          "notes": null,
+          "code": "48",
+          "modifiedDate": "2026-09-15T13:59:54-04:00",
+          "state": "TX",
+          "stateName": "Texas",
+          "county": "",
+          "district": ""
+        },
+        "contestType": "General Election",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 9738759,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "21:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-26T13:30:44-04:00",
+        "seatname": "",
+        "officename": "US Senate",
+        "party": "",
+        "raceID": "294702",
+        "estimatedVotes": "9738759",
+        "choice": [
+          {
+            "id": 204942,
+            "elected": false,
+            "name": "Brown, Ted",
+            "name2": "Ted Brown",
+            "firstName": "Ted",
+            "lastName": "Brown",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US Senate/Texas/U.S. Senate/Brown, Ted",
+            "notes": null,
+            "party": {
+              "name": "Libertarian",
+              "nameShort": "L",
+              "nameAlt": "L",
+              "notes": null,
+              "main": true,
+              "color": "#4E4D4C",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:19:59-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:01-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204943,
+            "elected": false,
+            "name": "Paxton, Ken",
+            "name2": "Ken Paxton",
+            "firstName": "Ken",
+            "lastName": "Paxton",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US Senate/Texas/U.S. Senate/Paxton, Ken",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:01-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204941,
+            "elected": false,
+            "name": "Talarico, James",
+            "name2": "James Talarico",
+            "firstName": "James",
+            "lastName": "Talarico",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US Senate/Texas/U.S. Senate/Talarico, James",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:01-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 3,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 89847,
+        "event": {
+          "id": 371,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   US House",
+          "nameShort": "2026-11-03   US House",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-15T14:04:03-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11696,
+          "name": "U.S. House",
+          "nameShort": "U.S. House",
+          "notes": null,
+          "modifiedDate": "2026-09-15T14:09:55-04:00"
+        },
+        "area": {
+          "id": 12616,
+          "name": "Arizona - 1",
+          "nameShort": "AZ - 1",
+          "notes": null,
+          "code": "04",
+          "modifiedDate": "2026-06-24T10:55:51-04:00",
+          "District": "1",
+          "County": "",
+          "stateName": "Arizona",
+          "state": "AZ"
+        },
+        "contestType": "General Election",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 334882,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "21:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-26T13:30:53-04:00",
+        "seatname": "1",
+        "officename": "US House",
+        "party": "",
+        "raceID": "294718",
+        "estimatedVotes": "334882",
+        "choice": [
+          {
+            "id": 203671,
+            "elected": false,
+            "name": "Feely, Jay",
+            "name2": "Jay Feely",
+            "firstName": "Jay",
+            "lastName": "Feely",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Arizona - 1/U.S. House/Feely, Jay",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 203670,
+            "elected": false,
+            "name": "Shah, Amish",
+            "name2": "Amish Shah",
+            "firstName": "Amish",
+            "lastName": "Shah",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Arizona - 1/U.S. House/Shah, Amish",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90043,
+        "event": {
+          "id": 371,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   US House",
+          "nameShort": "2026-11-03   US House",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-15T14:04:03-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11696,
+          "name": "U.S. House",
+          "nameShort": "U.S. House",
+          "notes": null,
+          "modifiedDate": "2026-09-15T14:09:55-04:00"
+        },
+        "area": {
+          "id": 12791,
+          "name": "Michigan - 7",
+          "nameShort": "MI - 7",
+          "notes": null,
+          "code": "26",
+          "modifiedDate": "2026-06-24T10:55:52-04:00",
+          "County": "",
+          "district": "7",
+          "state": "MI",
+          "stateName": "Michigan"
+        },
+        "contestType": "General Election",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 432399,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "20:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-26T13:30:53-04:00",
+        "seatname": "7",
+        "officename": "US House",
+        "party": "",
+        "raceID": "294914",
+        "estimatedVotes": "432399",
+        "choice": [
+          {
+            "id": 204097,
+            "elected": false,
+            "name": "Barrett, Tom",
+            "name2": "Tom Barrett",
+            "firstName": "Tom",
+            "lastName": "Barrett",
+            "incumbent": true,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Michigan - 7/U.S. House/Barrett, Tom",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204098,
+            "elected": false,
+            "name": "Dedrick, Shane",
+            "name2": "Shane Dedrick",
+            "firstName": "Shane",
+            "lastName": "Dedrick",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Michigan - 7/U.S. House/Dedrick, Shane",
+            "notes": null,
+            "party": {
+              "name": "Green",
+              "nameShort": "G",
+              "nameAlt": "G",
+              "notes": null,
+              "main": true,
+              "color": "#4EAA36",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:40-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204096,
+            "elected": false,
+            "name": "Lawrence, William",
+            "name2": "William Lawrence",
+            "firstName": "William",
+            "lastName": "Lawrence",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Michigan - 7/U.S. House/Lawrence, William",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 3,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90194,
+        "event": {
+          "id": 371,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   US House",
+          "nameShort": "2026-11-03   US House",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-15T14:04:03-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11696,
+          "name": "U.S. House",
+          "nameShort": "U.S. House",
+          "notes": null,
+          "modifiedDate": "2026-09-15T14:09:55-04:00"
+        },
+        "area": {
+          "id": 13438,
+          "name": "Tennessee - 9",
+          "nameShort": "TN - 9",
+          "notes": null,
+          "code": "47",
+          "modifiedDate": "2026-08-05T13:03:53-04:00",
+          "state": "TN",
+          "stateName": "Tennessee",
+          "county": "",
+          "district": "9",
+          "State": "Tennessee",
+          "District": "9"
+        },
+        "contestType": "General Election",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 398,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "20:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-15T14:04:04-04:00",
+        "seatname": "9",
+        "officename": "US House",
+        "party": "",
+        "raceID": "295069",
+        "estimatedVotes": "323515",
+        "choice": [
+          {
+            "id": 204444,
+            "elected": false,
+            "name": "Pearson, Justin",
+            "name2": "Justin Pearson",
+            "firstName": "Justin",
+            "lastName": "Pearson",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Tennessee - 9/U.S. House/Pearson, Justin",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204443,
+            "elected": false,
+            "name": "Taylor, Brent",
+            "name2": "Brent Taylor",
+            "firstName": "Brent",
+            "lastName": "Taylor",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Tennessee - 9/U.S. House/Taylor, Brent",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90203,
+        "event": {
+          "id": 371,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   US House",
+          "nameShort": "2026-11-03   US House",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-15T14:04:03-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11696,
+          "name": "U.S. House",
+          "nameShort": "U.S. House",
+          "notes": null,
+          "modifiedDate": "2026-09-15T14:09:55-04:00"
+        },
+        "area": {
+          "id": 13836,
+          "name": "Texas - 9",
+          "nameShort": "TX - 9",
+          "notes": null,
+          "code": "48",
+          "modifiedDate": "2026-09-15T14:04:04-04:00",
+          "state": "TX",
+          "stateName": "Texas",
+          "county": "",
+          "district": "9"
+        },
+        "contestType": "General Election",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 30,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "20:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-15T14:04:04-04:00",
+        "seatname": "9",
+        "officename": "US House",
+        "party": "",
+        "raceID": "295078",
+        "estimatedVotes": "121929",
+        "choice": [
+          {
+            "id": 204461,
+            "elected": false,
+            "name": "Gutierrez, Leticia",
+            "name2": "Leticia Gutierrez",
+            "firstName": "Leticia",
+            "lastName": "Gutierrez",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Texas - 9/U.S. House/Gutierrez, Leticia",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204462,
+            "elected": false,
+            "name": "Mealer, Alex",
+            "name2": "Alex Mealer",
+            "firstName": "Alex",
+            "lastName": "Mealer",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Texas - 9/U.S. House/Mealer, Alex",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90239,
+        "event": {
+          "id": 371,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   US House",
+          "nameShort": "2026-11-03   US House",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-15T14:04:03-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11696,
+          "name": "U.S. House",
+          "nameShort": "U.S. House",
+          "notes": null,
+          "modifiedDate": "2026-09-15T14:09:55-04:00"
+        },
+        "area": {
+          "id": 12972,
+          "name": "Virginia - 2",
+          "nameShort": "VA - 2",
+          "notes": null,
+          "code": "51",
+          "modifiedDate": "2026-06-24T10:55:54-04:00",
+          "District": "2",
+          "State": "Virginia",
+          "County": "",
+          "district": "2",
+          "state": "VA",
+          "stateName": "Virginia"
+        },
+        "contestType": "General Election",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 407666,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "19:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-26T13:30:53-04:00",
+        "seatname": "2",
+        "officename": "US House",
+        "party": "",
+        "raceID": "295114",
+        "estimatedVotes": "407666",
+        "choice": [
+          {
+            "id": 204547,
+            "elected": false,
+            "name": "Kiggans, Jennifer",
+            "name2": "Jennifer Kiggans",
+            "firstName": "Jennifer",
+            "lastName": "Kiggans",
+            "incumbent": true,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Virginia - 2/U.S. House/Kiggans, Jennifer",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204546,
+            "elected": false,
+            "name": "Luria, Elaine",
+            "name2": "Elaine Luria",
+            "firstName": "Elaine",
+            "lastName": "Luria",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   US House/Virginia - 2/U.S. House/Luria, Elaine",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:11-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90388,
+        "event": {
+          "id": 384,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   Governor",
+          "nameShort": "2026-11-03   Governor",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-22T17:06:00-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11688,
+          "name": "Governor",
+          "nameShort": "Governor",
+          "notes": null,
+          "modifiedDate": "2026-09-11T11:25:17-04:00"
+        },
+        "area": {
+          "id": 13478,
+          "name": "Ohio",
+          "nameShort": "OH",
+          "notes": null,
+          "code": "39",
+          "modifiedDate": "2026-09-15T13:59:54-04:00",
+          "state": "OH",
+          "stateName": "Ohio",
+          "county": "",
+          "district": ""
+        },
+        "contestType": "General",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 5404069,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "19:30",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-26T13:30:48-04:00",
+        "seatname": "",
+        "officename": "Governor",
+        "party": "",
+        "raceID": "681152",
+        "estimatedVotes": "5404069",
+        "choice": [
+          {
+            "id": 204953,
+            "elected": false,
+            "name": "Acton, Amy",
+            "name2": "Amy Acton",
+            "firstName": "Amy",
+            "lastName": "Acton",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   Governor/Ohio/Governor/Acton, Amy",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:05-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204955,
+            "elected": false,
+            "name": "Kissick, Don",
+            "name2": "Don Kissick",
+            "firstName": "Don",
+            "lastName": "Kissick",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   Governor/Ohio/Governor/Kissick, Don",
+            "notes": null,
+            "party": {
+              "name": "Libertarian",
+              "nameShort": "L",
+              "nameAlt": "L",
+              "notes": null,
+              "main": true,
+              "color": "#4E4D4C",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:19:59-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:05-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204954,
+            "elected": false,
+            "name": "Ramaswamy, Vivek",
+            "name2": "Vivek Ramaswamy",
+            "firstName": "Vivek",
+            "lastName": "Ramaswamy",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   Governor/Ohio/Governor/Ramaswamy, Vivek",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:05-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 3,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90395,
+        "event": {
+          "id": 384,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03   Governor",
+          "nameShort": "2026-11-03   Governor",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-22T17:06:00-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11688,
+          "name": "Governor",
+          "nameShort": "Governor",
+          "notes": null,
+          "modifiedDate": "2026-09-11T11:25:17-04:00"
+        },
+        "area": {
+          "id": 13482,
+          "name": "Texas",
+          "nameShort": "TX",
+          "notes": null,
+          "code": "48",
+          "modifiedDate": "2026-09-15T13:59:54-04:00",
+          "state": "TX",
+          "stateName": "Texas",
+          "county": "",
+          "district": ""
+        },
+        "contestType": "General Election",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 9432450,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "21:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-26T13:30:48-04:00",
+        "seatname": "",
+        "officename": "Governor",
+        "party": "",
+        "raceID": "701534",
+        "estimatedVotes": "9432450",
+        "choice": [
+          {
+            "id": 204976,
+            "elected": false,
+            "name": "Abbott, Greg",
+            "name2": "Greg Abbott",
+            "firstName": "Greg",
+            "lastName": "Abbott",
+            "incumbent": true,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   Governor/Texas/Governor/Abbott, Greg",
+            "notes": null,
+            "party": {
+              "name": "Republican",
+              "nameShort": "GOP",
+              "nameAlt": "GOP",
+              "notes": null,
+              "main": true,
+              "color": "#C00000",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:20:12-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:05-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204977,
+            "elected": false,
+            "name": "Dixon, Pat",
+            "name2": "Pat Dixon",
+            "firstName": "Pat",
+            "lastName": "Dixon",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   Governor/Texas/Governor/Dixon, Pat",
+            "notes": null,
+            "party": {
+              "name": "Libertarian",
+              "nameShort": "L",
+              "nameAlt": "L",
+              "notes": null,
+              "main": true,
+              "color": "#4E4D4C",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:19:59-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:05-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204975,
+            "elected": false,
+            "name": "Hinojosa, Gina",
+            "name2": "Gina Hinojosa",
+            "firstName": "Gina",
+            "lastName": "Hinojosa",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03   Governor/Texas/Governor/Hinojosa, Gina",
+            "notes": null,
+            "party": {
+              "name": "Democratic",
+              "nameShort": "DEM",
+              "nameAlt": "DEM",
+              "notes": null,
+              "main": true,
+              "color": "#0E53E3",
+              "logo": {
+                "media": {
+                  "id": 32,
+                  "name": "Demo",
+                  "localUrl": "http://txdaldc1nnr001.nexstar.tv/chameleon/blade/media/32.jpg?redirect=true",
+                  "fileName": "Demo.jpg",
+                  "extension": "jpg",
+                  "length": 1,
+                  "height": 0,
+                  "width": 0,
+                  "duration": null,
+                  "loop": false,
+                  "mimeType": "image/jpeg",
+                  "url": "https://www.worldatlas.com/r/w1200-h630-c1200x630/upload/ea/c3/c5/shutterstock-319420406.jpg",
+                  "savedPath": "",
+                  "caption": null,
+                  "keywords": null,
+                  "modifiedDate": "2026-06-24T12:51:02-04:00",
+                  "datafeedId": null,
+                  "datafeedChar": "",
+                  "source": "ExternalUrl",
+                  "alpha": false
+                }
+              },
+              "modifiedDate": "2026-06-24T12:51:05-04:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:05-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 3,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      },
+      {
+        "id": 90280,
+        "event": {
+          "id": 380,
+          "date": "2026-11-03T00:00:00",
+          "name": "2026-11-03    Ballot Questions",
+          "nameShort": "2026-11-03    Ballot Questions",
+          "type": "General Election",
+          "notes": null,
+          "timeZone": "Eastern Standard Time",
+          "contestSortTypeCode": "",
+          "partySortTypeCode": "",
+          "modifiedDate": "2026-09-17T13:00:44-04:00",
+          "dataSource": {
+            "name": "DDHQ",
+            "shortName": "DDHQ"
+          },
+          "genericHeadshot": {
+            "media": null
+          }
+        },
+        "office": {
+          "id": 11702,
+          "name": "Proposition 40",
+          "nameShort": "Wealth Tax",
+          "notes": "Proposition 40 - One-Time Wealth Tax for State-Funded Healthcare, Education, and Food Assistance Programs-Nonpartisan",
+          "modifiedDate": "2026-09-17T13:05:03-04:00"
+        },
+        "area": {
+          "id": 13485,
+          "name": "California",
+          "nameShort": "CA",
+          "notes": null,
+          "code": "06",
+          "modifiedDate": "2026-09-15T13:59:58-04:00",
+          "state": "CA",
+          "stateName": "California",
+          "county": "",
+          "district": ""
+        },
+        "contestType": "Ballot Question",
+        "notes": null,
+        "positions": 1,
+        "polls": {
+          "total": 21023,
+          "reported": 0,
+          "reportedPercent": "0",
+          "closingTime": "23:00",
+          "isClosed": false
+        },
+        "runoffEligible": false,
+        "isRunoff": false,
+        "dbVotesPercent": "0",
+        "dbVotesPercentPrevious": "",
+        "sortType": "",
+        "modifiedDate": "2026-09-17T13:00:44-04:00",
+        "seatname": "",
+        "officename": "Proposition 40 - One-Time Wealth Tax for State-Funded Healthcare, Education, and Food Assistance Programs",
+        "party": "Nonpartisan",
+        "raceID": "790967",
+        "estimatedVotes": "8126274",
+        "choice": [
+          {
+            "id": 204632,
+            "elected": false,
+            "name": "No",
+            "name2": "No",
+            "firstName": "",
+            "lastName": "No",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03    Ballot Questions/California/Proposition 40/No",
+            "notes": null,
+            "party": {
+              "name": "Nonpartisan",
+              "nameShort": "NP",
+              "nameAlt": "NP",
+              "notes": null,
+              "main": false,
+              "color": "#4E4D4C",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:39:46-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:24-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 1,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          },
+          {
+            "id": 204631,
+            "elected": false,
+            "name": "Yes",
+            "name2": "Yes",
+            "firstName": "",
+            "lastName": "Yes",
+            "incumbent": false,
+            "acclaimed": false,
+            "headShot": {
+              "media": null
+            },
+            "path": "2026-11-03    Ballot Questions/California/Proposition 40/Yes",
+            "notes": null,
+            "party": {
+              "name": "Nonpartisan",
+              "nameShort": "NP",
+              "nameAlt": "NP",
+              "notes": null,
+              "main": false,
+              "color": "#4E4D4C",
+              "logo": {
+                "media": null
+              },
+              "modifiedDate": "2024-11-04T12:39:46-05:00"
+            },
+            "modifiedDate": "2026-09-25T05:58:24-04:00",
+            "votes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "position": 2,
+            "previousVotes": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "votes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "previousVotes2": {
+              "total": 0,
+              "votePercent": 0
+            },
+            "dbVotesPercent": 0,
+            "dbVotesPercentPrevious": 0
+          }
+        ]
+      }
+    ]
+  }
+}

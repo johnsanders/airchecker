@@ -7,7 +7,7 @@ import type { RaceObservation } from '../../src/reconcile/reconcile.js';
 import type { HttpJson } from '../../src/sources/http.js';
 import type { DdhqAuth } from '../../src/sources/provider/auth.js';
 
-import { makeProviderPoller } from '../../src/sources/provider/poller.js';
+import { makeProviderPoller, rebaseNextPageUrl } from '../../src/sources/provider/poller.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const sample = JSON.parse(
@@ -153,5 +153,43 @@ describe('makeProviderPoller', () => {
 		expect(invalidated).toBe(true);
 		expect(calls).toBe(2); // failed once, retried, succeeded
 		expect(observed).toHaveLength(1);
+	});
+});
+
+describe('rebaseNextPageUrl', () => {
+	it("re-bases DDHQ's schemeless, other-host next_page_url onto the configured baseUrl", () => {
+		expect(
+			rebaseNextPageUrl(
+				'race-api.decisiondeskhq.com/api/v4/races?limit=10&page=2&race_date=2026-11-03',
+				baseUrl,
+			),
+		).toBe(`${baseUrl}/api/v4/races?limit=10&page=2&race_date=2026-11-03`);
+	});
+
+	it('leaves a URL without an /api/ path alone', () => {
+		expect(rebaseNextPageUrl(`${baseUrl}/page2`, baseUrl)).toBe(`${baseUrl}/page2`);
+	});
+
+	it('is applied when the poller follows pages', async () => {
+		const page1 = {
+			...sample,
+			data: [(sample.data as unknown[])[0]],
+			next_page_url: 'race-api.decisiondeskhq.com/api/v4/races?race_ids=1&page=2',
+		};
+		const page2 = { ...sample, data: [(sample.data as unknown[])[1]], next_page_url: '' };
+		const { gets, http } = makeHttp({
+			[`${baseUrl}/api/v4/races?race_ids=1&page=2`]: page2,
+			[`${baseUrl}/api/v4/races?race_ids=1`]: page1,
+		});
+		const observed: RaceObservation[] = [];
+		await makeProviderPoller({
+			auth: stubAuth(),
+			baseUrl,
+			getQueries: () => ['race_ids=1'],
+			http,
+			onObservations: (obs) => observed.push(...obs),
+		}).pollOnce();
+		expect(gets).toHaveLength(2);
+		expect(observed).toHaveLength(2);
 	});
 });

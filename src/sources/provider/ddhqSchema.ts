@@ -12,15 +12,29 @@ const candidateSchema = z.object({
 	suffix: z.string().nullable(),
 });
 
+// percent is null until DDHQ has a precinct count for the race (pre-election
+// General races ship total: 0, percent: null).
 const precinctsSchema = z.object({
-	percent: z.number(),
+	percent: z.number().nullable(),
 	reporting: z.number(),
 	total: z.number(),
+});
+
+// DDHQ's modeled progress: total_votes as a share of the expected vote (turnout_*),
+// revised through the night. This is what "% IN" means for every race in scope.
+const estimatedVotesSchema = z.object({
+	estimated_votes_high: z.number(),
+	estimated_votes_low: z.number(),
+	estimated_votes_mid: z.number(),
+	turnout_high: z.number(),
+	turnout_low: z.number(),
+	turnout_mid: z.number(),
 });
 
 const toplineSchema = z.object({
 	call_times: z.array(z.unknown()),
 	called_candidates: z.array(z.number()),
+	estimated_votes: estimatedVotesSchema.nullable().optional(),
 	precincts: precinctsSchema,
 	total_votes: z.number(),
 	votes: z.record(z.string(), z.number()),
@@ -36,6 +50,8 @@ const raceSchema = z.object({
 	party: z.string().nullable(),
 	party_id: z.number().nullable(),
 	race_id: z.number(),
+	// 'estimated' | 'precincts' — which progress figure the race reports in.
+	reporting_type: z.string().optional(),
 	state: z.string(),
 	state_name: z.string(),
 	topline_results: toplineSchema,

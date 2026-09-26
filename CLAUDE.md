@@ -66,7 +66,7 @@ type RaceObservation = {
 	observedAt: number; // when WE recorded it (ms epoch)
 	reportedAt: number | null; // upstream timestamp if available
 	raceKey: string;
-	pctIn: number;
+	pctIn: number; // share of ESTIMATED turnout, not precincts — see below
 	candidates: CandidateState[];
 	calledFor: string[]; // candidate keys called/advancing; empty = none. A SET, order-insensitive.
 	templateId?: string; // air only
@@ -75,6 +75,8 @@ type RaceObservation = {
 ```
 
 `calledFor` is a **set of candidate keys**, not a single winner — top-two primaries/runoffs (and multi-seat races) genuinely call two. DDHQ uses all `called_candidates`; Chameleon all `elected` choices; the air extractor's recall pass reads every ✓. The reconciler's call rules compare it set-wise (order-insensitive), and flag `missing_call` when air shows a strict subset of the provider's called set (e.g. air caught only the leader's check mark in a two-winner race). The `recordings/goldens/fs_ga11_house_*` goldens lock this in.
+
+`pctIn` is **a share of estimated turnout, not of precincts.** DDHQ reports progress two ways and names which per race in `reporting_type`: `estimated` → `topline_results.estimated_votes.turnout_mid` (total votes as a share of the modeled expected vote, revised through the night — so it can legitimately *fall* while votes keep rising, e.g. when early turnout beats the forecast), `precincts` → `topline_results.precincts.percent` (municipal races only). Every race in scope is `estimated`. Chameleon's `dbVotesPercent` is its copy of `turnout_mid` and is what the Nov 3 template renders as `% IN`; its `polls.reportedPercent` is the precinct figure and is not used. (June 2026 evidence: the air badge showed 78/81/65/76 while our precinct-based vendor figure said 67/75/77/85 — the three June `pct_in_mismatch` alerts were this.) Never add a rule that treats `pctIn` as monotonic.
 
 ### `TemplateSpec`
 
@@ -157,16 +159,21 @@ Carried over from the user's other TS/React work; defaults until said otherwise.
 Current samples in repo root:
 
 - `ddhq_response_example.json` — a 39-race paginated DDHQ response covering TX US House 2024-11-05 General Election (page 1, 10 races).
+- `ddhq_response_general_example.json` — page 1 of `race_date=2026-11-03&state=TX&office_id=3` as served on 2026-09-26 (`test_data: true` races; pre-election `precincts.percent` is **null**).
 - `chameleon_response_example.json` — 49 contests from 2026-05-26 TX runoffs (Senate, House, Governor, AG, Lt Gov × Primary/Runoff/Special).
+- `chameleon_response_general_example.json` — 13 contests sliced from the live 2026-11-03 playlist: every `area` shape seen, a 3-candidate statewide, a ballot question, a special, and the `General` (not `General Election`) contest type.
 
-The two samples don't currently overlap on a shared race, so the cross-source race-key alignment test uses a synthetic pair (see `tests/chameleonAdapter.test.ts`). Before adding race-type-specific code (Presidential, statewide General, multi-winner Primary, Special Elections), drop a representative sample in the repo root and widen the schema tests so we know it parses. Cheap insurance.
+The two General samples overlap on TX-9 (DDHQ race 295078 ↔ Chameleon contest 90203), so the cross-source race-key alignment test runs on a real pair as well as the synthetic one (see `tests/chameleonAdapter.test.ts`). Live on 2026-09-26, all 119 Nov 3 Chameleon contests keyed identically to the DDHQ races they point at. Before adding race-type-specific code (Presidential, multi-winner Primary, ranked choice), drop a representative sample in the repo root and widen the schema tests so we know it parses. Cheap insurance.
+
+Two live-data shapes the schemas were widened for on 2026-09-26 (both broke a poll tick outright before): DDHQ's `next_page_url` has no scheme and names a different host, so the poller re-bases it onto `DDHQ_BASE_URL`; Chameleon's `area.State`/`District`/`County` are dynamic fields that are usually absent on the General playlist, and the built-in lowercase `state`/`district`/`county` carry the data.
 
 Known fields not yet modeled (zod default strips them — won't crash, but the adapter can't surface them):
 
 - DDHQ `ecvotes` (Presidential electoral votes)
 - DDHQ `counties[]` (per-county breakdowns — rich data, ignored today)
 - DDHQ `topline_results.voting_data` (absentee/election-day split)
-- DDHQ `reporting_type`, `expected_winners`, `marquee_race`
+- DDHQ `expected_winners`, `marquee_race`, `test_data`
+- Chameleon `contest.raceID` — the DDHQ `race_id`, set on every Nov 3 contest. Would make Ross→DDHQ race linking deterministic (no Haiku proposal); not wired yet.
 
 ## Known gaps / deferred work
 
@@ -184,9 +191,9 @@ These are deliberate v1 cuts, written down so they're not forgotten:
 
 types → store → reconciler with unit tests → adapters → recorder → replay player with stub sources → template specs + calibrate → **two-pass `extractFrame` + first golden** → real pollers → air capturer → wire `liveMain` → web view.
 
-Currently done: **the entire build order above, plus the identity resolver, live pollers, the air capturer, `liveMain`, the Fastify + websocket web view, and session goldens.** Proven live against two June 2026 broadcast nights (TX runoffs with all three sources + a DDHQ/Ross primary night). **170 tests passing.**
+Currently done: **the entire build order above, plus the identity resolver, live pollers, the air capturer, `liveMain`, the Fastify + websocket web view, and session goldens.** Proven live against two June 2026 broadcast nights (TX runoffs with all three sources + a DDHQ/Ross primary night). **237 tests passing.**
 
-Next up — no longer blocked on user inputs. See [`NEXT_STEPS.md`](NEXT_STEPS.md) for the current list: the recorder image-payload bloat fix before a 6-hour broadcast, alert-history persistence, a possible votes-up/pct_in-down rule, then the still-deferred items below.
+Next up — see [`NEXT_STEPS.md`](NEXT_STEPS.md) for the current list: the rehearsal with all three sources, deterministic Ross→DDHQ linking via Chameleon's `raceID`, then the still-deferred items below.
 
 ## Don't
 

@@ -28,6 +28,15 @@ const buildCandidateName = (candidate: DdhqCandidate): string => {
 	return parts.filter((part) => part.length > 0).join(' ');
 };
 
+// DDHQ reports progress two ways and says which per race (its docs): precinct
+// reporting for municipal races, otherwise estimated_votes.turnout_mid — a share
+// of the modeled expected vote, which can fall when the estimate is revised up.
+// Everything on the Nov 3 package is 'estimated'.
+const pctInFor = (race: DdhqRace): number =>
+	race.reporting_type === 'precincts'
+		? (race.topline_results.precincts.percent ?? 0)
+		: (race.topline_results.estimated_votes?.turnout_mid ?? 0);
+
 const adaptRace = (race: DdhqRace, observedAt: number): RaceObservation => {
 	const raceKey = buildRaceKey(race);
 	const totalVotes = race.topline_results.total_votes;
@@ -48,7 +57,7 @@ const adaptRace = (race: DdhqRace, observedAt: number): RaceObservation => {
 		calledFor,
 		candidates,
 		observedAt,
-		pctIn: race.topline_results.precincts.percent,
+		pctIn: pctInFor(race),
 		raceKey,
 		reportedAt: Number.isNaN(reportedAt) ? null : reportedAt,
 		source: 'DDHQ',
