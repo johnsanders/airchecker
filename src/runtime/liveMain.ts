@@ -270,7 +270,10 @@ const liveMain = async (): Promise<void> => {
 	const apiRecording: WebApiRecording =
 		playback !== undefined && playbackClock !== undefined
 			? {
+					body: apiRecorder.body,
 					list: apiRecorder.list,
+					meta: apiRecorder.meta,
+					responses: apiRecorder.responses,
 					status: () => ({
 						durationMs: playbackClock.durationMs,
 						elapsedMs: Math.min(playbackClock.elapsedMs(), playbackClock.durationMs),
