@@ -2,12 +2,10 @@ import type { ApiRecording, ApiResponseRow, ApiSource } from '../replay/apiRecor
 import type { HttpJson } from './http.js';
 
 import { stripOrigin } from '../replay/apiRecording.js';
+import { errorMessage } from '../runtime/sourceErrors.js';
 
 // Record/playback seams over HttpJson, so pollers, schemas and adapters run unchanged
 // against a recorded night. Mirrors makeRecordingLlmClient / makeStubLlmClient.
-
-const errorMessage = (error: unknown): string =>
-	error instanceof Error ? error.message : String(error);
 
 // GETs only: the OAuth token POST is never recorded, so no credentials or tokens land on disk.
 export const makeRecordingHttp = (

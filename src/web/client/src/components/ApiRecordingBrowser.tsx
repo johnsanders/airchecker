@@ -6,7 +6,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
@@ -54,8 +53,16 @@ const errorMessage = (error: unknown): string =>
 
 // Read-only view of one API recording: what was captured, newest first, and any one
 // response's stored JSON. The body only mounts while open, so each open starts fresh.
+// Fixed height, with the table and the JSON scrolling in their own columns: a dialog
+// sized to its content re-centers (jumps) whenever a body opens or rows arrive.
 const ApiRecordingBrowser: React.FC<Props> = (props) => (
-	<Dialog fullWidth={true} maxWidth="xl" onClose={props.onClose} open={props.name !== undefined}>
+	<Dialog
+		fullWidth={true}
+		maxWidth="xl"
+		onClose={props.onClose}
+		open={props.name !== undefined}
+		slotProps={{ paper: { sx: { height: '90vh' } } }}
+	>
 		{props.name !== undefined && (
 			<>
 				<DialogTitle sx={{ pr: 6, wordBreak: 'break-all' }}>
@@ -68,7 +75,7 @@ const ApiRecordingBrowser: React.FC<Props> = (props) => (
 						<CloseIcon />
 					</IconButton>
 				</DialogTitle>
-				<DialogContent dividers={true}>
+				<DialogContent dividers={true} sx={{ display: 'flex', flexDirection: 'column' }}>
 					<RecordingBrowser inProgress={props.inProgress} name={props.name} />
 				</DialogContent>
 			</>
@@ -76,62 +83,48 @@ const ApiRecordingBrowser: React.FC<Props> = (props) => (
 	</Dialog>
 );
 
+const matchesFilter = (row: ApiResponseSummary, source: SourceFilter, errorsOnly: boolean) =>
+	(source === 'all' || row.source === source) && (!errorsOnly || row.error !== null);
+
 const RecordingBrowser: React.FC<{ inProgress: boolean; name: string }> = (props) => {
 	const [meta, setMeta] = React.useState<ApiRecordingDetail | undefined>(undefined);
 	const [source, setSource] = React.useState<SourceFilter>('all');
 	const [errorsOnly, setErrorsOnly] = React.useState(false);
 	const [rows, setRows] = React.useState<ApiResponseSummary[] | undefined>(undefined);
+	const [newest, setNewest] = React.useState<ApiResponseSummary[]>([]);
 	const [hasOlder, setHasOlder] = React.useState(false);
 	const [loadingOlder, setLoadingOlder] = React.useState(false);
 	const [selected, setSelected] = React.useState<ApiResponseSummary | undefined>(undefined);
 	const [msg, setMsg] = React.useState('');
 
-	React.useEffect(() => {
-		let active = true;
-		const load = async (): Promise<void> => {
-			try {
-				const next = await api.getApiRecordingMeta(props.name);
-				if (active) setMeta(next);
-			} catch (error) {
-				if (active) setMsg(errorMessage(error));
-			}
-		};
-		void load();
-		const timer = props.inProgress
-			? setInterval(() => void load(), RECORDING_REFRESH_MS)
-			: undefined;
-		return () => {
-			active = false;
-			clearInterval(timer);
-		};
-	}, [props.name, props.inProgress]);
-
-	// The first page on open and on every filter change; while recording, newer rows are
-	// merged on top so pages already loaded below stay put.
+	// The first page on open and on every filter change. While recording, the refresh
+	// holds newer rows back for "Show N new" (rows sliding down under the pointer made
+	// the operator click the wrong one) unless the table is empty, with nothing to shift.
+	// Meta rides the same fetch so the header counts keep pace with the rows.
 	React.useEffect(() => {
 		let active = true;
 		const query = { errorsOnly, limit: PAGE_SIZE, source: source === 'all' ? undefined : source };
-		const loadNewest = async (merge: boolean): Promise<void> => {
+		const load = async (initial: boolean): Promise<void> => {
 			try {
-				const page = (await api.listApiResponses(props.name, query)).responses;
+				const [nextMeta, page] = await Promise.all([
+					api.getApiRecordingMeta(props.name),
+					api.listApiResponses(props.name, query),
+				]);
 				if (!active) return;
 				setMsg('');
-				if (merge)
-					setRows((current) => [
-						...page.filter((row) => row.seq > (current?.[0]?.seq ?? 0)),
-						...(current ?? []),
-					]);
-				else {
-					setRows(page);
-					setHasOlder(page.length === PAGE_SIZE);
-				}
+				setMeta(nextMeta);
+				setNewest(page.responses);
+				if (initial) {
+					setRows(page.responses);
+					setHasOlder(page.responses.length === PAGE_SIZE);
+				} else setRows((current) => (current?.length === 0 ? page.responses : current));
 			} catch (error) {
 				if (active) setMsg(errorMessage(error));
 			}
 		};
-		void loadNewest(false);
+		void load(true);
 		const timer = props.inProgress
-			? setInterval(() => void loadNewest(true), RECORDING_REFRESH_MS)
+			? setInterval(() => void load(false), RECORDING_REFRESH_MS)
 			: undefined;
 		return () => {
 			active = false;
@@ -161,9 +154,12 @@ const RecordingBrowser: React.FC<{ inProgress: boolean; name: string }> = (props
 	};
 
 	const oldest = rows?.[rows.length - 1];
+	const pending = rows === undefined ? [] : newest.filter((row) => row.seq > (rows[0]?.seq ?? 0));
+	const shown =
+		selected !== undefined && matchesFilter(selected, source, errorsOnly) ? selected : undefined;
 
 	return (
-		<Box>
+		<Box sx={{ display: 'flex', flex: 1, flexDirection: 'column', minHeight: 0 }}>
 			{meta !== undefined && <RecordingHeader inProgress={props.inProgress} meta={meta} />}
 			<Stack alignItems="center" direction="row" spacing={2} sx={{ flexWrap: 'wrap', mb: 1 }}>
 				<ToggleButtonGroup
@@ -188,13 +184,27 @@ const RecordingBrowser: React.FC<{ inProgress: boolean; name: string }> = (props
 					}
 					label="errors only"
 				/>
+				{pending.length > 0 && rows !== undefined && (
+					<Button onClick={() => setRows([...pending, ...rows])} size="small" variant="outlined">
+						Show {pending.length} new
+					</Button>
+				)}
 				<Typography color="error" variant="caption">
 					{msg}
 				</Typography>
 			</Stack>
-			<Grid container={true} spacing={2}>
-				<Grid size={{ md: 7, xs: 12 }}>
-					<TableContainer sx={{ maxHeight: '65vh' }}>
+			<Box
+				sx={{
+					display: 'grid',
+					flex: 1,
+					gap: 2,
+					gridTemplateColumns: { md: 'minmax(0, 7fr) minmax(0, 5fr)', xs: 'minmax(0, 1fr)' },
+					gridTemplateRows: { md: 'minmax(0, 1fr)', xs: 'repeat(2, minmax(0, 1fr))' },
+					minHeight: 0,
+				}}
+			>
+				<Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+					<TableContainer sx={{ flex: 1 }}>
 						<Table size="small" stickyHeader={true}>
 							<TableHead>
 								<TableRow>
@@ -219,7 +229,7 @@ const RecordingBrowser: React.FC<{ inProgress: boolean; name: string }> = (props
 										hover={true}
 										key={row.seq}
 										onClick={() => setSelected(row)}
-										selected={row.seq === selected?.seq}
+										selected={row.seq === shown?.seq}
 										sx={{ cursor: 'pointer' }}
 									>
 										<TableCell align="right">{row.seq}</TableCell>
@@ -263,22 +273,22 @@ const RecordingBrowser: React.FC<{ inProgress: boolean; name: string }> = (props
 							disabled={loadingOlder}
 							onClick={() => void loadOlder(oldest.seq)}
 							size="small"
-							sx={{ mt: 1 }}
+							sx={{ alignSelf: 'flex-start', mt: 1 }}
 						>
 							{loadingOlder ? 'loading…' : 'Load older'}
 						</Button>
 					)}
-				</Grid>
-				<Grid size={{ md: 5, xs: 12 }}>
-					{selected === undefined ? (
+				</Box>
+				<Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+					{shown === undefined ? (
 						<Typography color="text.secondary" variant="body2">
 							Click a response to see what was stored.
 						</Typography>
 					) : (
-						<ResponseDetail name={props.name} row={selected} />
+						<ResponseDetail name={props.name} row={shown} />
 					)}
-				</Grid>
-			</Grid>
+				</Box>
+			</Box>
 		</Box>
 	);
 };
@@ -305,7 +315,7 @@ const RecordingHeader: React.FC<{ inProgress: boolean; meta: ApiRecordingDetail 
 					{counts.errors > 0 && (
 						<Box component="span" sx={{ color: 'error.main' }}>
 							{' '}
-							· {plural(counts.errors, 'error')}
+							({counts.errors} failed)
 						</Box>
 					)}
 				</Typography>
@@ -323,7 +333,7 @@ const RecordingHeader: React.FC<{ inProgress: boolean; meta: ApiRecordingDetail 
 );
 
 const ResponseDetail: React.FC<RowProps> = (props) => (
-	<Box>
+	<Box sx={{ display: 'flex', flex: 1, flexDirection: 'column', minHeight: 0 }}>
 		<Stack alignItems="baseline" direction="row" spacing={1}>
 			<Typography variant="body2">
 				<b>#{props.row.seq}</b> · {props.row.source} · {new Date(props.row.ts).toLocaleString()}
@@ -397,10 +407,11 @@ const PrettyBody: React.FC<RowProps> = (props) => {
 			sx={{
 				bgcolor: 'action.hover',
 				borderRadius: 1,
+				flex: 1,
 				fontFamily: 'monospace',
 				fontSize: 12,
 				m: 0,
-				maxHeight: '60vh',
+				minHeight: 0,
 				overflow: 'auto',
 				p: 1,
 			}}
