@@ -1,16 +1,29 @@
 import { randomUUID } from 'node:crypto';
 
 import type { RaceObservation } from '../reconcile/reconcile.js';
+import type { ApiRecording } from '../replay/apiRecording.js';
 import type { CaptureMode } from '../sources/air/captureScheduler.js';
+import type { MatchStore } from '../sources/air/matchStore.js';
+import type { HttpJson } from '../sources/http.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
+import type { WebApiRecording } from '../web/server.js';
 
 import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
+import { loadApiRecording, resolveApiRecordingFile } from '../replay/apiRecording.js';
 import makeRecorder from '../replay/recorder.js';
+import { makeSessionFiles } from '../replay/sessionFiles.js';
 import { makeSettingsStore } from '../settings/settingsStore.js';
 import { makeAirSource } from '../sources/air/airSource.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
+import { makeMatchStore } from '../sources/air/matchStore.js';
+import { makeFetchHttp } from '../sources/http.js';
 import { makeProviderSource } from '../sources/provider/providerSource.js';
 import { makeQueryStore } from '../sources/provider/queryStore.js';
+import {
+	makePlaybackClock,
+	makePlaybackHttp,
+	makeRecordingHttp,
+} from '../sources/recordingHttp.js';
 import { makeVendorSource } from '../sources/vendor/vendorSource.js';
 import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { makeRecordingLlmClient } from '../vision/llmClient.js';
@@ -18,6 +31,7 @@ import { makeChangeBus } from '../web/changeBus.js';
 import { makeWebServer } from '../web/server.js';
 import { makeAlertLog } from './alertLog.js';
 import { makeAnomalyTracker } from './anomalyTracker.js';
+import { makeApiRecorder } from './apiRecorder.js';
 import makeComposition from './composition.js';
 import { observationChanged } from './observationChanged.js';
 
@@ -30,6 +44,22 @@ const readIntervalMs = (): number => {
 	const raw = Number(process.env.CAPTURE_INTERVAL_MS);
 	return Number.isFinite(raw) && raw > 0 ? raw : 5000;
 };
+
+//   --api-playback <name|file.sqlite>  answer DDHQ + Chameleon from an API recording
+//   --speed=<n>                        playback speed (default 1)
+const argValue = (flag: string): string | undefined => {
+	const inline = process.argv.find((arg) => arg.startsWith(`${flag}=`));
+	if (inline !== undefined) return inline.slice(flag.length + 1);
+	const index = process.argv.indexOf(flag);
+	return index === -1 ? undefined : process.argv[index + 1];
+};
+const readPlaybackSpeed = (): number => {
+	const raw = Number(argValue('--speed'));
+	return Number.isFinite(raw) && raw > 0 ? raw : 1;
+};
+
+// The API recording's 60 s check interval, held while recording.
+const API_RECORD_INTERVAL_MS = 60_000;
 
 const liveMain = async (): Promise<void> => {
 	const missingKeys = missingLiveKeys();
@@ -120,8 +150,17 @@ const liveMain = async (): Promise<void> => {
 	};
 
 	// Air source: real browser capture → extractFrame → store. Driven by the cadence
-	// scheduler (interval or manual web button).
-	const airSource = makeAirSource({ llmClient, onObservations: ingest, recorder });
+	// scheduler (interval or manual web button). The captured tab is persisted so a
+	// restart keeps the operator's pick instead of snapping back to the default.
+	const memoryMatch = makeMatchStore(settings.getAirMatch());
+	const matchStore: MatchStore = {
+		get: memoryMatch.get,
+		set: (next) => {
+			memoryMatch.set(next);
+			settings.setAirMatch(memoryMatch.get());
+		},
+	};
+	const airSource = makeAirSource({ llmClient, matchStore, onObservations: ingest, recorder });
 	const mode = readCaptureMode();
 	const intervalMs = readIntervalMs();
 	const airScheduler = makeCaptureScheduler({
@@ -132,23 +171,53 @@ const liveMain = async (): Promise<void> => {
 		onSkip: () => console.warn('[air] capture skipped — previous still in flight'),
 	});
 
-	// DDHQ provider source — queries are runtime state (queryStore), set via the web
-	// view; nothing polls until queries are added. Started only when creds are present.
+	const playbackName = argValue('--api-playback');
+	const playback: ApiRecording | undefined =
+		playbackName === undefined
+			? undefined
+			: loadApiRecording(resolveApiRecordingFile('recordings', playbackName));
+	const playbackClock =
+		playback === undefined
+			? undefined
+			: makePlaybackClock(playback, { speed: readPlaybackSpeed() });
+
+	// Persisted DDHQ query list: in-memory, seeded from settings, writes through so UI
+	// edits survive restarts. In playback the list is the recording's, and fixed.
+	const memoryQueries = makeQueryStore(
+		playback === undefined ? settings.getQueries() : playback.meta.ddhqQueries,
+	);
+	const liveQueryStore: QueryStore = {
+		get: memoryQueries.get,
+		set: (next) => {
+			memoryQueries.set(next);
+			if (playback === undefined) settings.setQueries(memoryQueries.get());
+		},
+	};
+
 	let providerScheduler: ReturnType<typeof makeCaptureScheduler> | undefined;
+	let providerIntervalMs = API_RECORD_INTERVAL_MS;
+	const apiRecorder = makeApiRecorder({
+		baseDir: 'recordings',
+		getQueries: liveQueryStore.get,
+		onStart: () => providerScheduler?.reconfigure({ intervalMs: API_RECORD_INTERVAL_MS }),
+		onStop: () => providerScheduler?.reconfigure({ intervalMs: providerIntervalMs }),
+	});
+	const sourceHttp = (source: 'DDHQ' | 'Ross'): HttpJson =>
+		playback !== undefined && playbackClock !== undefined
+			? makePlaybackHttp(playback, source, playbackClock)
+			: makeRecordingHttp(makeFetchHttp(), source, apiRecorder.record);
+
+	// DDHQ provider source — queries are runtime state (queryStore), set via the web
+	// view; nothing polls until queries are added. Started when creds are present, or
+	// always in playback.
 	let queryStore: QueryStore | undefined;
-	if (process.env.DDHQ_CLIENT_ID !== undefined) {
-		// In-memory store seeded from the persisted list; writes-through to settings so
-		// UI edits survive restarts. get() stays in-memory (no per-tick disk read).
-		const memory = makeQueryStore(settings.getQueries());
-		const persistentQueryStore: QueryStore = {
-			get: memory.get,
-			set: (next) => {
-				memory.set(next);
-				settings.setQueries(memory.get());
-			},
-		};
-		const provider = makeProviderSource(ingest, persistentQueryStore);
+	if (process.env.DDHQ_CLIENT_ID !== undefined || playback !== undefined) {
+		const provider = makeProviderSource(ingest, liveQueryStore, {
+			http: sourceHttp('DDHQ'),
+			playback: playback !== undefined,
+		});
 		queryStore = provider.queryStore;
+		providerIntervalMs = provider.intervalMs;
 		providerScheduler = makeCaptureScheduler({
 			captureOnce: provider.poller.pollOnce,
 			immediate: true,
@@ -166,7 +235,7 @@ const liveMain = async (): Promise<void> => {
 	}
 
 	// Chameleon vendor source — fixed playlist URL, always on, once per minute (VPN-only).
-	const vendor = makeVendorSource(ingest);
+	const vendor = makeVendorSource(ingest, sourceHttp('Ross'));
 	const vendorScheduler = makeCaptureScheduler({
 		captureOnce: vendor.poller.pollOnce,
 		immediate: true,
@@ -178,9 +247,38 @@ const liveMain = async (): Promise<void> => {
 	vendorScheduler.start();
 	console.log(`[vendor] Chameleon polling every ${vendor.intervalMs}ms.`);
 
+	const apiRecording: WebApiRecording =
+		playback !== undefined && playbackClock !== undefined
+			? {
+					list: apiRecorder.list,
+					status: () => ({
+						durationMs: playbackClock.durationMs,
+						elapsedMs: Math.min(playbackClock.elapsedMs(), playbackClock.durationMs),
+						ended: playbackClock.ended(),
+						mode: 'playback',
+						name: playback.meta.name,
+						speed: playbackClock.speed,
+					}),
+				}
+			: apiRecorder;
+	if (playback !== undefined && playbackClock !== undefined) {
+		console.log(
+			`[api-playback] ${playback.meta.name}: ${playback.responses.length} responses over ${Math.round(playbackClock.durationMs / 60_000)} min at ${playbackClock.speed}x`,
+		);
+		const endWatch = setInterval(() => {
+			if (!playbackClock.ended()) return;
+			clearInterval(endWatch);
+			console.log(
+				'[api-playback] reached the end of the recording; the last responses keep being served.',
+			);
+		}, 5_000);
+		endWatch.unref();
+	}
+
 	// Web view: state per source, recent alerts, last frame, manual capture button,
 	// editable DDHQ queries.
 	const web = makeWebServer({
+		apiRecording,
 		changeBus,
 		getAlertHistory: alertLog.recent,
 		getCadence: airScheduler.getConfig,
@@ -190,6 +288,7 @@ const liveMain = async (): Promise<void> => {
 		onRaceRelink: applyRelink,
 		raceIdentity,
 		reconcileRace: composition.reconcileRace,
+		sessions: makeSessionFiles('recordings', sessionId),
 		setCadence: airScheduler.reconfigure,
 		store: composition.store,
 		triggerCapture: airScheduler.triggerCapture,
@@ -202,6 +301,7 @@ const liveMain = async (): Promise<void> => {
 		if (shuttingDown) return;
 		shuttingDown = true;
 		airScheduler.stop();
+		apiRecorder.stop();
 		providerScheduler?.stop();
 		vendorScheduler.stop();
 		void airSource.close();

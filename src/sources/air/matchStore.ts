@@ -1,5 +1,5 @@
 // Which browser tab the air capturer grabs, as a URL substring — runtime state so
-// the web UI can switch between surfaces (DirecTV stream vs the Actus playback)
+// the web UI can switch between capture surfaces (only the DirecTV stream today)
 // without a restart. The capturer reads get() fresh each capture; the web server
 // calls set() from the preset buttons.
 export type MatchStore = {
@@ -7,7 +7,7 @@ export type MatchStore = {
 	set: (match: string) => void;
 };
 
-export const makeMatchStore = (initial = 'actus'): MatchStore => {
+export const makeMatchStore = (initial = 'directv'): MatchStore => {
 	let match = initial;
 	return {
 		get: () => match,

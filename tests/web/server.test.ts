@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { Anomaly, RaceObservation } from '../../src/reconcile/reconcile.js';
+import type { ApiRecorderStatus } from '../../src/runtime/apiRecorder.js';
 
 import { makeRaceIdentityResolver } from '../../src/identity/raceIdentity.js';
 import { makeMatchStore } from '../../src/sources/air/matchStore.js';
@@ -246,6 +247,33 @@ describe('web server', () => {
 		expect(ga.sources.DDHQ!.present).toBe(false);
 	});
 
+	it('orders races by last change: every air read, but only changed DDHQ/Ross polls', async () => {
+		const store = makeStore();
+		const at = (observation: RaceObservation, observedAt: number): RaceObservation => ({
+			...observation,
+			observedAt,
+		});
+		store.record(at(obs('DDHQ', 'AIRED', { pctIn: 10 }), 1_000));
+		store.record(at(obs('DDHQ', 'CHANGED', { pctIn: 10 }), 1_000));
+		store.record(at(obs('DDHQ', 'UNCHANGED', { pctIn: 10 }), 1_000));
+		store.record(at(obs('air', 'AIRED', { pctIn: 10 }), 2_000));
+		store.record(at(obs('DDHQ', 'CHANGED', { pctIn: 20 }), 3_000));
+		// A later poll that repeats the same reading doesn't bump either race...
+		store.record(at(obs('DDHQ', 'UNCHANGED', { pctIn: 10 }), 4_000));
+		store.record(at(obs('DDHQ', 'CHANGED', { pctIn: 20 }), 4_000));
+		// ...but an air read of the same graphic does.
+		store.record(at(obs('air', 'AIRED', { pctIn: 10 }), 5_000));
+		app = makeWebServer({ getRecentAlerts: () => [], store });
+		const body = (await app.inject({ method: 'GET', url: '/api/races' })).json() as {
+			races: { lastAt: null | number; raceKey: string }[];
+		};
+		expect(body.races.map((race) => [race.raceKey, race.lastAt])).toEqual([
+			['AIRED', 5_000],
+			['CHANGED', 3_000],
+			['UNCHANGED', 1_000],
+		]);
+	});
+
 	it('aligns candidates across sources by normalized name in /api/race/:key', async () => {
 		const store = makeStore();
 		// Same candidate, different casing/source; air missed the call, DDHQ has it.
@@ -306,11 +334,15 @@ describe('web server', () => {
 		});
 		const res = await app.inject({
 			method: 'POST',
-			payload: { match: 'actus' },
+			payload: { match: 'other-player' },
 			url: '/api/air-match',
 		});
-		expect(res.json()).toEqual({ match: 'actus' });
-		expect(matchStore.get()).toBe('actus');
+		expect(res.json()).toEqual({ match: 'other-player' });
+		expect(matchStore.get()).toBe('other-player');
+		// Pushed with the state so the UI toggle always reflects the server's target.
+		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().airMatch).toBe(
+			'other-player',
+		);
 	});
 
 	it('rejects an empty air match', async () => {
@@ -358,6 +390,130 @@ describe('web server', () => {
 			canonicalRaceKey: 'DDHQ:RACE',
 			source: 'air',
 			sourceRaceKey: 'AIR HEADING',
+		});
+	});
+
+	it('starts and stops an API recording and lists saved ones', async () => {
+		let status: ApiRecorderStatus = { mode: 'live', recording: null };
+		const names: (string | undefined)[] = [];
+		app = makeWebServer({
+			apiRecording: {
+				list: () => [
+					{
+						file: 'recordings/api/a.sqlite',
+						name: 'a',
+						responseCount: 3,
+						startedAt: 1,
+						stoppedAt: 2,
+					},
+				],
+				start: (name) => {
+					names.push(name);
+					if (status.mode === 'live' && status.recording !== null)
+						throw new Error('already recording a');
+					status = { mode: 'live', recording: { name: 'a', responseCount: 0, startedAt: 1 } };
+					return status;
+				},
+				status: () => status,
+				stop: () => {
+					status = { mode: 'live', recording: null };
+					return status;
+				},
+			},
+			getRecentAlerts: () => [],
+			store: makeStore(),
+		});
+		const started = await app.inject({
+			method: 'POST',
+			payload: { name: 'a' },
+			url: '/api/api-recording/start',
+		});
+		expect(started.json()).toMatchObject({ recording: { name: 'a' } });
+		expect(names).toEqual(['a']);
+		const again = await app.inject({
+			method: 'POST',
+			payload: {},
+			url: '/api/api-recording/start',
+		});
+		expect(again.statusCode).toBe(409);
+		expect((await app.inject({ method: 'GET', url: '/api/api-recording' })).json()).toMatchObject({
+			recording: { name: 'a' },
+		});
+		const stopped = await app.inject({
+			method: 'POST',
+			payload: {},
+			url: '/api/api-recording/stop',
+		});
+		expect(stopped.json()).toEqual({ mode: 'live', recording: null });
+		const list = await app.inject({ method: 'GET', url: '/api/api-recordings' });
+		expect(list.json()).toMatchObject({ recordings: [{ name: 'a', responseCount: 3 }] });
+	});
+
+	it('in API playback, refuses recording and query edits', async () => {
+		const queryStore = makeQueryStore(['state=TX']);
+		app = makeWebServer({
+			apiRecording: {
+				list: () => [],
+				status: () => ({
+					durationMs: 60_000,
+					elapsedMs: 0,
+					ended: false,
+					mode: 'playback',
+					name: 'a',
+					speed: 2,
+				}),
+			},
+			getRecentAlerts: () => [],
+			queryStore,
+			store: makeStore(),
+		});
+		expect(
+			(await app.inject({ method: 'POST', payload: {}, url: '/api/api-recording/start' }))
+				.statusCode,
+		).toBe(409);
+		const edit = await app.inject({
+			method: 'POST',
+			payload: { queries: ['state=GA'] },
+			url: '/api/queries',
+		});
+		expect(edit.statusCode).toBe(409);
+		expect(queryStore.get()).toEqual(['state=TX']);
+		expect((await app.inject({ method: 'GET', url: '/api/api-recording' })).json()).toMatchObject({
+			mode: 'playback',
+			speed: 2,
+		});
+	});
+
+	it('lists sessions and maps prune and delete refusals to 409', async () => {
+		app = makeWebServer({
+			getRecentAlerts: () => [],
+			sessions: {
+				deleteSession: (id) => {
+					if (id === 'live') throw new Error('session live is being recorded');
+					return 99;
+				},
+				disk: () => ({ freeBytes: 5, totalBytes: 10 }),
+				list: () => [],
+				pruneFrames: (id) => {
+					if (id === 'live') throw new Error('cannot prune the session being recorded');
+					return 42;
+				},
+			},
+			store: makeStore(),
+		});
+		expect((await app.inject({ method: 'GET', url: '/api/sessions' })).json()).toEqual({
+			disk: { freeBytes: 5, totalBytes: 10 },
+			sessions: [],
+		});
+		const refused = await app.inject({ method: 'POST', url: '/api/sessions/live/prune-frames' });
+		expect(refused.statusCode).toBe(409);
+		expect(
+			(await app.inject({ method: 'POST', url: '/api/sessions/old/prune-frames' })).json(),
+		).toEqual({ freedBytes: 42 });
+		const refusedDelete = await app.inject({ method: 'DELETE', url: '/api/sessions/live' });
+		expect(refusedDelete.statusCode).toBe(409);
+		expect((await app.inject({ method: 'DELETE', url: '/api/sessions/old' })).json()).toEqual({
+			freedBytes: 99,
 		});
 	});
 });

@@ -15,7 +15,7 @@ import { redactError } from '../vision/redact.js';
 // then be frozen (`freeze-session`), mined for frame goldens
 // (`capture-golden --from-session`), or replayed — all with no API key.
 //
-//   npm run import-video -- <video> [fps]      (default fps 0.2 = one frame per 5 s)
+//   node --env-file-if-exists=.env --import tsx src/tools/importVideo.ts <video> [fps]      (default fps 0.2 = one frame per 5 s)
 //
 // Observations are stamped on a synthetic timeline starting now, one frame per
 // 1/fps seconds, so replay batching by observedAt reproduces the cadence.
@@ -24,7 +24,9 @@ const run = async (): Promise<void> => {
 	const videoPath = process.argv[2];
 	const fps = Number(process.argv[3] ?? '0.2');
 	if (videoPath === undefined || !Number.isFinite(fps) || fps <= 0) {
-		console.error('Usage: npm run import-video -- <video> [fps]');
+		console.error(
+			'Usage: node --env-file-if-exists=.env --import tsx src/tools/importVideo.ts <video> [fps]',
+		);
 		process.exit(1);
 	}
 	const missingKeys = missingLiveKeys();
@@ -102,7 +104,9 @@ const run = async (): Promise<void> => {
 	console.log(
 		`[import] done: ${totals.frames} frames, ${totals.observations} observations (${perTemplate}), ${totals.calls} LLM calls → recordings/${sessionId}.sqlite`,
 	);
-	console.log(`[import] freeze it:  npm run freeze-session -- ${sessionId} <goldenName>`);
+	console.log(
+		`[import] freeze it:  node --import tsx src/tools/freezeSessionGolden.ts ${sessionId} <goldenName>`,
+	);
 };
 
 run().catch((error: unknown) => {

@@ -88,7 +88,7 @@ export type TemplateSpec = {
 };
 ```
 
-`src/templates/tickerV1.ts` is the first concrete spec (race label, state, two candidate rows with party/name/votes/pct, pct_in, called_for). It doubles as the worked example for future templates. Rects calibrated once via a small `npm run calibrate <templateId> <framePng>` helper that draws the rects over the frame in the browser for visual verification.
+`src/templates/tickerV1.ts` is the first concrete spec (race label, state, two candidate rows with party/name/votes/pct, pct_in, called_for). It doubles as the worked example for future templates. Rects calibrated once via a small `node --import tsx src/tools/calibrate.ts <templateId> <framePng>` helper that draws the rects over the frame in the browser for visual verification.
 
 ## Detection & extraction (per template, not per frame)
 
@@ -132,7 +132,7 @@ One wire format, two modes.
 - **Recorder** (always on in live mode): every observation, every frame PNG, every LLM request/response gets appended to `recordings/<sessionId>.sqlite` with monotonic `seq` and wall-clock `ts`. Frames are content-addressed PNGs alongside.
 - **Player**: `replayMain.ts <sessionId> [--speed=N] [--stub-llm|--live-llm]`. Same composition root, swaps the three source modules for replay sources that emit recorded events in original relative order. `--stub-llm` reuses recorded LLM responses keyed by `(frame hash, prompt hash)` — fully deterministic, zero API cost, fast. This is the test suite.
 - **Capture past elections**: small `import*` scripts ingest OBS/QuickTime recordings (ffmpeg → 1Hz frames), historical provider JSON dumps, and periodic vendor DB `SELECT *` snapshots into the same SQLite schema.
-- **Golden replays** under `recordings/goldens/` with labeled expected alerts. `npm run replay:goldens` is the CI suite.
+- **Golden replays** under `recordings/goldens/` with labeled expected alerts. `npm test` is the CI suite.
 
 ## MVP scope
 
@@ -167,7 +167,7 @@ Build order: types → store → reconciler (with unit tests) → providerPoller
 ## Verification
 
 - **Unit tests** (Vitest): every row of the triangulation severity table; lag math via property tests; name normalizer via fixture table.
-- **Replay-as-tests**: `npm run replay:goldens` runs each golden session in `--stub-llm` mode and snapshot-asserts `(seq, alertType, severity, raceKey)`. Adding a new golden = capture a session, label expected alerts, commit. This is the load-bearing check.
-- **Live dry-run**: `npm run live -- --race=<key> --no-alerts` pointed at the vendor's current contents during a non-election day; visually confirm the web view shows expected state.
-- **Calibration helper**: `npm run calibrate <templateId> <framePng>` opens the frame with spec rects drawn over it for sanity-checking before running anything else.
+- **Replay-as-tests**: `npm test` runs each golden session in `--stub-llm` mode and snapshot-asserts `(seq, alertType, severity, raceKey)`. Adding a new golden = capture a session, label expected alerts, commit. This is the load-bearing check.
+- **Live dry-run**: `npm run backend -- --race=<key> --no-alerts` pointed at the vendor's current contents during a non-election day; visually confirm the web view shows expected state.
+- **Calibration helper**: `node --import tsx src/tools/calibrate.ts <templateId> <framePng>` opens the frame with spec rects drawn over it for sanity-checking before running anything else.
 - **Prompt iteration**: re-run a golden with `--live-llm` after a prompt change; diff alerts vs the stub run.

@@ -5,7 +5,10 @@ import { headingRaceKey } from './headingKey.js';
 // Full-screen results board. Pass 1 sees the whole frame; captureRegion is used
 // ONLY by the recall (call-detection) pass. It stops at 70% of frame height — the
 // cards end near 66% — so the headline chyron, the optional "DDHQ PROJECTION"
-// band, and the ticker beneath stay out of the recall crop by construction.
+// band, and the ticker beneath stay out of the recall crop by construction. In
+// the native geometry (layer exports, test feeds — see the reference-frames
+// README) the board sits 42 px lower and the name plates end near 71%; the
+// surnames and their ✓ are still inside, measured 18/18 on the nine exports.
 const fullscreenResults: TemplateSpec = {
 	bind: {
 		candidateKeyFrom: (candidate) => candidate.name ?? '',

@@ -9,7 +9,7 @@ import { formatUsage, makeUsageMeter } from './usageMeter.js';
 // against a frame and count how often calledFor matches an expected value.
 // Independent of any golden — answers "does it read the check mark" honestly.
 //
-//   npm run measure-call -- <framePng> <expectedCalledForLowercase> [runs] [--template <id>]
+//   node --env-file-if-exists=.env --import tsx src/tools/measureCall.ts <framePng> <expectedCalledForLowercase> [runs] [--template <id>]
 //     --template picks which observation to score on a multi-surface frame (default: first)
 //     --model / --recall-model take Anthropic IDs or OpenRouter vendor/model IDs
 //     --reasoning sets OpenRouter's reasoning effort (none | minimal | low | medium | high)
@@ -34,7 +34,7 @@ const run = async (): Promise<void> => {
 	const votes = votesFlag === undefined ? undefined : Number(votesFlag);
 	if (framePath === undefined || expected === undefined) {
 		console.error(
-			'Usage: npm run measure-call -- <framePng> <expectedCalledForLowercase> [runs] [--template <id>] [--model X] [--recall-model Y] [--reasoning E] [--votes N]',
+			'Usage: node --env-file-if-exists=.env --import tsx src/tools/measureCall.ts <framePng> <expectedCalledForLowercase> [runs] [--template <id>] [--model X] [--recall-model Y] [--reasoning E] [--votes N]',
 		);
 		process.exit(1);
 	}
@@ -48,7 +48,7 @@ const run = async (): Promise<void> => {
 	}
 
 	console.log(
-		`model=${model ?? 'haiku (default)'} recallModel=${recallModel ?? 'sonnet (default)'} reasoning=${reasoning ?? 'low (client default)'} recallVotes=${votes ?? '1 (default)'} runs=${runs}`,
+		`model=${model ?? DEFAULT_MODEL} recallModel=${recallModel ?? DEFAULT_RECALL_MODEL} reasoning=${reasoning ?? 'low (client default)'} recallVotes=${votes ?? '1 (default)'} runs=${runs}`,
 	);
 	const png = readFileSync(framePath);
 	const meter = makeUsageMeter(

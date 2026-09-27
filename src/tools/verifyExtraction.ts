@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import sharp from 'sharp';
 
 import type { CandidateState, RaceObservation } from '../reconcile/reconcile.js';
 
@@ -15,7 +16,8 @@ import { formatUsage, makeUsageMeter } from './usageMeter.js';
 // casing. Over several goldens (or `all`) it also tallies drifts by field and
 // totals what the run cost per model — this is the model-comparison harness.
 //
-//   npm run verify -- <goldenName...|all> [runs] [--model X] [--recall-model Y] [--reasoning E]
+//   node --env-file-if-exists=.env --import tsx src/tools/verifyExtraction.ts <goldenName...|all> [runs] [--model X] [--recall-model Y] [--reasoning E] [--width W]
+//     --width downscales each golden frame first, to test a lower-resolution feed
 //     model IDs with a slash (google/gemini-3.8-flash) go to OpenRouter, others to Anthropic
 
 type GoldenDoc = { frame: string; observations: RaceObservation[] };
@@ -101,7 +103,7 @@ const DRIFT_KINDS: readonly [string, string][] = [
 const driftKind = (line: string): string =>
 	DRIFT_KINDS.find(([, needle]) => line.includes(needle))?.[0] ?? 'structure';
 
-const FLAGS_WITH_VALUE = new Set(['--model', '--reasoning', '--recall-model']);
+const FLAGS_WITH_VALUE = new Set(['--model', '--reasoning', '--recall-model', '--width']);
 
 const flagValue = (flag: string): string | undefined => {
 	const index = process.argv.indexOf(flag);
@@ -124,7 +126,7 @@ const run = async (): Promise<void> => {
 	const requested = args.filter((arg) => arg !== runsArg);
 	if (requested.length === 0) {
 		console.error(
-			'Usage: npm run verify -- <goldenName...|all> [runs] [--model X] [--recall-model Y] [--reasoning E]',
+			'Usage: node --env-file-if-exists=.env --import tsx src/tools/verifyExtraction.ts <goldenName...|all> [runs] [--model X] [--recall-model Y] [--reasoning E] [--width W]',
 		);
 		process.exit(1);
 	}
@@ -145,8 +147,10 @@ const run = async (): Promise<void> => {
 				.map((file) => file.slice(0, -GOLDEN_SUFFIX.length))
 		: requested;
 	const reasoning = flagValue('--reasoning');
+	const widthArg = flagValue('--width');
+	const width = widthArg === undefined ? undefined : Number(widthArg);
 	console.log(
-		`model=${model ?? 'haiku (default)'} recallModel=${recallModel ?? 'sonnet (default)'} reasoning=${reasoning ?? 'low (client default)'} runs=${runs} goldens=${names.length}\n`,
+		`model=${model ?? DEFAULT_MODEL} recallModel=${recallModel ?? DEFAULT_RECALL_MODEL} reasoning=${reasoning ?? 'low (client default)'} width=${width ?? 'native'} runs=${runs} goldens=${names.length}\n`,
 	);
 
 	const meter = makeUsageMeter(
@@ -165,7 +169,9 @@ const run = async (): Promise<void> => {
 		const doc = JSON.parse(
 			readFileSync(join(goldensDir, `${name}${GOLDEN_SUFFIX}`), 'utf8'),
 		) as GoldenDoc;
-		const png = readFileSync(join(goldensDir, doc.frame));
+		const nativePng = readFileSync(join(goldensDir, doc.frame));
+		const png =
+			width === undefined ? nativePng : await sharp(nativePng).resize({ width }).png().toBuffer();
 		const expectedCanon = canonFrame(doc.observations);
 		let exact = 0;
 		const driftCounts = new Map<string, number>();

@@ -11,6 +11,7 @@ import type { Composition } from './composition.js';
 
 import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
 import makePlayer from '../replay/player.js';
+import { makeSessionFiles } from '../replay/sessionFiles.js';
 import { buildTimeline } from '../replay/sessionGolden.js';
 import { makeChangeBus } from '../web/changeBus.js';
 import { makeWebServer } from '../web/server.js';
@@ -23,7 +24,7 @@ import makeComposition from './composition.js';
 // stands) or paced in wall-clock time behind the real web view (`--serve`), so the
 // operator flow can be rehearsed on a past broadcast with no sources and no key.
 //
-//   npm run replay -- <sessionId> [--serve] [--port=8787] [--speed=N]
+//   node --import tsx src/runtime/replayMain.ts <sessionId> [--serve] [--port=8787] [--speed=N]
 //
 // Timestamps are shifted by a constant so the session starts "now": lag windows
 // keep their real widths, and at --speed=1 the view reads exactly as it did live.
@@ -153,7 +154,9 @@ const flag = (name: string): string | undefined =>
 const main = async (): Promise<void> => {
 	const sessionId = process.argv[2];
 	if (sessionId === undefined || sessionId.startsWith('--')) {
-		console.error('usage: npm run replay -- <sessionId> [--serve] [--port=8787] [--speed=N]');
+		console.error(
+			'usage: node --import tsx src/runtime/replayMain.ts <sessionId> [--serve] [--port=8787] [--speed=N]',
+		);
 		process.exit(1);
 	}
 	const serve = process.argv.includes('--serve');
@@ -171,6 +174,7 @@ const main = async (): Promise<void> => {
 			getRecentAlerts: replay.tracker.list,
 			raceIdentity: replay.raceIdentity,
 			reconcileRace: replay.composition.reconcileRace,
+			sessions: makeSessionFiles('recordings', sessionId),
 			store: replay.composition.store,
 		});
 		await web.listen({ port });

@@ -1,12 +1,15 @@
 import AppBar from '@mui/material/AppBar';
+import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import type { RaceSummary, StateResponse } from './api.js';
+import type { ApiRecordingStatus, RaceSummary, StateResponse } from './api.js';
 
 import { api } from './api.js';
 import AlertHistory from './components/AlertHistory.js';
@@ -16,6 +19,8 @@ import QueryEditor from './components/QueryEditor.js';
 import RaceDetailDialog from './components/RaceDetailDialog.js';
 import RaceLinks from './components/RaceLinks.js';
 import RaceTable from './components/RaceTable.js';
+import RecordPanel from './components/RecordPanel.js';
+import SessionsPanel from './components/SessionsPanel.js';
 import SourceHealth from './components/SourceHealth.js';
 import { useLiveQuery } from './useLiveQuery.js';
 
@@ -32,10 +37,36 @@ const Section: React.FC<{ children: React.ReactNode; title: string }> = (props) 
 	</Paper>
 );
 
+const TABS = ['live', 'air', 'setup', 'recordings'] as const;
+type TabId = (typeof TABS)[number];
+
+const tabFromHash = (): TabId => TABS.find((tab) => `#${tab}` === window.location.hash) ?? 'live';
+
+const TabLabel: React.FC<{ count: number; label: string }> = (props) => (
+	<Badge badgeContent={props.count} color="error" sx={{ '& .MuiBadge-badge': { right: -12 } }}>
+		{props.label}
+	</Badge>
+);
+
 const App: React.FC = () => {
 	const { data: state } = useLiveQuery<StateResponse>(() => api.getState());
 	const { data: racesData } = useLiveQuery<{ races: RaceSummary[] }>(() => api.getRaces());
+	const { data: apiRecording, reload: reloadApiRecording } = useLiveQuery<ApiRecordingStatus>(() =>
+		api.getApiRecording(),
+	);
 	const [selected, setSelected] = React.useState<string | undefined>(undefined);
+	const [tab, setTab] = React.useState<TabId>(tabFromHash);
+
+	React.useEffect(() => {
+		const onHashChange = () => setTab(tabFromHash());
+		window.addEventListener('hashchange', onHashChange);
+		return () => window.removeEventListener('hashchange', onHashChange);
+	}, []);
+
+	const selectTab = (next: TabId) => {
+		window.location.hash = next;
+		setTab(next);
+	};
 
 	const races = racesData?.races ?? [];
 
@@ -45,8 +76,14 @@ const App: React.FC = () => {
 				<Toolbar variant="dense">
 					<Typography sx={{ fontWeight: 700 }}>Eagle Eye</Typography>
 					<Typography color="text.secondary" sx={{ ml: 2 }} variant="caption">
-						election-graphics observer · live
+						election-graphics observer ·{' '}
+						{apiRecording?.mode === 'playback' ? `API playback: ${apiRecording.name}` : 'live'}
 					</Typography>
+					{apiRecording?.mode === 'live' && apiRecording.recording !== null && (
+						<Typography color="error" sx={{ fontWeight: 700, ml: 2 }} variant="caption">
+							● REC
+						</Typography>
+					)}
 				</Toolbar>
 			</AppBar>
 
@@ -55,45 +92,85 @@ const App: React.FC = () => {
 					<SourceHealth sources={state?.sources ?? []} />
 				</Box>
 
-				<Grid container spacing={2}>
-					<Grid size={{ xs: 12 }}>
-						<Section title="Races">
-							<RaceTable onSelect={setSelected} races={races} />
-						</Section>
-					</Grid>
+				<Tabs
+					onChange={(_event, value: TabId) => selectTab(value)}
+					sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
+					value={tab}
+				>
+					<Tab label={<TabLabel count={state?.alerts.length ?? 0} label="Live" />} value="live" />
+					<Tab label="Air capture" value="air" />
+					<Tab
+						label={<TabLabel count={state?.pendingLinkCount ?? 0} label="Setup" />}
+						value="setup"
+					/>
+					<Tab label="Recordings" value="recordings" />
+				</Tabs>
 
-					<Grid size={{ md: 6, xs: 12 }}>
-						<Section title="Alerts">
-							<Alerts alerts={state?.alerts ?? []} onSelectRace={setSelected} />
-						</Section>
-					</Grid>
+				<Box hidden={tab !== 'live'}>
+					<Grid container spacing={2}>
+						<Grid size={{ md: 6, xs: 12 }}>
+							<Section title="Alerts">
+								<Alerts alerts={state?.alerts ?? []} onSelectRace={setSelected} />
+							</Section>
+						</Grid>
 
-					<Grid size={{ md: 6, xs: 12 }}>
-						<Section title="Recent alert events">
-							<AlertHistory onSelectRace={setSelected} />
-						</Section>
-					</Grid>
+						<Grid size={{ md: 6, xs: 12 }}>
+							<Section title="Recent alert events">
+								<AlertHistory onSelectRace={setSelected} />
+							</Section>
+						</Grid>
 
-					<Grid size={{ md: 6, xs: 12 }}>
-						<Section title="Actus capture">
-							<CapturePanel cadence={state?.cadence ?? null} lastFrame={state?.lastFrame ?? null} />
-						</Section>
+						<Grid size={{ xs: 12 }}>
+							<Section title="Races">
+								<RaceTable onSelect={setSelected} races={races} />
+							</Section>
+						</Grid>
 					</Grid>
+				</Box>
 
-					<Grid size={{ xs: 12 }}>
-						<Section
-							title={`Race links${state?.pendingLinkCount ? ` (${state.pendingLinkCount})` : ''}`}
-						>
-							<RaceLinks />
-						</Section>
-					</Grid>
+				<Box hidden={tab !== 'air'}>
+					<Section title="Air capture">
+						<CapturePanel
+							airMatch={state?.airMatch ?? null}
+							cadence={state?.cadence ?? null}
+							lastFrame={state?.lastFrame ?? null}
+						/>
+					</Section>
+				</Box>
 
-					<Grid size={{ xs: 12 }}>
-						<Section title="DDHQ queries">
-							<QueryEditor />
-						</Section>
+				<Box hidden={tab !== 'setup'}>
+					<Grid container spacing={2}>
+						<Grid size={{ xs: 12 }}>
+							<Section title="DDHQ queries">
+								<QueryEditor readOnly={apiRecording?.mode === 'playback'} />
+							</Section>
+						</Grid>
+
+						<Grid size={{ xs: 12 }}>
+							<Section
+								title={`Race links${state?.pendingLinkCount ? ` (${state.pendingLinkCount})` : ''}`}
+							>
+								<RaceLinks />
+							</Section>
+						</Grid>
 					</Grid>
-				</Grid>
+				</Box>
+
+				<Box hidden={tab !== 'recordings'}>
+					<Grid container spacing={2}>
+						<Grid size={{ xs: 12 }}>
+							<Section title="API recording">
+								<RecordPanel onChange={reloadApiRecording} status={apiRecording} />
+							</Section>
+						</Grid>
+
+						<Grid size={{ xs: 12 }}>
+							<Section title="Recordings">
+								<SessionsPanel />
+							</Section>
+						</Grid>
+					</Grid>
+				</Box>
 			</Box>
 
 			<RaceDetailDialog onClose={() => setSelected(undefined)} raceKey={selected} />

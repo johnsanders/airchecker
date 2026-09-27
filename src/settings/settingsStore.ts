@@ -5,15 +5,18 @@ import { dirname } from 'node:path';
 // Persistent config that must outlive a single run — unlike the recorder DB, whose
 // file is session-scoped (a fresh one per launch). A tiny key/value table in a
 // fixed-path SQLite file so things like the DDHQ query list survive restarts.
-// Values are JSON; helpers wrap the one key we persist today.
+// Values are JSON; one helper pair per persisted key.
 export type SettingsStore = {
 	close: () => void;
+	getAirMatch: () => string | undefined;
 	getIdentityState: () => undefined | unknown;
 	getQueries: () => string[];
+	setAirMatch: (match: string) => void;
 	setIdentityState: (state: unknown) => void;
 	setQueries: (queries: string[]) => void;
 };
 
+const AIR_MATCH_KEY = 'air_match';
 const IDENTITY_KEY = 'race_identity_state_v1';
 const QUERIES_KEY = 'ddhq_queries';
 
@@ -37,6 +40,13 @@ export const makeSettingsStore = (path: string): SettingsStore => {
 		return Array.isArray(parsed) ? parsed.filter((q): q is string => typeof q === 'string') : [];
 	};
 
+	const getAirMatch = (): string | undefined => {
+		const row = selectValue.get(AIR_MATCH_KEY) as { value: string } | undefined;
+		if (row === undefined) return undefined;
+		const parsed = JSON.parse(row.value) as unknown;
+		return typeof parsed === 'string' ? parsed : undefined;
+	};
+
 	const getIdentityState = (): undefined | unknown => {
 		const row = selectValue.get(IDENTITY_KEY) as { value: string } | undefined;
 		return row === undefined ? undefined : (JSON.parse(row.value) as unknown);
@@ -44,8 +54,10 @@ export const makeSettingsStore = (path: string): SettingsStore => {
 
 	return {
 		close: () => db.close(),
+		getAirMatch,
 		getIdentityState,
 		getQueries,
+		setAirMatch: (match) => upsertValue.run(AIR_MATCH_KEY, JSON.stringify(match)),
 		setIdentityState: (state) => upsertValue.run(IDENTITY_KEY, JSON.stringify(state)),
 		setQueries: (queries) => upsertValue.run(QUERIES_KEY, JSON.stringify(queries)),
 	};

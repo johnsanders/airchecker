@@ -6,9 +6,13 @@ import React from 'react';
 
 import { api } from '../api.js';
 
+interface Props {
+	readOnly: boolean; // API playback: the recording fixes the query list
+}
+
 // Editable DDHQ query list — one /api/v4/races query string per line. Runtime
 // state on the server (queryStore); the poller picks up edits on its next tick.
-const QueryEditor: React.FC = () => {
+const QueryEditor: React.FC<Props> = (props) => {
 	const [text, setText] = React.useState('');
 	const [msg, setMsg] = React.useState('');
 
@@ -29,6 +33,7 @@ const QueryEditor: React.FC = () => {
 	return (
 		<Box>
 			<TextField
+				disabled={props.readOnly}
 				fullWidth
 				minRows={3}
 				multiline
@@ -38,7 +43,12 @@ const QueryEditor: React.FC = () => {
 				value={text}
 			/>
 			<Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mt: 1 }}>
-				<Button onClick={() => void save()} size="small" variant="outlined">
+				<Button
+					disabled={props.readOnly}
+					onClick={() => void save()}
+					size="small"
+					variant="outlined"
+				>
 					Save queries
 				</Button>
 				<Typography color="text.secondary" variant="caption">

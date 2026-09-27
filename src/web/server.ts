@@ -9,7 +9,10 @@ import { fileURLToPath } from 'node:url';
 
 import type { RaceAlias, RaceIdentityResolver } from '../identity/raceIdentity.js';
 import type { Anomaly, RaceObservation, SourceName } from '../reconcile/reconcile.js';
+import type { ApiRecordingSummary } from '../replay/apiRecording.js';
+import type { SessionFiles } from '../replay/sessionFiles.js';
 import type { AlertEvent } from '../runtime/alertLog.js';
+import type { ApiRecorderStatus } from '../runtime/apiRecorder.js';
 import type { CadenceConfig, CaptureResult } from '../sources/air/captureScheduler.js';
 import type { MatchStore } from '../sources/air/matchStore.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
@@ -29,7 +32,17 @@ export type LastFrameView = {
 	ts: number;
 };
 
+// The Record button (live) or the playback banner (--api-playback). start/stop are
+// omitted in playback: recording a playback would just copy the recording.
+export type WebApiRecording = {
+	list: () => ApiRecordingSummary[];
+	start?: (name?: string) => ApiRecorderStatus;
+	status: () => ApiRecorderStatus;
+	stop?: () => ApiRecorderStatus;
+};
+
 export type WebServerConfig = {
+	apiRecording?: WebApiRecording;
 	// When present, the server opens a /ws endpoint and pushes a "changed" nudge over
 	// it on every state change, so the client refetches on demand instead of polling.
 	changeBus?: ChangeBus;
@@ -43,6 +56,8 @@ export type WebServerConfig = {
 	queryStore?: QueryStore; // DDHQ queries get/set; omitted if DDHQ isn't configured
 	raceIdentity?: RaceIdentityResolver;
 	reconcileRace?: (raceKey: string, now: number) => Anomaly[];
+	// Recorded sessions + disk space (Recordings panel); omitted if not wired.
+	sessions?: SessionFiles;
 	setCadence?: (next: Partial<CadenceConfig>) => void;
 	store: Store;
 	// Manual capture trigger (air scheduler's triggerCapture); omitted if air isn't wired.
@@ -59,6 +74,27 @@ const historyFor = (store: Store, source: SourceName, raceKey: string): RaceObse
 
 const latest = (history: RaceObservation[]): RaceObservation | undefined =>
 	history.length === 0 ? undefined : history[history.length - 1];
+
+const readingOf = (observation: RaceObservation): string =>
+	JSON.stringify([
+		observation.pctIn,
+		[...observation.calledFor].sort(),
+		observation.candidates.map((candidate) => [candidate.key, candidate.votes, candidate.pct]),
+	]);
+
+// When a source last said something new about a race. Every air read counts (the race
+// was just on screen); DDHQ and Ross re-record every tracked race each poll, so only
+// a reading that differs from the one before counts — otherwise every polled race
+// would jump to the top of the races table together once a minute.
+const lastChangeAt = (source: SourceName, history: RaceObservation[]): number =>
+	source === 'air'
+		? (latest(history)?.observedAt ?? 0)
+		: history.reduce((changedAt, observation, index) => {
+				const previous = history[index - 1];
+				return previous === undefined || readingOf(previous) !== readingOf(observation)
+					? observation.observedAt
+					: changedAt;
+			}, 0);
 
 const aliasFor = (
 	resolver: RaceIdentityResolver | undefined,
@@ -137,6 +173,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		});
 		const lastFrame = config.getLastFrame?.();
 		return {
+			airMatch: config.matchStore?.get() ?? null,
 			alerts: config.getRecentAlerts().slice(-100).reverse(),
 			cadence: config.getCadence?.() ?? null,
 			lastFrame:
@@ -151,44 +188,46 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		};
 	});
 
-	// Race list: per-source summary (pctIn + ranked candidates), last activity, alert count.
+	// Race list, most recent change first: per-source summary (pctIn + ranked candidates),
+	// last change, alert count.
 	app.get('/api/races', () => {
 		const store = config.store;
 		const now = Date.now();
 		return {
-			races: store.getRaceKeys().map((raceKey) => {
-				const sources = Object.fromEntries(
-					SOURCES.map((source) => [
-						source,
-						summarizeSource(latest(historyFor(store, source, raceKey))),
-					]),
-				) as Record<SourceName, RaceSourceSummary>;
-				const lastAt = Math.max(
-					0,
-					...SOURCES.flatMap((source) =>
-						historyFor(store, source, raceKey).map((o) => o.observedAt),
-					),
-				);
-				const alertCount = config.reconcileRace?.(raceKey, now).length ?? 0;
-				const canonical = config.raceIdentity
-					?.getSnapshot()
-					.canonicalRaces.find((race) => race.canonicalRaceKey === raceKey);
-				const pendingLinkCount =
-					config.raceIdentity
+			races: store
+				.getRaceKeys()
+				.map((raceKey) => {
+					const sources = Object.fromEntries(
+						SOURCES.map((source) => [
+							source,
+							summarizeSource(latest(historyFor(store, source, raceKey))),
+						]),
+					) as Record<SourceName, RaceSourceSummary>;
+					const lastAt = Math.max(
+						0,
+						...SOURCES.map((source) => lastChangeAt(source, historyFor(store, source, raceKey))),
+					);
+					const alertCount = config.reconcileRace?.(raceKey, now).length ?? 0;
+					const canonical = config.raceIdentity
 						?.getSnapshot()
-						.proposals.filter(
-							(proposal) =>
-								proposal.status === 'pending' && proposal.candidateCanonicalRaceKey === raceKey,
-						).length ?? 0;
-				return {
-					alertCount,
-					lastAt: lastAt > 0 ? lastAt : null,
-					pendingLinkCount,
-					provisional: canonical?.provisional ?? false,
-					raceKey,
-					sources,
-				};
-			}),
+						.canonicalRaces.find((race) => race.canonicalRaceKey === raceKey);
+					const pendingLinkCount =
+						config.raceIdentity
+							?.getSnapshot()
+							.proposals.filter(
+								(proposal) =>
+									proposal.status === 'pending' && proposal.candidateCanonicalRaceKey === raceKey,
+							).length ?? 0;
+					return {
+						alertCount,
+						lastAt: lastAt > 0 ? lastAt : null,
+						pendingLinkCount,
+						provisional: canonical?.provisional ?? false,
+						raceKey,
+						sources,
+					};
+				})
+				.sort((a, b) => (b.lastAt ?? 0) - (a.lastAt ?? 0) || a.raceKey.localeCompare(b.raceKey)),
 		};
 	});
 
@@ -331,12 +370,48 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	app.post<{ Body: { queries?: unknown } }>('/api/queries', (req, reply) => {
 		if (config.queryStore === undefined)
 			return reply.code(503).send({ error: 'DDHQ not configured' });
+		if (config.apiRecording?.status().mode === 'playback')
+			return reply
+				.code(409)
+				.send({ error: 'queries are fixed by the API recording during playback' });
 		const raw = req.body.queries;
 		if (!Array.isArray(raw) || !raw.every((q) => typeof q === 'string'))
 			return reply.code(400).send({ error: 'queries must be an array of strings' });
 		config.queryStore.set(raw);
 		changeBus?.broadcast({ type: 'changed' });
 		return { queries: config.queryStore.get() };
+	});
+
+	// Raw DDHQ + Chameleon response recording (Record button) and playback status.
+	app.get('/api/api-recording', (_req, reply) => {
+		if (config.apiRecording === undefined)
+			return reply.code(503).send({ error: 'API recording not wired' });
+		return config.apiRecording.status();
+	});
+
+	app.get('/api/api-recordings', () => ({ recordings: config.apiRecording?.list() ?? [] }));
+
+	app.post<{ Body: { name?: unknown } | null }>('/api/api-recording/start', (req, reply) => {
+		if (config.apiRecording?.start === undefined)
+			return reply.code(409).send({ error: 'recording is unavailable in API playback' });
+		const name = typeof req.body?.name === 'string' ? req.body.name : undefined;
+		try {
+			const status = config.apiRecording.start(name);
+			changeBus?.broadcast({ type: 'changed' });
+			return status;
+		} catch (error) {
+			return reply
+				.code(409)
+				.send({ error: error instanceof Error ? error.message : String(error) });
+		}
+	});
+
+	app.post('/api/api-recording/stop', (_req, reply) => {
+		if (config.apiRecording?.stop === undefined)
+			return reply.code(409).send({ error: 'recording is unavailable in API playback' });
+		const status = config.apiRecording.stop();
+		changeBus?.broadcast({ type: 'changed' });
+		return status;
 	});
 
 	// Which browser tab the air capturer grabs (URL substring), switchable live.
@@ -350,6 +425,37 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		config.matchStore.set(req.body.match);
 		changeBus?.broadcast({ type: 'changed' });
 		return { match: config.matchStore.get() };
+	});
+
+	// Recorded sessions, free disk, pruning a session's frame PNGs, and deleting a session.
+	app.get('/api/sessions', (_req, reply) => {
+		if (config.sessions === undefined)
+			return reply.code(503).send({ error: 'session files not wired' });
+		return { disk: config.sessions.disk(), sessions: config.sessions.list() };
+	});
+
+	app.delete<{ Params: { id: string } }>('/api/sessions/:id', (req, reply) => {
+		if (config.sessions === undefined)
+			return reply.code(503).send({ error: 'session files not wired' });
+		try {
+			return { freedBytes: config.sessions.deleteSession(req.params.id) };
+		} catch (error) {
+			return reply
+				.code(409)
+				.send({ error: error instanceof Error ? error.message : String(error) });
+		}
+	});
+
+	app.post<{ Params: { id: string } }>('/api/sessions/:id/prune-frames', (req, reply) => {
+		if (config.sessions === undefined)
+			return reply.code(503).send({ error: 'session files not wired' });
+		try {
+			return { freedBytes: config.sessions.pruneFrames(req.params.id) };
+		} catch (error) {
+			return reply
+				.code(409)
+				.send({ error: error instanceof Error ? error.message : String(error) });
+		}
 	});
 
 	// --- Static SPA ----------------------------------------------------------
@@ -367,7 +473,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			reply
 				.type('text/html')
 				.send(
-					'<h1>Eagle Eye</h1><p>Web UI not built. Run <code>npm run web:build</code>, then restart.</p>',
+					'<h1>Eagle Eye</h1><p>Web UI not built. Run <code>npm run frontend:build</code>, then restart.</p>',
 				),
 		);
 	}

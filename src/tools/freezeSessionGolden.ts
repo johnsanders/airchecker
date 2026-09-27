@@ -11,8 +11,8 @@ import { replaySessionTimeline } from '../replay/sessionGolden.js';
 // so the replay test can re-run the store/reconciler path with no sqlite and
 // no API key.
 //
-//   npm run freeze-session -- <sessionId> <goldenName>
-//   npm run freeze-session -- --refreeze <path-to-session.json>
+//   node --import tsx src/tools/freezeSessionGolden.ts <sessionId> <goldenName>
+//   node --import tsx src/tools/freezeSessionGolden.ts --refreeze <path-to-session.json>
 
 const writeDoc = (outPath: string, doc: SessionGoldenDoc): void => {
 	// Compact JSON — the doc is megabytes of observation payloads.
@@ -68,8 +68,8 @@ const run = (): void => {
 	const second = process.argv[3];
 	if (first === undefined || second === undefined) {
 		console.error(
-			'Usage: npm run freeze-session -- <sessionId> <goldenName>\n' +
-				'       npm run freeze-session -- --refreeze <path-to-session.json>',
+			'Usage: node --import tsx src/tools/freezeSessionGolden.ts <sessionId> <goldenName>\n' +
+				'       node --import tsx src/tools/freezeSessionGolden.ts --refreeze <path-to-session.json>',
 		);
 		process.exit(1);
 	}

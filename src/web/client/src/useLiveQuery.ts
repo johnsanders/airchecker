@@ -21,12 +21,15 @@ export const useLiveQuery = <T>(
 	const mountedRef = React.useRef(true);
 	fetcherRef.current = fetcher;
 
-	React.useEffect(
-		() => () => {
+	// Set true in the effect body, not just the ref's initial value: StrictMode (dev)
+	// mounts, unmounts, and remounts, and without this the ref stays false after the
+	// first cleanup and every fetch result is silently dropped.
+	React.useEffect(() => {
+		mountedRef.current = true;
+		return () => {
 			mountedRef.current = false;
-		},
-		[],
-	);
+		};
+	}, []);
 
 	const reload = React.useCallback(async (): Promise<void> => {
 		try {

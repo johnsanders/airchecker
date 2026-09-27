@@ -4,8 +4,8 @@
 export type SourceName = 'air' | 'DDHQ' | 'Ross';
 
 // Display label for a source. The internal discriminant stays 'air' (it's the
-// on-air source in the reconciler/store/types); the UI shows 'Actus' per request.
-export const sourceLabel = (source: SourceName): string => (source === 'air' ? 'Actus' : source);
+// on-air source in the reconciler/store/types); the UI shows 'Air'.
+export const sourceLabel = (source: SourceName): string => (source === 'air' ? 'Air' : source);
 
 export interface AlertEvent {
 	detail: string;
@@ -27,6 +27,26 @@ export interface Anomaly {
 	type: string;
 }
 
+// Raw DDHQ + Chameleon response recording (Record button) / playback (--api-playback).
+export type ApiRecordingStatus =
+	| {
+			durationMs: number;
+			elapsedMs: number;
+			ended: boolean;
+			mode: 'playback';
+			name: string;
+			speed: number;
+	  }
+	| { mode: 'live'; recording: { name: string; responseCount: number; startedAt: number } | null };
+
+export interface ApiRecordingSummary {
+	file: string;
+	name: string;
+	responseCount: number;
+	startedAt: number;
+	stoppedAt: null | number;
+}
+
 export interface Cadence {
 	intervalMs: number;
 	mode: 'interval' | 'manual';
@@ -44,6 +64,11 @@ export interface CanonicalRace {
 	canonicalRaceKey: string;
 	descriptor: RaceDescriptor;
 	provisional: boolean;
+}
+
+export interface DiskUsage {
+	freeBytes: number;
+	totalBytes: number;
 }
 
 export interface Observation {
@@ -135,6 +160,18 @@ export interface RaceSummary {
 	sources: Record<SourceName, RaceSourceSummary>;
 }
 
+export interface SessionSummary {
+	alerts: number;
+	current: boolean;
+	endedAt: null | number;
+	frames: number;
+	framesBytes: number;
+	id: string;
+	observations: number;
+	sqliteBytes: number;
+	startedAt: null | number;
+}
+
 export interface SourceStat {
 	lastAt: null | number;
 	observations: number;
@@ -143,6 +180,7 @@ export interface SourceStat {
 }
 
 export interface StateResponse {
+	airMatch: null | string;
 	alerts: Anomaly[];
 	cadence: Cadence | null;
 	lastFrame: { observations: Observation[]; ts: number } | null;
@@ -177,15 +215,25 @@ export const api = {
 		const res = await fetch('/api/capture', { method: 'POST' });
 		return res.json() as Promise<{ error?: string; ran: boolean; status: string }>;
 	},
-	getAirMatch: () => getJson<{ match: null | string }>('/api/air-match'),
+	deleteSession: async (id: string): Promise<{ freedBytes: number }> => {
+		const url = `/api/sessions/${encodeURIComponent(id)}`;
+		const res = await fetch(url, { method: 'DELETE' });
+		if (!res.ok) throw new Error(`${res.status} ${url}`);
+		return res.json() as Promise<{ freedBytes: number }>;
+	},
 	getAlertHistory: (limit = 100) =>
 		getJson<{ events: AlertEvent[] }>(`/api/alert-history?limit=${limit}`),
+	getApiRecording: () => getJson<ApiRecordingStatus>('/api/api-recording'),
 	getQueries: () => getJson<{ queries: string[] }>('/api/queries'),
 	getRace: (raceKey: string) =>
 		getJson<RaceDetailResponse>(`/api/race/${encodeURIComponent(raceKey)}`),
 	getRaceLinks: () => getJson<RaceLinksResponse>('/api/race-links'),
 	getRaces: () => getJson<{ races: RaceSummary[] }>('/api/races'),
+	getSessions: () => getJson<{ disk: DiskUsage; sessions: SessionSummary[] }>('/api/sessions'),
 	getState: () => getJson<StateResponse>('/api/state'),
+	listApiRecordings: () => getJson<{ recordings: ApiRecordingSummary[] }>('/api/api-recordings'),
+	pruneSessionFrames: (id: string) =>
+		postJson<{ freedBytes: number }>(`/api/sessions/${encodeURIComponent(id)}/prune-frames`, {}),
 	rejectRaceProposal: (id: string) =>
 		postJson<{ raceLinks: RaceLinksResponse }>(
 			`/api/race-links/proposals/${encodeURIComponent(id)}/reject`,
@@ -196,10 +244,12 @@ export const api = {
 	setQueries: (queries: string[]) => postJson<{ queries: string[] }>('/api/queries', { queries }),
 	setRaceAlias: (body: { canonicalRaceKey: string; source: SourceName; sourceRaceKey: string }) =>
 		postJson<{ raceLinks: RaceLinksResponse }>('/api/race-links/aliases', body),
+	startApiRecording: (name?: string) =>
+		postJson<ApiRecordingStatus>('/api/api-recording/start', name === undefined ? {} : { name }),
+	stopApiRecording: () => postJson<ApiRecordingStatus>('/api/api-recording/stop', {}),
 };
 
 // Preset tabs the capture button can target (label → URL substring).
 export const AIR_PRESETS: { label: string; match: string }[] = [
 	{ label: 'DirecTV', match: 'directv' },
-	{ label: 'Actus', match: 'actus' },
 ];

@@ -26,6 +26,14 @@ describe('settings store', () => {
 		settings.close();
 	});
 
+	it('persists the air tab match, undefined until set', () => {
+		const settings = makeSettingsStore(':memory:');
+		expect(settings.getAirMatch()).toBeUndefined();
+		settings.setAirMatch('directv');
+		expect(settings.getAirMatch()).toBe('directv');
+		settings.close();
+	});
+
 	it('round-trips queries through a file across reopen (survives restart)', () => {
 		const path = `/tmp/eagle-eye-settings-${process.pid}.sqlite`;
 		const first = makeSettingsStore(path);

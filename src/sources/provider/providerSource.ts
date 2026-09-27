@@ -1,4 +1,5 @@
 import type { RaceObservation } from '../../reconcile/reconcile.js';
+import type { HttpJson } from '../http.js';
 import type { ProviderPoller } from './poller.js';
 import type { QueryStore } from './queryStore.js';
 
@@ -25,22 +26,40 @@ export type ProviderSource = {
 	queryStore: QueryStore; // exposed so the web server can get/set the query list
 };
 
-export const makeProviderSource = (
-	onObservations: (observations: RaceObservation[]) => Promise<unknown> | unknown,
-	queryStore: QueryStore = makeQueryStore(),
-): ProviderSource => {
+export type ProviderSourceOptions = {
+	fixedIntervalMs?: number; // overrides DDHQ_POLL_INTERVAL_MS (API recording pins 60 s)
+	http?: HttpJson;
+	playback?: boolean; // answers come from an API recording: no credentials needed
+};
+
+const PLAYBACK_CREDENTIALS = {
+	clientId: 'api-playback',
+	clientSecret: 'api-playback',
+	grantType: 'api-playback',
+};
+
+const readCredentials = () => {
 	const clientId = process.env.DDHQ_CLIENT_ID;
 	const clientSecret = process.env.DDHQ_CLIENT_SECRET;
 	const grantType = process.env.DDHQ_GRANT_TYPE;
 	if (clientId === undefined || clientSecret === undefined || grantType === undefined)
 		throw new Error('DDHQ_CLIENT_ID, DDHQ_CLIENT_SECRET, and DDHQ_GRANT_TYPE must be set');
+	return { clientId, clientSecret, grantType };
+};
 
+export const makeProviderSource = (
+	onObservations: (observations: RaceObservation[]) => Promise<unknown> | unknown,
+	queryStore: QueryStore = makeQueryStore(),
+	options: ProviderSourceOptions = {},
+): ProviderSource => {
+	const credentials = options.playback === true ? PLAYBACK_CREDENTIALS : readCredentials();
 	const baseUrl = process.env.DDHQ_BASE_URL ?? DEFAULT_BASE_URL;
-	const http = makeFetchHttp();
-	const auth = makeDdhqAuth({ baseUrl, credentials: { clientId, clientSecret, grantType }, http });
+	const http = options.http ?? makeFetchHttp();
+	const auth = makeDdhqAuth({ baseUrl, credentials, http });
 	const intervalRaw = Number(process.env.DDHQ_POLL_INTERVAL_MS);
 	const intervalMs =
-		Number.isFinite(intervalRaw) && intervalRaw > 0 ? intervalRaw : DEFAULT_POLL_INTERVAL_MS;
+		options.fixedIntervalMs ??
+		(Number.isFinite(intervalRaw) && intervalRaw > 0 ? intervalRaw : DEFAULT_POLL_INTERVAL_MS);
 
 	const poller = makeProviderPoller({
 		auth,

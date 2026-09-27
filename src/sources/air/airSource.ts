@@ -14,7 +14,7 @@ import { makeMatchStore } from './matchStore.js';
 // The air source: grab a frame of the on-air broadcast, run extractFrame, hand the
 // resulting observations on, and record the frame for replay / the web view. One
 // captureOnce() is what the scheduler (interval or manual button) drives. The tab
-// to capture starts on 'actus' and is switched live from the web UI — no env.
+// to capture starts on DirecTV and is switched live from the web UI — no env.
 
 export type AirSource = {
 	captureOnce: () => Promise<void>;
@@ -41,8 +41,7 @@ export type LastFrame = {
 };
 
 export const makeAirSource = (config: AirSourceConfig): AirSource => {
-	// Starts on the Actus playback tab; switch it live from the web UI (no env).
-	const matchStore = config.matchStore ?? makeMatchStore('actus');
+	const matchStore = config.matchStore ?? makeMatchStore();
 	const capturer = config.capturer ?? makeBrowserCapturer({ urlMatch: matchStore.get });
 	const llmClient = config.llmClient ?? makeLiveLlmClient();
 	let lastFrame: LastFrame | undefined;

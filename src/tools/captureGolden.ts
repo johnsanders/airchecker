@@ -17,14 +17,14 @@ import { redactError } from '../vision/redact.js';
 // exact (frameSha256, promptHash, response) tuples the flow produced plus the
 // resulting observations, so a stubbed replay can assert against it with no API key.
 //
-//   npm run capture-golden -- <framePng> <goldenName>
+//   node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts <framePng> <goldenName>
 //     live mode: real VLM calls (needs ANTHROPIC_API_KEY + OPENROUTER_API_KEY)
 //
-//   npm run capture-golden -- --from-session <sessionId> <frameHash> <goldenName>
+//   node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts --from-session <sessionId> <frameHash> <goldenName>
 //     promote an already-recorded session frame: responses come from the session's
 //     llm_calls table — zero API cost, no key needed
 //
-//   npm run capture-golden -- --refreeze <golden.json> [...more]
+//   node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts --refreeze <golden.json> [...more]
 //     recompute a golden's observations from its own recorded responses — no API —
 //     after a deterministic post-processing change (key normalization, merge rules).
 //     Prompts must be unchanged; a prompt change means a live re-capture.
@@ -112,9 +112,9 @@ const run = async (): Promise<void> => {
 		console.error(
 			[
 				'Usage:',
-				'  npm run capture-golden -- <framePng> <goldenName>',
-				'  npm run capture-golden -- --from-session <sessionId> <frameHash> <goldenName>',
-				'  npm run capture-golden -- --refreeze <golden.json> [...more]',
+				'  node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts <framePng> <goldenName>',
+				'  node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts --from-session <sessionId> <frameHash> <goldenName>',
+				'  node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts --refreeze <golden.json> [...more]',
 			].join('\n'),
 		);
 		process.exit(1);

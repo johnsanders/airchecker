@@ -13,6 +13,7 @@ import { AIR_PRESETS, api } from '../api.js';
 import { ago, pct } from '../format.js';
 
 interface Props {
+	airMatch: null | string; // which tab the capturer targets (URL substring), as the server has it
 	cadence: Cadence | null;
 	lastFrame: { observations: Observation[]; ts: number } | null;
 }
@@ -26,14 +27,14 @@ const CapturePanel: React.FC<Props> = (props) => {
 	const [seconds, setSeconds] = React.useState(
 		props.cadence ? Math.round(props.cadence.intervalMs / 1000) : 5,
 	);
-	// Which tab the capturer targets (URL substring), loaded from the server.
-	const [airMatch, setAirMatch] = React.useState<null | string>(null);
-	React.useEffect(() => {
-		void api.getAirMatch().then((r) => setAirMatch(r.match));
-	}, []);
+	// No local copy of the selection: the server's value arrives with every state push,
+	// so the toggle can't drift from what the capturer actually targets.
 	const pickPreset = (match: string): void => {
-		setAirMatch(match);
-		void api.setAirMatch(match);
+		api
+			.setAirMatch(match)
+			.catch((e: unknown) =>
+				setMsg(e instanceof Error ? `source switch failed: ${e.message}` : 'source switch failed'),
+			);
 	};
 
 	// Cache-bust the frame image per timestamp so it refreshes on each capture.
@@ -100,7 +101,7 @@ const CapturePanel: React.FC<Props> = (props) => {
 				<Typography color="text.secondary" variant="caption">
 					source tab:
 				</Typography>
-				<ToggleButtonGroup exclusive size="small" value={airMatch}>
+				<ToggleButtonGroup exclusive size="small" value={props.airMatch}>
 					{AIR_PRESETS.map((preset) => (
 						<ToggleButton
 							key={preset.match}
@@ -111,9 +112,9 @@ const CapturePanel: React.FC<Props> = (props) => {
 						</ToggleButton>
 					))}
 				</ToggleButtonGroup>
-				{airMatch !== null && !AIR_PRESETS.some((p) => p.match === airMatch) && (
+				{props.airMatch !== null && !AIR_PRESETS.some((p) => p.match === props.airMatch) && (
 					<Typography color="text.secondary" variant="caption">
-						({airMatch})
+						({props.airMatch})
 					</Typography>
 				)}
 			</Stack>
@@ -124,7 +125,14 @@ const CapturePanel: React.FC<Props> = (props) => {
 						alt="last frame"
 						component="img"
 						src={frameSrc}
-						sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, width: '100%' }}
+						sx={{
+							border: '1px solid',
+							borderColor: 'divider',
+							borderRadius: 1,
+							display: 'block',
+							maxWidth: 720,
+							width: '100%',
+						}}
 					/>
 					<Typography color="text.secondary" variant="caption">
 						captured {ago(props.lastFrame?.ts)} · {props.lastFrame?.observations.length ?? 0}{' '}

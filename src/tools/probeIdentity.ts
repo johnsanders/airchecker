@@ -9,7 +9,7 @@ import { redactError } from '../vision/redact.js';
 // DDHQ canonicals, then feeds messy "air" headings and asks: does Haiku propose the
 // RIGHT link (and refuse a wrong one)? Prints each decision + reason and a verdict.
 //
-//   ANTHROPIC_API_KEY=... npm run probe-identity
+//   ANTHROPIC_API_KEY=... node --env-file-if-exists=.env --import tsx src/tools/probeIdentity.ts
 //
 // In-memory only: no settings file, no recorder — nothing persists.
 

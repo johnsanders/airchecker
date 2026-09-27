@@ -9,13 +9,13 @@ import { findTemplate, templateRegistry } from '../templates/registry.js';
 // so the region can be eyeballed — if the whole graphic is in the crop, the region
 // is good (the VLM localizes the fields within it).
 //
-//   npm run calibrate <templateId> <framePng>
+//   node --import tsx src/tools/calibrate.ts <templateId> <framePng>
 
 const run = async (): Promise<void> => {
 	const templateId = process.argv[2];
 	const framePath = process.argv[3];
 	if (templateId === undefined || framePath === undefined) {
-		console.error('Usage: npm run calibrate <templateId> <framePng>');
+		console.error('Usage: node --import tsx src/tools/calibrate.ts <templateId> <framePng>');
 		process.exit(1);
 	}
 

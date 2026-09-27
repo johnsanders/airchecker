@@ -10,11 +10,13 @@ Calibration and prompt-authoring source of truth for the current on-air look. Co
 
 ## Layout facts (normalized to frame height)
 
+**Two geometries.** The fullscreen and lower-third layer has a native position (the graphics team's layer exports) and an on-air position: on air the layer is scaled 0.979 in y from the top of the frame and shifted up 42 px (measured 2026-09-26: the fullscreen card panel sits at rows 213–539 in the export and 166–483 in the video; `y_air = 0.979·y_native − 42`). The ticker does not move. The video frames below are the on-air geometry. A test feed may show the **fullscreen** natively, and it reads fine either way (18/18 on the nine exports, no code change). The **lower third only ever airs shifted**: natively its box (y 0.747–0.943) would sit on top of the always-on ticker, so that position is not a supported state and its `captureRegion` is authored to the on-air band only (decision 2026-09-27).
+
 | Surface | Band (y) | Notes |
 | --- | --- | --- |
 | ticker | 0.885 – 0.985 | Always on air during election coverage; a ~20 s promo bar sometimes takes its slot. No graphics detected = programming we don't monitor. Flips every ~10 s (vertical wipe). Heading `ST \| OFFICE (P)` with optional `DISTRICT n` second line. `>95% IN` is the normal display at ≥95. |
-| results lower-third | 0.685 – 0.89, x 0.19 – 0.955 | Replaces the headline chyron in the same band; NewsNation bug stays bottom-left. |
-| fullscreen board | 0 – 0.68 | Headline chyron stays visible beneath it, ticker below that. `% IN` badge top-right above the DD26 bug — always present; absence is a display bug. A "DDHQ PROJECTION" band may or may not appear beneath the cards; it is not a call signal. |
+| results lower-third | 0.693 – 0.884, x 0.19 – 0.955 | Replaces the headline chyron in the same band; NewsNation bug stays bottom-left. On-air position only (see above). |
+| fullscreen board | 0 – 0.68 on air / 0.04 – 0.71 native | Headline chyron stays visible beneath it, ticker below that. `% IN` badge top-right above the DD26 bug — always present; absence is a display bug. A "DDHQ PROJECTION" band may or may not appear beneath the cards; it is not a call signal. |
 
 ## Frames cut from the video
 
@@ -54,7 +56,7 @@ Calibration and prompt-authoring source of truth for the current on-air look. Co
 - `ticker.png` — VA Governor ticker keyed over color bars (graphics-team export). Same data as the VA GOVERNOR row above.
 - `fs-2.png`, `fs-3.png` — all-three composites (fullscreen + RACE ALERT-style lower-third + ticker) built for convenience; the stacked case is possible but rare.
 - `example_fs_winner.jpg`, `ticker_no_winner.jpg` — originals of the two converted frames above.
-- `example_*_L3 *.jpg`, `example_*_FS *.jpg` — Photoshop layer exports of the lower-third and fullscreen designs on white. Prompt-authoring references only: they are JPEG, the lower-thirds sit lower than on air, and two are duplicates (`L3 5` = `L3 7`).
+- `example_*_L3 *.jpg`, `example_*_FS *.jpg` — Photoshop layer exports of the lower-third and fullscreen designs on white, in the **native geometry** (see Two geometries above). JPEG, so convert before feeding the pipeline; two are duplicates (`L3 5` = `L3 7`). All nine fullscreens carry the same mock data as a video golden (VA-2, CA-22 and CA Governor are the extras), which is how the native fullscreen was verified live on 2026-09-26 (18/18 exact). The lower-third exports are prompt-authoring references only — that position never airs.
 
 ## Still wanted
 

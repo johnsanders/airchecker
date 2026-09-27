@@ -4,21 +4,21 @@ One page for the truck. Dev context lives in [`CLAUDE.md`](../CLAUDE.md); what w
 
 ## Before the night
 
-1. **Machine.** Working copy at `~/Developer/airchecker`, `npm install` done, `npm run web:build` done (rebuild after any client change). `npm test` green.
+1. **Machine.** Working copy at `~/Developer/airchecker`, `npm install` done, `npm run frontend:build` done (rebuild after any client change). `npm test` green.
 2. **`.env`** (gitignored) with `ANTHROPIC_API_KEY` (pass 1, Haiku), `GEMINI_API_KEY` (the crop read, Gemini 3.8 Flash direct from Google — a prepaid AI Studio project; keep its credits topped up, a depleted project answers 402 and `live` refuses to start without both keys), `DDHQ_CLIENT_ID`, `DDHQ_CLIENT_SECRET`, `DDHQ_GRANT_TYPE`. Optional: `OPENROUTER_API_KEY` (only for `verify` / `measure-call` trials of `vendor/model` IDs), `DDHQ_BASE_URL`, `DDHQ_POLL_INTERVAL_MS` (default 60000), `CAPTURE_MODE` (`interval` | `manual`), `CAPTURE_INTERVAL_MS` (default 5000), `WEB_PORT` (default 8787).
 3. **VPN up** — the Chameleon playlist URL is reachable only on the corporate network. Without it the Ross source logs poll errors every minute and the reconciler has nothing to compare air against.
-4. **Disk.** Frames cost ~1 GB per broadcast hour at the 5 s cadence, session sqlites tens of MB per hour. Check free space; `npm run sessions` lists what old sessions hold and `npm run sessions -- --prune-frames <id>` drops a session's frame PNGs (its sqlite still replays and freezes).
+4. **Disk.** Frames cost ~1 GB per broadcast hour at the 5 s cadence, session sqlites tens of MB per hour. The web view's **Recordings** panel shows free space (red below 10 GB) and each session's size, and **Prune** drops an old session's frame PNGs (its sqlite still replays and freezes). Check it right after launch.
 5. **DDHQ queries.** The list persists in `recordings/settings.sqlite` and is edited in the web view ("DDHQ queries"). Each entry is a `/api/v4/races?…` query string, e.g. `race_date=2026-11-03&state=TX&office_id=3`. Nothing is polled until the list is non-empty.
 
 ## Launch order
 
 ```bash
 npm run chrome:debug      # a Chrome with CDP on :9222, opened on the stream player — log in, start playback
-npm run live              # all three sources, recorder on, web view
+npm run backend              # all three sources, recorder on, web view
 open http://localhost:8787
 ```
 
-In the web view's "Actus capture" panel pick the tab to grab (DirecTV or Actus playback), confirm the last-frame image shows real video (a black frame means DRM blocked the screenshot — switch tabs), and leave the cadence on interval.
+In the web view's "Air capture" panel pick the tab to grab (DirecTV is the only preset today), confirm the last-frame image shows real video (a black frame means DRM blocked the screenshot — switch tabs), and leave the cadence on interval.
 
 ## Reading the view
 
@@ -27,7 +27,7 @@ In the web view's "Actus capture" panel pick the tab to grab (DirecTV or Actus p
 - **Race links** — Haiku proposes which DDHQ race an air or Ross race is; a human **accepts or rejects**. Nothing is auto-linked by the model. Until a race is linked its air reads reconcile against nothing. Check this panel early and whenever the badge count rises.
 - **Alerts** — what stands right now, grouped by race. Clears on the next clean poll.
 - **Recent alert events** — every raise and clear this session, newest first. This is where a one-poll event stays visible. Click a row for the race.
-- **Actus capture** — the last frame and what the model read from it.
+- **Air capture** — the last frame and what the model read from it.
 
 ## What the alert types mean
 
@@ -45,9 +45,19 @@ In the web view's "Actus capture" panel pick the tab to grab (DirecTV or Actus p
 
 Air alerts fire on the **first** bad graphic seen; they clear after three clean reconciles. Severity: high = act now, medium = look, low = note.
 
+## Recording the APIs for rehearsal
+
+The **API recording** panel's red **Record** button saves every DDHQ and Chameleon response (once a minute) until **Stop**. It is separate from the always-on session recording and costs about 20 MB per hour. To rehearse later against that night's data, with no VPN and no DDHQ credentials:
+
+```bash
+npm run backend -- --api-playback <name> --speed=1
+```
+
+Air capture stays live, so this pairs a recorded night of data with a live feed. The header shows `API playback: <name>`, and the query list is locked to what was recorded.
+
 ## When something looks wrong
 
-- **No air reads at all** — check the capture panel's frame; wrong tab or black frame. `npm run air:probe` grabs one frame outside the app and reports whether it is real pixels.
+- **No air reads at all** — check the capture panel's frame; wrong tab or black frame. `node --env-file-if-exists=.env --import tsx src/tools/airProbe.ts` grabs one frame outside the app and reports whether it is real pixels.
 - **A race never links** — accept or reject the proposal in Race links, or relink manually from the race's detail dialog.
 - **Ross idle** — VPN.
 - **DDHQ idle** — credentials in `.env`, and the query list is non-empty.
@@ -55,12 +65,11 @@ Air alerts fire on the **first** bad graphic seen; they clear after three clean 
 
 ## After the night
 
-Everything was recorded under `recordings/<sessionId>` + `.sqlite`. Useful follow-ups need no API key:
+Everything was recorded under `recordings/<sessionId>` + `.sqlite`. The web view's **Recordings** panel lists them. Useful follow-ups need no API key:
 
 ```bash
-npm run sessions                                              # what was recorded
-npm run replay -- <sessionId>                                 # what stood at the end
-npm run replay -- <sessionId> --serve --speed=30              # re-watch it in the web view
-npm run freeze-session -- <sessionId> <goldenName>            # freeze it as a regression golden
-npm run capture-golden -- --from-session <sessionId> <frameHash> <name>   # promote a frame to a vision golden
+node --import tsx src/runtime/replayMain.ts <sessionId>                                 # what stood at the end
+node --import tsx src/runtime/replayMain.ts <sessionId> --serve --speed=30              # re-watch it in the web view
+node --import tsx src/tools/freezeSessionGolden.ts <sessionId> <goldenName>            # freeze it as a regression golden
+node --env-file-if-exists=.env --import tsx src/tools/captureGolden.ts --from-session <sessionId> <frameHash> <name>   # promote a frame to a vision golden
 ```

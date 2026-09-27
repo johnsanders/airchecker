@@ -9,7 +9,7 @@ import puppeteer from 'puppeteer-core';
 // and DISCONNECT — your browser keeps running untouched.
 //
 // urlMatch is a GETTER read fresh each capture, so the web UI can switch which tab
-// is grabbed at runtime (DirecTV vs the Actus playback) without a restart.
+// is grabbed at runtime without a restart.
 //
 // DRM caveat: stream.directv.com is Widevine-protected. A CDP screenshot of
 // protected video can come back BLACK (the protected layer doesn't composite into

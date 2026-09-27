@@ -1,4 +1,5 @@
 import type { RaceObservation } from '../../reconcile/reconcile.js';
+import type { HttpJson } from '../http.js';
 import type { VendorPoller } from './poller.js';
 
 import { makeFetchHttp } from '../http.js';
@@ -18,7 +19,8 @@ export type VendorSource = {
 
 export const makeVendorSource = (
 	onObservations: (observations: RaceObservation[]) => Promise<unknown> | unknown,
+	http: HttpJson = makeFetchHttp(),
 ): VendorSource => {
-	const poller = makeVendorPoller({ http: makeFetchHttp(), onObservations, url: CHAMELEON_URL });
+	const poller = makeVendorPoller({ http, onObservations, url: CHAMELEON_URL });
 	return { intervalMs: POLL_INTERVAL_MS, poller, url: CHAMELEON_URL };
 };
