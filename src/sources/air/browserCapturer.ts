@@ -2,6 +2,8 @@ import type { Browser, Page } from 'puppeteer-core';
 
 import puppeteer from 'puppeteer-core';
 
+import { TEST_PLAYER_PATH, TEST_VIDEO_ELEMENT_ID } from './testPlayer.js';
+
 // Captures a frame of the on-air stream by ATTACHING to a Chrome you already have
 // open and logged in (CDP over browserURL), so there's no re-auth against the DRM'd
 // player. Launch that Chrome with --remote-debugging-port=9222 (see npm run
@@ -15,6 +17,10 @@ import puppeteer from 'puppeteer-core';
 // protected video can come back BLACK (the protected layer doesn't composite into
 // page.screenshot). The air probe verified real pixels for this stream; if a
 // different surface comes back black, fall back to a macOS window screencapture.
+//
+// The TEST player tab is the exception: its frame is drawn off the <video> element at
+// the file's native resolution, not screenshotted, so it matches the 1920×1080 the
+// templates are authored against whatever the window size or pixel density.
 
 export type BrowserCapturer = {
 	captureOnce: () => Promise<Buffer>;
@@ -26,8 +32,19 @@ export type BrowserCapturerConfig = {
 	urlMatch?: () => string; // substring the target tab URL must contain; read per capture
 };
 
-const DEFAULT_BROWSER_URL = 'http://localhost:9222';
+export const DEFAULT_BROWSER_URL = 'http://localhost:9222';
 const DEFAULT_URL_MATCH = 'directv';
+
+// Evaluated in the page (a string: the backend compiles without DOM types). Yields a
+// PNG data URL of whatever frame the video is showing, playing or paused.
+const GRAB_VIDEO_FRAME = `(() => {
+	const video = document.getElementById(${JSON.stringify(TEST_VIDEO_ELEMENT_ID)});
+	const canvas = document.createElement('canvas');
+	canvas.width = video.videoWidth;
+	canvas.height = video.videoHeight;
+	canvas.getContext('2d').drawImage(video, 0, 0);
+	return canvas.toDataURL('image/png');
+})()`;
 
 export const makeBrowserCapturer = (config: BrowserCapturerConfig = {}): BrowserCapturer => {
 	const browserURL = config.browserURL ?? DEFAULT_BROWSER_URL;
@@ -52,6 +69,10 @@ export const makeBrowserCapturer = (config: BrowserCapturerConfig = {}): Browser
 	return {
 		captureOnce: async () => {
 			const page = await findPage();
+			if (page.url().includes(TEST_PLAYER_PATH)) {
+				const dataUrl = (await page.evaluate(GRAB_VIDEO_FRAME)) as string;
+				return Buffer.from(dataUrl.slice(dataUrl.indexOf(',') + 1), 'base64');
+			}
 			const shot = await page.screenshot({ type: 'png' });
 			return Buffer.from(shot);
 		},

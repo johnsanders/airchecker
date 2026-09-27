@@ -1,5 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { Anomaly, RaceObservation } from '../../src/reconcile/reconcile.js';
@@ -373,6 +376,23 @@ describe('web server', () => {
 		);
 	});
 
+	it("reports each source's current failure in /api/state", async () => {
+		app = makeWebServer({
+			getRecentAlerts: () => [],
+			getSourceError: (source) =>
+				source === 'air' ? { count: 2, message: 'no open tab', since: 1_000 } : undefined,
+			store: makeStore(),
+		});
+		const state = (await app.inject({ method: 'GET', url: '/api/state' })).json() as {
+			sources: { error: unknown; source: string }[];
+		};
+		expect(state.sources.map((entry) => [entry.source, entry.error])).toEqual([
+			['DDHQ', null],
+			['Ross', null],
+			['air', { count: 2, message: 'no open tab', since: 1_000 }],
+		]);
+	});
+
 	it('rejects an empty air match', async () => {
 		app = makeWebServer({
 			getRecentAlerts: () => [],
@@ -385,6 +405,61 @@ describe('web server', () => {
 			url: '/api/air-match',
 		});
 		expect(res.statusCode).toBe(400);
+	});
+
+	it('serves TEST videos and points capture at the player once one is opened', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'eagle-eye-videos-'));
+		writeFileSync(join(dir, 'night.mp4'), 'fake video bytes');
+		const opened: string[] = [];
+		const matchStore = makeMatchStore('directv');
+		app = makeWebServer({
+			getRecentAlerts: () => [],
+			matchStore,
+			store: makeStore(),
+			testVideos: { dir, open: (file) => Promise.resolve(void opened.push(file)) },
+		});
+
+		expect((await app.inject({ method: 'GET', url: '/api/test-videos' })).json()).toEqual({
+			files: ['night.mp4'],
+		});
+		const player = await app.inject({ method: 'GET', url: '/test-player/night.mp4' });
+		expect(player.headers['content-type']).toContain('text/html');
+		expect(player.body).toContain('src="/test-video/night.mp4"');
+		expect((await app.inject({ method: 'GET', url: '/test-video/night.mp4' })).body).toBe(
+			'fake video bytes',
+		);
+		expect((await app.inject({ method: 'GET', url: '/test-player/other.mp4' })).statusCode).toBe(
+			404,
+		);
+
+		const res = await app.inject({
+			method: 'POST',
+			payload: { file: 'night.mp4' },
+			url: '/api/test-video',
+		});
+		expect(res.json()).toEqual({ match: '/test-player/' });
+		expect(opened).toEqual(['night.mp4']);
+		expect(matchStore.get()).toBe('/test-player/');
+	});
+
+	it('refuses to open a TEST video that is not in the directory', async () => {
+		const matchStore = makeMatchStore('directv');
+		app = makeWebServer({
+			getRecentAlerts: () => [],
+			matchStore,
+			store: makeStore(),
+			testVideos: {
+				dir: mkdtempSync(join(tmpdir(), 'eagle-eye-videos-')),
+				open: () => Promise.resolve(),
+			},
+		});
+		const res = await app.inject({
+			method: 'POST',
+			payload: { file: '../settings.sqlite' },
+			url: '/api/test-video',
+		});
+		expect(res.statusCode).toBe(400);
+		expect(matchStore.get()).toBe('directv');
 	});
 
 	it('lists and manually updates race aliases', async () => {

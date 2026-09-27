@@ -11,8 +11,10 @@ import { loadApiRecording, resolveApiRecordingFile } from '../replay/apiRecordin
 import { makeSessionFiles } from '../replay/sessionFiles.js';
 import { makeSettingsStore } from '../settings/settingsStore.js';
 import { makeAirSource } from '../sources/air/airSource.js';
+import { DEFAULT_BROWSER_URL } from '../sources/air/browserCapturer.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import { makeMatchStore } from '../sources/air/matchStore.js';
+import { openTestPlayer, TEST_PLAYER_PATH } from '../sources/air/testPlayer.js';
 import { makeFetchHttp } from '../sources/http.js';
 import { makeProviderSource } from '../sources/provider/providerSource.js';
 import { makeQueryStore } from '../sources/provider/queryStore.js';
@@ -32,6 +34,7 @@ import { makeApiRecorder } from './apiRecorder.js';
 import makeComposition from './composition.js';
 import { makeLiveSession } from './liveSession.js';
 import { observationChanged } from './observationChanged.js';
+import { errorMessage, makeSourceErrors } from './sourceErrors.js';
 
 //   CAPTURE_MODE=interval|manual     air cadence (default interval)
 //   CAPTURE_INTERVAL_MS=<n>          default 5000; interval mode only
@@ -91,6 +94,9 @@ const liveMain = async (): Promise<void> => {
 	// Pushes a "changed" nudge to live web clients so they refetch on demand instead
 	// of polling on a timer. Broadcast wherever server state settles.
 	const changeBus = makeChangeBus();
+	const sourceErrors = makeSourceErrors({
+		onChange: () => changeBus.broadcast({ type: 'changed' }),
+	});
 
 	// Current anomalies per race for the web view. Reconciliation re-runs on every
 	// batch over the races it touched; the tracker replaces a race's anomalies each
@@ -169,10 +175,10 @@ const liveMain = async (): Promise<void> => {
 	const mode = readCaptureMode();
 	const intervalMs = readIntervalMs();
 	const airScheduler = makeCaptureScheduler({
-		captureOnce: airSource.captureOnce,
+		captureOnce: () => airSource.captureOnce().then(() => sourceErrors.ok('air')),
 		intervalMs,
 		mode,
-		onError: (error) => console.error('[air] capture error', error),
+		onError: (error) => sourceErrors.fail('air', error),
 		onSkip: () => console.warn('[air] capture skipped — previous still in flight'),
 	});
 
@@ -217,18 +223,27 @@ const liveMain = async (): Promise<void> => {
 	// always in playback.
 	let queryStore: QueryStore | undefined;
 	if (process.env.DDHQ_CLIENT_ID !== undefined || playback !== undefined) {
+		// A poll with any failed query counts as failed, so one bad query can't hide
+		// behind the others succeeding.
+		let queryFailures: string[] = [];
 		const provider = makeProviderSource(ingest, liveQueryStore, {
 			http: sourceHttp('DDHQ'),
+			onQueryError: (query, error) => queryFailures.push(`query ${query}: ${errorMessage(error)}`),
 			playback: playback !== undefined,
 		});
 		queryStore = provider.queryStore;
 		providerIntervalMs = provider.intervalMs;
 		providerScheduler = makeCaptureScheduler({
-			captureOnce: provider.poller.pollOnce,
+			captureOnce: async () => {
+				queryFailures = [];
+				await provider.poller.pollOnce();
+				if (queryFailures.length === 0) sourceErrors.ok('DDHQ');
+				else sourceErrors.fail('DDHQ', queryFailures.join('; '));
+			},
 			immediate: true,
 			intervalMs: provider.intervalMs,
 			mode: 'interval',
-			onError: (error) => console.error('[provider] poll error', error),
+			onError: (error) => sourceErrors.fail('DDHQ', error),
 			onSkip: () => console.warn('[provider] poll skipped — previous still in flight'),
 		});
 		monitored.push(providerScheduler);
@@ -242,11 +257,11 @@ const liveMain = async (): Promise<void> => {
 	// Chameleon vendor source — fixed playlist URL, always on, once per minute (VPN-only).
 	const vendor = makeVendorSource(ingest, sourceHttp('Ross'));
 	const vendorScheduler = makeCaptureScheduler({
-		captureOnce: vendor.poller.pollOnce,
+		captureOnce: () => vendor.poller.pollOnce().then(() => sourceErrors.ok('Ross')),
 		immediate: true,
 		intervalMs: vendor.intervalMs,
 		mode: 'interval',
-		onError: (error) => console.error('[vendor] poll error', error),
+		onError: (error) => sourceErrors.fail('Ross', error),
 		onSkip: () => console.warn('[vendor] poll skipped — previous still in flight'),
 	});
 	monitored.push(vendorScheduler);
@@ -282,6 +297,7 @@ const liveMain = async (): Promise<void> => {
 
 	// Web view: state per source, recent alerts, last frame, manual capture button,
 	// editable DDHQ queries.
+	const webPort = Number(process.env.WEB_PORT) || 8787;
 	const web = makeWebServer({
 		apiRecording,
 		changeBus,
@@ -289,6 +305,7 @@ const liveMain = async (): Promise<void> => {
 		getCadence: airScheduler.getConfig,
 		getLastFrame: airSource.getLastFrame,
 		getRecentAlerts: anomalies.list,
+		getSourceError: sourceErrors.get,
 		matchStore: airSource.matchStore,
 		onRaceRelink: applyRelink,
 		raceIdentity,
@@ -297,10 +314,17 @@ const liveMain = async (): Promise<void> => {
 		sessions: makeSessionFiles('recordings', session.currentId),
 		setCadence: airScheduler.reconfigure,
 		store: composition.store,
+		testVideos: {
+			dir: 'recordings/video',
+			open: (file) =>
+				openTestPlayer(
+					DEFAULT_BROWSER_URL,
+					`http://localhost:${webPort}${TEST_PLAYER_PATH}${encodeURIComponent(file)}`,
+				),
+		},
 		triggerCapture: airScheduler.triggerCapture,
 		...(queryStore === undefined ? {} : { queryStore }),
 	});
-	const webPort = Number(process.env.WEB_PORT) || 8787;
 
 	let shuttingDown = false;
 	const shutdown = (): void => {

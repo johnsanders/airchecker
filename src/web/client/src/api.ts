@@ -175,6 +175,7 @@ export interface SessionSummary {
 }
 
 export interface SourceStat {
+	error: { count: number; message: string; since: number } | null; // current poll/capture failure
 	lastAt: null | number;
 	observations: number;
 	races: number;
@@ -234,7 +235,20 @@ export const api = {
 	getRaces: () => getJson<{ races: RaceSummary[] }>('/api/races'),
 	getSessions: () => getJson<{ disk: DiskUsage; sessions: SessionSummary[] }>('/api/sessions'),
 	getState: () => getJson<StateResponse>('/api/state'),
+	getTestVideos: () => getJson<{ files: string[] }>('/api/test-videos'),
 	listApiRecordings: () => getJson<{ recordings: ApiRecordingSummary[] }>('/api/api-recordings'),
+	// Surfaces the server's message: the usual failure is the debug Chrome not running.
+	openTestVideo: async (file: string): Promise<void> => {
+		const res = await fetch('/api/test-video', {
+			body: JSON.stringify({ file }),
+			headers: { 'content-type': 'application/json' },
+			method: 'POST',
+		});
+		if (!res.ok) {
+			const body = (await res.json().catch(() => ({}))) as { error?: string };
+			throw new Error(body.error ?? `${res.status} /api/test-video`);
+		}
+	},
 	pruneSessionFrames: (id: string) =>
 		postJson<{ freedBytes: number }>(`/api/sessions/${encodeURIComponent(id)}/prune-frames`, {}),
 	rejectRaceProposal: (id: string) =>
@@ -255,6 +269,10 @@ export const api = {
 };
 
 // Preset tabs the capture button can target (label → URL substring).
+// The TEST source's match is the player page's path (TEST_PLAYER_PATH on the server).
+export const TEST_AIR_MATCH = '/test-player/';
+
 export const AIR_PRESETS: { label: string; match: string }[] = [
 	{ label: 'DirecTV', match: 'directv' },
+	{ label: 'TEST', match: TEST_AIR_MATCH },
 ];

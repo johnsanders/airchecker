@@ -4,7 +4,7 @@ import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
 import Fastify from 'fastify';
 import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { RaceAlias, RaceIdentityResolver } from '../identity/raceIdentity.js';
@@ -14,6 +14,7 @@ import type { SessionFiles } from '../replay/sessionFiles.js';
 import type { AlertEvent } from '../runtime/alertLog.js';
 import type { ApiRecorderStatus } from '../runtime/apiRecorder.js';
 import type { SessionStatus } from '../runtime/liveSession.js';
+import type { SourceError } from '../runtime/sourceErrors.js';
 import type { CadenceConfig, CaptureResult } from '../sources/air/captureScheduler.js';
 import type { MatchStore } from '../sources/air/matchStore.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
@@ -21,6 +22,12 @@ import type { Store } from '../store/store.js';
 import type { ChangeBus } from './changeBus.js';
 
 import { normalizeName } from '../reconcile/reconcile.js';
+import {
+	listTestVideos,
+	TEST_PLAYER_PATH,
+	TEST_VIDEO_PATH,
+	testPlayerHtml,
+} from '../sources/air/testPlayer.js';
 
 // The live web view at localhost:8787. The React SPA (src/web/client) is served as
 // static files; everything else is a JSON API over injected handles — no source
@@ -52,6 +59,7 @@ export type WebServerConfig = {
 	getCadence?: () => CadenceConfig;
 	getLastFrame?: () => LastFrameView | undefined;
 	getRecentAlerts: () => Anomaly[];
+	getSourceError?: (source: SourceName) => SourceError | undefined; // current poll/capture failure
 	matchStore?: MatchStore; // air tab URL-match get/set; omitted if air isn't wired
 	onRaceRelink?: (source: SourceName, sourceRaceKey: string, canonicalRaceKey: string) => void;
 	queryStore?: QueryStore; // DDHQ queries get/set; omitted if DDHQ isn't configured
@@ -64,6 +72,9 @@ export type WebServerConfig = {
 	sessions?: SessionFiles;
 	setCadence?: (next: Partial<CadenceConfig>) => void;
 	store: Store;
+	// The TEST air source: recorded broadcasts in `dir`, opened in the debug Chrome by
+	// `open` (which gets the file name); omitted if air isn't wired.
+	testVideos?: { dir: string; open: (file: string) => Promise<void> };
 	// Manual capture trigger (air scheduler's triggerCapture); omitted if air isn't wired.
 	triggerCapture?: () => Promise<CaptureResult>;
 };
@@ -152,7 +163,13 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			const observations = histories.reduce((sum, h) => sum + h.length, 0);
 			const races = histories.filter((h) => h.length > 0).length;
 			const lastAt = Math.max(0, ...histories.flat().map((o) => o.observedAt));
-			return { lastAt: lastAt > 0 ? lastAt : null, observations, races, source };
+			return {
+				error: config.getSourceError?.(source) ?? null,
+				lastAt: lastAt > 0 ? lastAt : null,
+				observations,
+				races,
+				source,
+			};
 		});
 		const lastFrame = config.getLastFrame?.();
 		return {
@@ -411,6 +428,40 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		changeBus?.broadcast({ type: 'changed' });
 		return { match: config.matchStore.get() };
 	});
+
+	// TEST source: pick a recording from recordings/video; it opens paused in the debug
+	// Chrome and the capturer targets it. The page and file are served from here.
+	const testVideos = config.testVideos;
+	if (testVideos !== undefined) {
+		void app.register(fastifyStatic, {
+			decorateReply: false,
+			prefix: TEST_VIDEO_PATH,
+			root: resolve(testVideos.dir),
+		});
+		app.get('/api/test-videos', () => ({ files: listTestVideos(testVideos.dir) }));
+		app.get<{ Params: { file: string } }>(`${TEST_PLAYER_PATH}:file`, (req, reply) => {
+			if (!listTestVideos(testVideos.dir).includes(req.params.file))
+				return reply.code(404).send({ error: 'no such test video' });
+			return reply.type('text/html').send(testPlayerHtml(req.params.file));
+		});
+		app.post<{ Body: { file?: unknown } }>('/api/test-video', async (req, reply) => {
+			if (config.matchStore === undefined)
+				return reply.code(503).send({ error: 'air capture not wired' });
+			const file = req.body.file;
+			if (typeof file !== 'string' || !listTestVideos(testVideos.dir).includes(file))
+				return reply.code(400).send({ error: 'file must be one of /api/test-videos' });
+			try {
+				await testVideos.open(file);
+			} catch (error) {
+				return reply
+					.code(502)
+					.send({ error: error instanceof Error ? error.message : String(error) });
+			}
+			config.matchStore.set(TEST_PLAYER_PATH);
+			changeBus?.broadcast({ type: 'changed' });
+			return { match: config.matchStore.get() };
+		});
+	}
 
 	app.post('/api/session/start', (_req, reply) => {
 		if (config.session === undefined) return reply.code(503).send({ error: 'sessions not wired' });

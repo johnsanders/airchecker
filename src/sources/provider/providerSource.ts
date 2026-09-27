@@ -29,6 +29,9 @@ export type ProviderSource = {
 export type ProviderSourceOptions = {
 	fixedIntervalMs?: number; // overrides DDHQ_POLL_INTERVAL_MS (API recording pins 60 s)
 	http?: HttpJson;
+	// One query failing doesn't fail the poll (the others still run), so it's reported
+	// here rather than thrown.
+	onQueryError?: (query: string, error: unknown) => void;
 	playback?: boolean; // answers come from an API recording: no credentials needed
 };
 
@@ -66,7 +69,7 @@ export const makeProviderSource = (
 		baseUrl,
 		getQueries: queryStore.get,
 		http,
-		onError: (query, error) => console.error(`[provider] query failed: ${query}`, error),
+		...(options.onQueryError === undefined ? {} : { onError: options.onQueryError }),
 		onObservations,
 	});
 
