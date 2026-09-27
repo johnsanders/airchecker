@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { Anomaly, RaceObservation } from '../../src/reconcile/reconcile.js';
 import type { ApiRecorderStatus } from '../../src/runtime/apiRecorder.js';
+import type { DdhqEnvironment } from '../../src/sources/provider/providerSource.js';
 
 import { makeRaceIdentityResolver } from '../../src/identity/raceIdentity.js';
 import { openApiRecordingWriter } from '../../src/replay/apiRecording.js';
@@ -401,6 +402,48 @@ describe('web server', () => {
 		// Pushed with the state so the UI toggle always reflects the server's target.
 		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().airMatch).toBe(
 			'other-player',
+		);
+	});
+
+	it('switches the DDHQ environment and reports it in /api/state', async () => {
+		let environment: DdhqEnvironment = 'production';
+		app = makeWebServer({
+			ddhqEnvironment: {
+				get: () => environment,
+				set: (next) => {
+					environment = next;
+				},
+			},
+			getRecentAlerts: () => [],
+			store: makeStore(),
+		});
+		const bad = await app.inject({
+			method: 'POST',
+			payload: { environment: 'staging' },
+			url: '/api/ddhq-environment',
+		});
+		expect(bad.statusCode).toBe(400);
+		const res = await app.inject({
+			method: 'POST',
+			payload: { environment: 'integration' },
+			url: '/api/ddhq-environment',
+		});
+		expect(res.json()).toEqual({ environment: 'integration' });
+		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().ddhqEnvironment).toBe(
+			'integration',
+		);
+	});
+
+	it('refuses a DDHQ environment switch when none is wired (playback)', async () => {
+		app = makeWebServer({ getRecentAlerts: () => [], store: makeStore() });
+		const res = await app.inject({
+			method: 'POST',
+			payload: { environment: 'integration' },
+			url: '/api/ddhq-environment',
+		});
+		expect(res.statusCode).toBe(409);
+		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().ddhqEnvironment).toBe(
+			null,
 		);
 	});
 

@@ -47,7 +47,7 @@ describe('makeProviderPoller', () => {
 		const observed: RaceObservation[] = [];
 		const poller = makeProviderPoller({
 			auth: stubAuth(),
-			baseUrl,
+			getBaseUrl: () => baseUrl,
 			getQueries: () => ['race_ids=1'],
 			http,
 			onObservations: (obs) => observed.push(...obs),
@@ -66,7 +66,7 @@ describe('makeProviderPoller', () => {
 		const observed: RaceObservation[] = [];
 		const poller = makeProviderPoller({
 			auth: stubAuth(),
-			baseUrl,
+			getBaseUrl: () => baseUrl,
 			getQueries: () => ['race_ids=1', 'state=TX'],
 			http,
 			onObservations: (obs) => observed.push(...obs),
@@ -75,6 +75,30 @@ describe('makeProviderPoller', () => {
 		expect(gets).toContain(`${baseUrl}/api/v4/races?race_ids=1`);
 		expect(gets).toContain(`${baseUrl}/api/v4/races?state=TX`);
 		expect(observed).toHaveLength(2);
+	});
+
+	it('polls whichever host getBaseUrl names at the start of each poll', async () => {
+		const oneRace = { ...sample, data: [(sample.data as unknown[])[0]], next_page_url: null };
+		const integrationUrl = 'https://integration.test';
+		const { gets, http } = makeHttp({
+			[`${baseUrl}/api/v4/races?race_ids=1`]: oneRace,
+			[`${integrationUrl}/api/v4/races?race_ids=1`]: oneRace,
+		});
+		let current = baseUrl;
+		const poller = makeProviderPoller({
+			auth: stubAuth(),
+			getBaseUrl: () => current,
+			getQueries: () => ['race_ids=1'],
+			http,
+			onObservations: () => undefined,
+		});
+		await poller.pollOnce();
+		current = integrationUrl;
+		await poller.pollOnce();
+		expect(gets).toEqual([
+			`${baseUrl}/api/v4/races?race_ids=1`,
+			`${integrationUrl}/api/v4/races?race_ids=1`,
+		]);
 	});
 
 	it('follows next_page_url to drain all pages', async () => {
@@ -91,7 +115,7 @@ describe('makeProviderPoller', () => {
 		const observed: RaceObservation[] = [];
 		const poller = makeProviderPoller({
 			auth: stubAuth(),
-			baseUrl,
+			getBaseUrl: () => baseUrl,
 			getQueries: () => ['race_ids=1'],
 			http,
 			onObservations: (obs) => observed.push(...obs),
@@ -110,7 +134,7 @@ describe('makeProviderPoller', () => {
 		const errors: string[] = [];
 		const poller = makeProviderPoller({
 			auth: stubAuth(),
-			baseUrl,
+			getBaseUrl: () => baseUrl,
 			getQueries: () => ['good=1', 'bad=1'],
 			http,
 			onError: (query) => errors.push(query),
@@ -144,7 +168,7 @@ describe('makeProviderPoller', () => {
 		const observed: RaceObservation[] = [];
 		const poller = makeProviderPoller({
 			auth,
-			baseUrl,
+			getBaseUrl: () => baseUrl,
 			getQueries: () => ['race_ids=1'],
 			http,
 			onObservations: (obs) => observed.push(...obs),
@@ -184,7 +208,7 @@ describe('rebaseNextPageUrl', () => {
 		const observed: RaceObservation[] = [];
 		await makeProviderPoller({
 			auth: stubAuth(),
-			baseUrl,
+			getBaseUrl: () => baseUrl,
 			getQueries: () => ['race_ids=1'],
 			http,
 			onObservations: (obs) => observed.push(...obs),

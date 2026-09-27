@@ -162,13 +162,13 @@ describe('API record → playback round trip through the real pollers', () => {
 		const pollBoth = async (ddhqHttp: HttpJson, vendorHttp: HttpJson, baseUrl: string) => {
 			const observed: RaceObservation[] = [];
 			const auth = makeDdhqAuth({
-				baseUrl,
 				credentials: { clientId: 'id', clientSecret: 's', grantType: 'g' },
+				getBaseUrl: () => baseUrl,
 				http: ddhqHttp,
 			});
 			const provider = makeProviderPoller({
 				auth,
-				baseUrl,
+				getBaseUrl: () => baseUrl,
 				getQueries: () => ['state=TX'],
 				http: ddhqHttp,
 				onObservations: (o) => observed.push(...o),

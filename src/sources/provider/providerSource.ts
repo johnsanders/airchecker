@@ -13,12 +13,20 @@ import { makeQueryStore } from './queryStore.js';
 // strings are NOT from env: they're runtime state in queryStore, edited via the
 // web UI. The caller may inject a persistent queryStore (settings-backed) so edits
 // survive restarts; the default is in-memory and starts empty.
-//   DDHQ_BASE_URL      (default https://resultsapi.decisiondeskhq.com)
+//   DDHQ_BASE_URL      production host (default https://resultsapi.decisiondeskhq.com)
 //   DDHQ_CLIENT_ID / DDHQ_CLIENT_SECRET / DDHQ_GRANT_TYPE  (required)
 //   DDHQ_POLL_INTERVAL_MS  (default 60000 — once per minute)
 
-const DEFAULT_BASE_URL = 'https://resultsapi.decisiondeskhq.com';
 const DEFAULT_POLL_INTERVAL_MS = 60_000;
+
+// DDHQ's test environment serves the same paths from its own host. Which one is polled
+// is runtime state (switchable in the web view), read fresh each poll.
+export type DdhqEnvironment = 'integration' | 'production';
+
+export const ddhqBaseUrl = (environment: DdhqEnvironment): string =>
+	environment === 'integration'
+		? 'https://resultsapi-integration.decisiondeskhq.com'
+		: (process.env.DDHQ_BASE_URL ?? 'https://resultsapi.decisiondeskhq.com');
 
 export type ProviderSource = {
 	intervalMs: number;
@@ -28,6 +36,7 @@ export type ProviderSource = {
 
 export type ProviderSourceOptions = {
 	fixedIntervalMs?: number; // overrides DDHQ_POLL_INTERVAL_MS (API recording pins 60 s)
+	getEnvironment?: () => DdhqEnvironment; // default production
 	http?: HttpJson;
 	// One query failing doesn't fail the poll (the others still run), so it's reported
 	// here rather than thrown.
@@ -56,9 +65,10 @@ export const makeProviderSource = (
 	options: ProviderSourceOptions = {},
 ): ProviderSource => {
 	const credentials = options.playback === true ? PLAYBACK_CREDENTIALS : readCredentials();
-	const baseUrl = process.env.DDHQ_BASE_URL ?? DEFAULT_BASE_URL;
+	const getEnvironment = options.getEnvironment ?? (() => 'production');
+	const getBaseUrl = (): string => ddhqBaseUrl(getEnvironment());
 	const http = options.http ?? makeFetchHttp();
-	const auth = makeDdhqAuth({ baseUrl, credentials, http });
+	const auth = makeDdhqAuth({ credentials, getBaseUrl, http });
 	const intervalRaw = Number(process.env.DDHQ_POLL_INTERVAL_MS);
 	const intervalMs =
 		options.fixedIntervalMs ??
@@ -66,7 +76,7 @@ export const makeProviderSource = (
 
 	const poller = makeProviderPoller({
 		auth,
-		baseUrl,
+		getBaseUrl,
 		getQueries: queryStore.get,
 		http,
 		...(options.onQueryError === undefined ? {} : { onError: options.onQueryError }),

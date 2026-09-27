@@ -17,7 +17,7 @@ export type ProviderPoller = {
 
 export type ProviderPollerConfig = {
 	auth: DdhqAuth;
-	baseUrl: string;
+	getBaseUrl: () => string; // read per query, so an environment switch lands on the next poll
 	// Read FRESH each tick — queries are runtime state edited via the web UI, so a
 	// getter (not a static array) lets edits take effect on the next poll with no
 	// restart. Each string becomes /api/v4/races?<query>, e.g. 'race_ids=123,456'.
@@ -30,7 +30,7 @@ export type ProviderPollerConfig = {
 
 // DDHQ's next_page_url has no scheme ('race-api.decisiondeskhq.com/api/v4/...')
 // and names a different host than the documented API; fetch can't parse it as
-// is. Re-base its path + query onto the configured baseUrl, which is also the
+// is. Re-base its path + query onto the polled baseUrl, which is also the
 // host the bearer token was issued for.
 export const rebaseNextPageUrl = (nextPageUrl: string, baseUrl: string): string => {
 	const pathStart = nextPageUrl.indexOf('/api/');
@@ -59,7 +59,8 @@ export const makeProviderPoller = (config: ProviderPollerConfig): ProviderPoller
 
 	const runQuery = async (query: string): Promise<void> => {
 		const observedAt = now();
-		let url: null | string = `${config.baseUrl}/api/v4/races?${query}`;
+		const baseUrl = config.getBaseUrl();
+		let url: null | string = `${baseUrl}/api/v4/races?${query}`;
 		while (url !== null && url.length > 0) {
 			const raw: unknown = await fetchPage(url);
 			const parsed = ddhqResponseSchema.parse(raw);
@@ -68,7 +69,7 @@ export const makeProviderPoller = (config: ProviderPollerConfig): ProviderPoller
 			url =
 				parsed.next_page_url === null || parsed.next_page_url.length === 0
 					? null
-					: rebaseNextPageUrl(parsed.next_page_url, config.baseUrl);
+					: rebaseNextPageUrl(parsed.next_page_url, baseUrl);
 		}
 	};
 

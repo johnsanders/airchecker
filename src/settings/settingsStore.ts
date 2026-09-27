@@ -2,6 +2,8 @@ import Database from 'better-sqlite3';
 import { existsSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 
+import type { DdhqEnvironment } from '../sources/provider/providerSource.js';
+
 // Persistent config that must outlive a single run — unlike the recorder DB, whose
 // file is session-scoped (a fresh one per launch). A tiny key/value table in a
 // fixed-path SQLite file so things like the DDHQ query list survive restarts.
@@ -9,14 +11,17 @@ import { dirname } from 'node:path';
 export type SettingsStore = {
 	close: () => void;
 	getAirMatch: () => string | undefined;
+	getDdhqEnvironment: () => DdhqEnvironment;
 	getIdentityState: () => undefined | unknown;
 	getQueries: () => string[];
 	setAirMatch: (match: string) => void;
+	setDdhqEnvironment: (environment: DdhqEnvironment) => void;
 	setIdentityState: (state: unknown) => void;
 	setQueries: (queries: string[]) => void;
 };
 
 const AIR_MATCH_KEY = 'air_match';
+const DDHQ_ENVIRONMENT_KEY = 'ddhq_environment';
 const IDENTITY_KEY = 'race_identity_state_v1';
 const QUERIES_KEY = 'ddhq_queries';
 
@@ -47,6 +52,13 @@ export const makeSettingsStore = (path: string): SettingsStore => {
 		return typeof parsed === 'string' ? parsed : undefined;
 	};
 
+	const getDdhqEnvironment = (): DdhqEnvironment => {
+		const row = selectValue.get(DDHQ_ENVIRONMENT_KEY) as { value: string } | undefined;
+		return row !== undefined && JSON.parse(row.value) === 'integration'
+			? 'integration'
+			: 'production';
+	};
+
 	const getIdentityState = (): undefined | unknown => {
 		const row = selectValue.get(IDENTITY_KEY) as { value: string } | undefined;
 		return row === undefined ? undefined : (JSON.parse(row.value) as unknown);
@@ -55,9 +67,12 @@ export const makeSettingsStore = (path: string): SettingsStore => {
 	return {
 		close: () => db.close(),
 		getAirMatch,
+		getDdhqEnvironment,
 		getIdentityState,
 		getQueries,
 		setAirMatch: (match) => upsertValue.run(AIR_MATCH_KEY, JSON.stringify(match)),
+		setDdhqEnvironment: (environment) =>
+			upsertValue.run(DDHQ_ENVIRONMENT_KEY, JSON.stringify(environment)),
 		setIdentityState: (state) => upsertValue.run(IDENTITY_KEY, JSON.stringify(state)),
 		setQueries: (queries) => upsertValue.run(QUERIES_KEY, JSON.stringify(queries)),
 	};

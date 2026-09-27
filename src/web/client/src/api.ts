@@ -92,6 +92,8 @@ export interface CanonicalRace {
 	provisional: boolean;
 }
 
+export type DdhqEnvironment = 'integration' | 'production';
+
 export interface DiskUsage {
 	freeBytes: number;
 	totalBytes: number;
@@ -212,6 +214,7 @@ export interface StateResponse {
 	airMatch: null | string;
 	alerts: Anomaly[];
 	cadence: Cadence | null;
+	ddhqEnvironment: DdhqEnvironment | null; // null: DDHQ not configured, or API playback
 	lastFrame: { observations: Observation[]; ts: number } | null;
 	pendingLinkCount: number;
 	session: null | SessionStatus;
@@ -307,6 +310,8 @@ export const api = {
 		),
 	setAirMatch: (match: string) => postJson<{ match: string }>('/api/air-match', { match }),
 	setCadence: (next: Partial<Cadence>) => postJson<Cadence>('/api/cadence', next),
+	setDdhqEnvironment: (environment: DdhqEnvironment) =>
+		postJson<{ environment: DdhqEnvironment }>('/api/ddhq-environment', { environment }),
 	setQueries: (queries: string[]) => postJson<{ queries: string[] }>('/api/queries', { queries }),
 	setRaceAlias: (body: { canonicalRaceKey: string; source: SourceName; sourceRaceKey: string }) =>
 		postJson<{ raceLinks: RaceLinksResponse }>('/api/race-links/aliases', body),

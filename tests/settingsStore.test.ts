@@ -34,6 +34,14 @@ describe('settings store', () => {
 		settings.close();
 	});
 
+	it('persists the DDHQ environment, production until set', () => {
+		const settings = makeSettingsStore(':memory:');
+		expect(settings.getDdhqEnvironment()).toBe('production');
+		settings.setDdhqEnvironment('integration');
+		expect(settings.getDdhqEnvironment()).toBe('integration');
+		settings.close();
+	});
+
 	it('round-trips queries through a file across reopen (survives restart)', () => {
 		const path = `/tmp/eagle-eye-settings-${process.pid}.sqlite`;
 		const first = makeSettingsStore(path);

@@ -145,7 +145,10 @@ const App: React.FC = () => {
 					<Grid container spacing={2}>
 						<Grid size={{ xs: 12 }}>
 							<Section title="DDHQ queries">
-								<QueryEditor readOnly={apiRecording?.mode === 'playback'} />
+								<QueryEditor
+									environment={state?.ddhqEnvironment ?? null}
+									readOnly={apiRecording?.mode === 'playback'}
+								/>
 							</Section>
 						</Grid>
 

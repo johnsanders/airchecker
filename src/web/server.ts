@@ -23,6 +23,7 @@ import type { SessionStatus } from '../runtime/liveSession.js';
 import type { SourceError } from '../runtime/sourceErrors.js';
 import type { CadenceConfig, CaptureResult } from '../sources/air/captureScheduler.js';
 import type { MatchStore } from '../sources/air/matchStore.js';
+import type { DdhqEnvironment } from '../sources/provider/providerSource.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
 import type { Store } from '../store/store.js';
 import type { ChangeBus } from './changeBus.js';
@@ -64,6 +65,9 @@ export type WebServerConfig = {
 	// When present, the server opens a /ws endpoint and pushes a "changed" nudge over
 	// it on every state change, so the client refetches on demand instead of polling.
 	changeBus?: ChangeBus;
+	// Which DDHQ host is polled (production or integration), switchable live; omitted
+	// if DDHQ isn't configured or in API playback.
+	ddhqEnvironment?: { get: () => DdhqEnvironment; set: (next: DdhqEnvironment) => void };
 	// Newest-first raise/clear events; omitted if alert history isn't wired.
 	getAlertHistory?: (limit?: number) => AlertEvent[];
 	getCadence?: () => CadenceConfig;
@@ -190,6 +194,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			airMatch: config.matchStore?.get() ?? null,
 			alerts: config.getRecentAlerts().slice(-100).reverse(),
 			cadence: config.getCadence?.() ?? null,
+			ddhqEnvironment: config.ddhqEnvironment?.get() ?? null,
 			lastFrame:
 				lastFrame === undefined
 					? null
@@ -470,6 +475,17 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		const status = config.apiRecording.stop();
 		changeBus?.broadcast({ type: 'changed' });
 		return status;
+	});
+
+	app.post<{ Body: { environment?: unknown } }>('/api/ddhq-environment', (req, reply) => {
+		if (config.ddhqEnvironment === undefined)
+			return reply.code(409).send({ error: 'DDHQ environment is not switchable here' });
+		const environment = req.body.environment;
+		if (environment !== 'production' && environment !== 'integration')
+			return reply.code(400).send({ error: 'environment must be production or integration' });
+		config.ddhqEnvironment.set(environment);
+		changeBus?.broadcast({ type: 'changed' });
+		return { environment: config.ddhqEnvironment.get() };
 	});
 
 	// Which browser tab the air capturer grabs (URL substring), switchable live.

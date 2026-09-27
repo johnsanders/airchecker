@@ -29,7 +29,12 @@ const makeHttp = (
 describe('makeDdhqAuth', () => {
 	it('POSTs credentials to the token endpoint and returns the access_token', async () => {
 		const { http, posts } = makeHttp([{ access_token: 'tok-1', expires_in: 300 }]);
-		const auth = makeDdhqAuth({ baseUrl: 'https://api.test', credentials, http, now: () => 0 });
+		const auth = makeDdhqAuth({
+			credentials,
+			getBaseUrl: () => 'https://api.test',
+			http,
+			now: () => 0,
+		});
 		expect(await auth.getToken()).toBe('tok-1');
 		expect(posts).toHaveLength(1);
 		expect(posts[0]!.url).toBe('https://api.test/api/v4/oauth/token');
@@ -43,7 +48,12 @@ describe('makeDdhqAuth', () => {
 	it('caches the token across calls within its TTL', async () => {
 		const { http, posts } = makeHttp([{ access_token: 'tok-1', expires_in: 300 }]);
 		let clock = 0;
-		const auth = makeDdhqAuth({ baseUrl: 'https://api.test', credentials, http, now: () => clock });
+		const auth = makeDdhqAuth({
+			credentials,
+			getBaseUrl: () => 'https://api.test',
+			http,
+			now: () => clock,
+		});
 		await auth.getToken();
 		clock = 100_000; // well within 300s TTL minus skew
 		await auth.getToken();
@@ -57,8 +67,8 @@ describe('makeDdhqAuth', () => {
 		]);
 		let clock = 0;
 		const auth = makeDdhqAuth({
-			baseUrl: 'https://api.test',
 			credentials,
+			getBaseUrl: () => 'https://api.test',
 			http,
 			now: () => clock,
 			refreshSkewMs: 60_000,
@@ -74,10 +84,31 @@ describe('makeDdhqAuth', () => {
 			{ access_token: 'tok-1', expires_in: 300 },
 			{ access_token: 'tok-2', expires_in: 300 },
 		]);
-		const auth = makeDdhqAuth({ baseUrl: 'https://api.test', credentials, http, now: () => 0 });
+		const auth = makeDdhqAuth({
+			credentials,
+			getBaseUrl: () => 'https://api.test',
+			http,
+			now: () => 0,
+		});
 		expect(await auth.getToken()).toBe('tok-1');
 		auth.invalidate();
 		expect(await auth.getToken()).toBe('tok-2');
 		expect(posts).toHaveLength(2);
+	});
+
+	it('issues a fresh token from the new host when the base URL changes', async () => {
+		const { http, posts } = makeHttp([
+			{ access_token: 'tok-prod', expires_in: 300 },
+			{ access_token: 'tok-test', expires_in: 300 },
+		]);
+		let baseUrl = 'https://prod.test';
+		const auth = makeDdhqAuth({ credentials, getBaseUrl: () => baseUrl, http, now: () => 0 });
+		expect(await auth.getToken()).toBe('tok-prod');
+		baseUrl = 'https://integration.test';
+		expect(await auth.getToken()).toBe('tok-test');
+		expect(posts.map((post) => post.url)).toEqual([
+			'https://prod.test/api/v4/oauth/token',
+			'https://integration.test/api/v4/oauth/token',
+		]);
 	});
 });

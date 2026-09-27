@@ -3,6 +3,7 @@ import type { ApiRecording } from '../replay/apiRecording.js';
 import type { CaptureMode } from '../sources/air/captureScheduler.js';
 import type { MatchStore } from '../sources/air/matchStore.js';
 import type { HttpJson } from '../sources/http.js';
+import type { DdhqEnvironment } from '../sources/provider/providerSource.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
 import type { WebApiRecording } from '../web/server.js';
 
@@ -16,7 +17,7 @@ import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import { makeMatchStore } from '../sources/air/matchStore.js';
 import { openTestPlayer, TEST_PLAYER_PATH } from '../sources/air/testPlayer.js';
 import { makeFetchHttp } from '../sources/http.js';
-import { makeProviderSource } from '../sources/provider/providerSource.js';
+import { ddhqBaseUrl, makeProviderSource } from '../sources/provider/providerSource.js';
 import { makeQueryStore } from '../sources/provider/queryStore.js';
 import {
 	makePlaybackClock,
@@ -222,16 +223,31 @@ const liveMain = async (): Promise<void> => {
 	// view; nothing polls until queries are added. Started when creds are present, or
 	// always in playback.
 	let queryStore: QueryStore | undefined;
+	let ddhqEnvironment:
+		| { get: () => DdhqEnvironment; set: (next: DdhqEnvironment) => void }
+		| undefined;
 	if (process.env.DDHQ_CLIENT_ID !== undefined || playback !== undefined) {
 		// A poll with any failed query counts as failed, so one bad query can't hide
 		// behind the others succeeding.
 		let queryFailures: string[] = [];
+		// Production or DDHQ's integration host; persisted, and moot in playback.
+		let environment = settings.getDdhqEnvironment();
 		const provider = makeProviderSource(ingest, liveQueryStore, {
+			getEnvironment: () => environment,
 			http: sourceHttp('DDHQ'),
 			onQueryError: (query, error) => queryFailures.push(`query ${query}: ${errorMessage(error)}`),
 			playback: playback !== undefined,
 		});
 		queryStore = provider.queryStore;
+		if (playback === undefined)
+			ddhqEnvironment = {
+				get: () => environment,
+				set: (next) => {
+					environment = next;
+					settings.setDdhqEnvironment(next);
+					console.log(`[provider] DDHQ environment → ${next} (${ddhqBaseUrl(next)})`);
+				},
+			};
 		providerIntervalMs = provider.intervalMs;
 		providerScheduler = makeCaptureScheduler({
 			captureOnce: async () => {
@@ -248,7 +264,7 @@ const liveMain = async (): Promise<void> => {
 		});
 		monitored.push(providerScheduler);
 		console.log(
-			`[provider] DDHQ polling every ${provider.intervalMs}ms (queries set via web view).`,
+			`[provider] DDHQ ${playback === undefined ? `${environment} (${ddhqBaseUrl(environment)})` : 'playback'} polling every ${provider.intervalMs}ms (queries set via web view).`,
 		);
 	} else {
 		console.log('[provider] DDHQ not configured (no DDHQ_CLIENT_ID) — skipping.');
@@ -327,6 +343,7 @@ const liveMain = async (): Promise<void> => {
 		},
 		triggerCapture: airScheduler.triggerCapture,
 		...(queryStore === undefined ? {} : { queryStore }),
+		...(ddhqEnvironment === undefined ? {} : { ddhqEnvironment }),
 	});
 
 	let shuttingDown = false;
