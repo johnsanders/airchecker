@@ -15,6 +15,7 @@ import { api } from './api.js';
 import AlertHistory from './components/AlertHistory.js';
 import Alerts from './components/Alerts.js';
 import CapturePanel from './components/CapturePanel.js';
+import MonitorControl from './components/MonitorControl.js';
 import QueryEditor from './components/QueryEditor.js';
 import RaceDetailDialog from './components/RaceDetailDialog.js';
 import RaceLinks from './components/RaceLinks.js';
@@ -37,7 +38,7 @@ const Section: React.FC<{ children: React.ReactNode; title: string }> = (props) 
 	</Paper>
 );
 
-const TABS = ['live', 'air', 'setup', 'recordings'] as const;
+const TABS = ['live', 'air', 'setup', 'sessions', 'api'] as const;
 type TabId = (typeof TABS)[number];
 
 const tabFromHash = (): TabId => TABS.find((tab) => `#${tab}` === window.location.hash) ?? 'live';
@@ -84,6 +85,7 @@ const App: React.FC = () => {
 							● REC
 						</Typography>
 					)}
+					<MonitorControl status={state?.session ?? null} />
 				</Toolbar>
 			</AppBar>
 
@@ -103,7 +105,8 @@ const App: React.FC = () => {
 						label={<TabLabel count={state?.pendingLinkCount ?? 0} label="Setup" />}
 						value="setup"
 					/>
-					<Tab label="Recordings" value="recordings" />
+					<Tab label="Session recordings" value="sessions" />
+					<Tab label="API recording" value="api" />
 				</Tabs>
 
 				<Box hidden={tab !== 'live'}>
@@ -156,20 +159,16 @@ const App: React.FC = () => {
 					</Grid>
 				</Box>
 
-				<Box hidden={tab !== 'recordings'}>
-					<Grid container spacing={2}>
-						<Grid size={{ xs: 12 }}>
-							<Section title="API recording">
-								<RecordPanel onChange={reloadApiRecording} status={apiRecording} />
-							</Section>
-						</Grid>
+				<Box hidden={tab !== 'sessions'}>
+					<Section title="Session recordings">
+						<SessionsPanel />
+					</Section>
+				</Box>
 
-						<Grid size={{ xs: 12 }}>
-							<Section title="Recordings">
-								<SessionsPanel />
-							</Section>
-						</Grid>
-					</Grid>
+				<Box hidden={tab !== 'api'}>
+					<Section title="API recording">
+						<RecordPanel onChange={reloadApiRecording} status={apiRecording} />
+					</Section>
 				</Box>
 			</Box>
 

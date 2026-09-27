@@ -166,6 +166,39 @@ describe('web server', () => {
 		expect(res.json()).toMatchObject({ error: 'no browser', ran: false });
 	});
 
+	it('starts and stops the session, and refuses a manual capture while stopped', async () => {
+		let running = true;
+		const status = () => ({
+			id: running ? 'live-1' : null,
+			running,
+			startedAt: running ? 1 : null,
+		});
+		app = makeWebServer({
+			getRecentAlerts: () => [],
+			session: {
+				start: () => {
+					running = true;
+					return status();
+				},
+				status,
+				stop: () => {
+					running = false;
+					return status();
+				},
+			},
+			store: makeStore(),
+			triggerCapture: async () => ({ status: 'ran' }),
+		});
+		const stopped = await app.inject({ method: 'POST', url: '/api/session/stop' });
+		expect(stopped.json()).toEqual({ id: null, running: false, startedAt: null });
+		const state = await app.inject({ method: 'GET', url: '/api/state' });
+		expect(state.json()).toMatchObject({ session: { running: false } });
+		const capture = await app.inject({ method: 'POST', url: '/api/capture' });
+		expect(capture.statusCode).toBe(409);
+		const started = await app.inject({ method: 'POST', url: '/api/session/start' });
+		expect(started.json()).toEqual({ id: 'live-1', running: true, startedAt: 1 });
+	});
+
 	it('serves the last frame PNG', async () => {
 		const png = Buffer.from('\x89PNG fake');
 		app = makeWebServer({
@@ -247,30 +280,25 @@ describe('web server', () => {
 		expect(ga.sources.DDHQ!.present).toBe(false);
 	});
 
-	it('orders races by last change: every air read, but only changed DDHQ/Ross polls', async () => {
+	it('orders races by last air read; DDHQ/Ross updates never move a race', async () => {
 		const store = makeStore();
 		const at = (observation: RaceObservation, observedAt: number): RaceObservation => ({
 			...observation,
 			observedAt,
 		});
-		store.record(at(obs('DDHQ', 'AIRED', { pctIn: 10 }), 1_000));
-		store.record(at(obs('DDHQ', 'CHANGED', { pctIn: 10 }), 1_000));
-		store.record(at(obs('DDHQ', 'UNCHANGED', { pctIn: 10 }), 1_000));
-		store.record(at(obs('air', 'AIRED', { pctIn: 10 }), 2_000));
-		store.record(at(obs('DDHQ', 'CHANGED', { pctIn: 20 }), 3_000));
-		// A later poll that repeats the same reading doesn't bump either race...
-		store.record(at(obs('DDHQ', 'UNCHANGED', { pctIn: 10 }), 4_000));
-		store.record(at(obs('DDHQ', 'CHANGED', { pctIn: 20 }), 4_000));
-		// ...but an air read of the same graphic does.
-		store.record(at(obs('air', 'AIRED', { pctIn: 10 }), 5_000));
+		store.record(at(obs('air', 'EARLIER', { pctIn: 10 }), 1_000));
+		store.record(at(obs('air', 'LATER', { pctIn: 10 }), 2_000));
+		store.record(at(obs('DDHQ', 'EARLIER', { pctIn: 20 }), 3_000));
+		store.record(at(obs('Ross', 'EARLIER', { pctIn: 30 }), 4_000));
+		store.record(at(obs('DDHQ', 'NEVER-AIRED', { pctIn: 20 }), 5_000));
 		app = makeWebServer({ getRecentAlerts: () => [], store });
 		const body = (await app.inject({ method: 'GET', url: '/api/races' })).json() as {
 			races: { lastAt: null | number; raceKey: string }[];
 		};
 		expect(body.races.map((race) => [race.raceKey, race.lastAt])).toEqual([
-			['AIRED', 5_000],
-			['CHANGED', 3_000],
-			['UNCHANGED', 1_000],
+			['LATER', 2_000],
+			['EARLIER', 1_000],
+			['NEVER-AIRED', null],
 		]);
 	});
 

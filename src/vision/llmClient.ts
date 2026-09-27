@@ -75,7 +75,10 @@ const stripImagePayload = (request: LlmRequest): LlmRequest =>
 		? request
 		: { ...request, image: { ...request.image, base64: '<stripped>' } };
 
-const makeRecordingLlmClient = (underlying: LlmClient, recorder: Recorder): LlmClient => ({
+const makeRecordingLlmClient = (
+	underlying: LlmClient,
+	recorder: Pick<Recorder, 'recordLlmCall'>,
+): LlmClient => ({
 	call: async (request) => {
 		const promptHash = hashPrompt(request);
 		const response = await underlying.call(request);

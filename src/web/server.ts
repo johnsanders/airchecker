@@ -13,6 +13,7 @@ import type { ApiRecordingSummary } from '../replay/apiRecording.js';
 import type { SessionFiles } from '../replay/sessionFiles.js';
 import type { AlertEvent } from '../runtime/alertLog.js';
 import type { ApiRecorderStatus } from '../runtime/apiRecorder.js';
+import type { SessionStatus } from '../runtime/liveSession.js';
 import type { CadenceConfig, CaptureResult } from '../sources/air/captureScheduler.js';
 import type { MatchStore } from '../sources/air/matchStore.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
@@ -56,6 +57,9 @@ export type WebServerConfig = {
 	queryStore?: QueryStore; // DDHQ queries get/set; omitted if DDHQ isn't configured
 	raceIdentity?: RaceIdentityResolver;
 	reconcileRace?: (raceKey: string, now: number) => Anomaly[];
+	// Monitoring on/off (live only): stop closes the session recording and halts polling
+	// and capture; start opens a new session. Omitted in replay.
+	session?: { start: () => SessionStatus; status: () => SessionStatus; stop: () => SessionStatus };
 	// Recorded sessions + disk space (Recordings panel); omitted if not wired.
 	sessions?: SessionFiles;
 	setCadence?: (next: Partial<CadenceConfig>) => void;
@@ -74,27 +78,6 @@ const historyFor = (store: Store, source: SourceName, raceKey: string): RaceObse
 
 const latest = (history: RaceObservation[]): RaceObservation | undefined =>
 	history.length === 0 ? undefined : history[history.length - 1];
-
-const readingOf = (observation: RaceObservation): string =>
-	JSON.stringify([
-		observation.pctIn,
-		[...observation.calledFor].sort(),
-		observation.candidates.map((candidate) => [candidate.key, candidate.votes, candidate.pct]),
-	]);
-
-// When a source last said something new about a race. Every air read counts (the race
-// was just on screen); DDHQ and Ross re-record every tracked race each poll, so only
-// a reading that differs from the one before counts — otherwise every polled race
-// would jump to the top of the races table together once a minute.
-const lastChangeAt = (source: SourceName, history: RaceObservation[]): number =>
-	source === 'air'
-		? (latest(history)?.observedAt ?? 0)
-		: history.reduce((changedAt, observation, index) => {
-				const previous = history[index - 1];
-				return previous === undefined || readingOf(previous) !== readingOf(observation)
-					? observation.observedAt
-					: changedAt;
-			}, 0);
 
 const aliasFor = (
 	resolver: RaceIdentityResolver | undefined,
@@ -184,12 +167,13 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 				config.raceIdentity
 					?.getSnapshot()
 					.proposals.filter((proposal) => proposal.status === 'pending').length ?? 0,
+			session: config.session?.status() ?? null,
 			sources,
 		};
 	});
 
-	// Race list, most recent change first: per-source summary (pctIn + ranked candidates),
-	// last change, alert count.
+	// Race list, most recently aired first: per-source summary (pctIn + ranked candidates),
+	// last air read, alert count.
 	app.get('/api/races', () => {
 		const store = config.store;
 		const now = Date.now();
@@ -203,10 +187,9 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 							summarizeSource(latest(historyFor(store, source, raceKey))),
 						]),
 					) as Record<SourceName, RaceSourceSummary>;
-					const lastAt = Math.max(
-						0,
-						...SOURCES.map((source) => lastChangeAt(source, historyFor(store, source, raceKey))),
-					);
+					// Only an on-air read moves a race: the operator is watching what's on screen,
+					// and DDHQ/Ross re-record every tracked race each poll anyway.
+					const lastAiredAt = latest(historyFor(store, 'air', raceKey))?.observedAt ?? null;
 					const alertCount = config.reconcileRace?.(raceKey, now).length ?? 0;
 					const canonical = config.raceIdentity
 						?.getSnapshot()
@@ -220,7 +203,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 							).length ?? 0;
 					return {
 						alertCount,
-						lastAt: lastAt > 0 ? lastAt : null,
+						lastAt: lastAiredAt,
 						pendingLinkCount,
 						provisional: canonical?.provisional ?? false,
 						raceKey,
@@ -340,6 +323,8 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	app.post('/api/capture', async (_req, reply) => {
 		if (config.triggerCapture === undefined)
 			return reply.code(503).send({ error: 'air capture not wired', ran: false, status: 'error' });
+		if (config.session?.status().running === false)
+			return reply.code(409).send({ error: 'monitoring is stopped', ran: false, status: 'error' });
 		const result = await config.triggerCapture();
 		// ran → success; skipped → busy; error → carry the real message so the UI is honest.
 		if (result.status === 'error')
@@ -425,6 +410,20 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		config.matchStore.set(req.body.match);
 		changeBus?.broadcast({ type: 'changed' });
 		return { match: config.matchStore.get() };
+	});
+
+	app.post('/api/session/start', (_req, reply) => {
+		if (config.session === undefined) return reply.code(503).send({ error: 'sessions not wired' });
+		const status = config.session.start();
+		changeBus?.broadcast({ type: 'changed' });
+		return status;
+	});
+
+	app.post('/api/session/stop', (_req, reply) => {
+		if (config.session === undefined) return reply.code(503).send({ error: 'sessions not wired' });
+		const status = config.session.stop();
+		changeBus?.broadcast({ type: 'changed' });
+		return status;
 	});
 
 	// Recorded sessions, free disk, pruning a session's frame PNGs, and deleting a session.

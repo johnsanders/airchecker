@@ -28,7 +28,7 @@ export type AirSourceConfig = {
 	llmClient?: LlmClient; // injectable; default real Anthropic client
 	matchStore?: MatchStore; // which tab to grab; UI-switchable. Default seeded below.
 	onObservations: (observations: RaceObservation[]) => Promise<unknown> | unknown;
-	recorder?: Recorder; // records each frame (content-addressed) for replay/web view
+	recorder?: Pick<Recorder, 'recordFrame'>; // records each frame (content-addressed) for replay/web view
 };
 
 // The last frame plus what the VLM read from it — the web view's frame panel shows

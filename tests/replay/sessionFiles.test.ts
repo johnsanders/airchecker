@@ -36,7 +36,7 @@ describe('sessionFiles', () => {
 		recordSession('old');
 		recordSession('live');
 		makeRecorder({ baseDir, sessionId: 'settings' }).close();
-		const sessions = makeSessionFiles(baseDir, 'live').list();
+		const sessions = makeSessionFiles(baseDir, () => 'live').list();
 		expect(sessions.map((session) => [session.id, session.current])).toEqual([
 			['live', true],
 			['old', false],
@@ -65,7 +65,7 @@ describe('sessionFiles', () => {
 
 	it('refuses the session being recorded and unknown ids', () => {
 		recordSession('live');
-		const files = makeSessionFiles(baseDir, 'live');
+		const files = makeSessionFiles(baseDir, () => 'live');
 		expect(() => files.pruneFrames('live')).toThrow(/being recorded/);
 		expect(() => files.pruneFrames('../live')).toThrow(/no session/);
 		expect(() => files.deleteSession('live')).toThrow(/being recorded/);

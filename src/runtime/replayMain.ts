@@ -174,7 +174,7 @@ const main = async (): Promise<void> => {
 			getRecentAlerts: replay.tracker.list,
 			raceIdentity: replay.raceIdentity,
 			reconcileRace: replay.composition.reconcileRace,
-			sessions: makeSessionFiles('recordings', sessionId),
+			sessions: makeSessionFiles('recordings', () => sessionId),
 			store: replay.composition.store,
 		});
 		await web.listen({ port });

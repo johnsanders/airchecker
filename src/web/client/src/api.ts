@@ -160,6 +160,8 @@ export interface RaceSummary {
 	sources: Record<SourceName, RaceSourceSummary>;
 }
 
+export type SessionStatus = { id: null | string; running: boolean; startedAt: null | number };
+
 export interface SessionSummary {
 	alerts: number;
 	current: boolean;
@@ -185,6 +187,7 @@ export interface StateResponse {
 	cadence: Cadence | null;
 	lastFrame: { observations: Observation[]; ts: number } | null;
 	pendingLinkCount: number;
+	session: null | SessionStatus;
 	sources: SourceStat[];
 }
 
@@ -246,7 +249,9 @@ export const api = {
 		postJson<{ raceLinks: RaceLinksResponse }>('/api/race-links/aliases', body),
 	startApiRecording: (name?: string) =>
 		postJson<ApiRecordingStatus>('/api/api-recording/start', name === undefined ? {} : { name }),
+	startSession: () => postJson<SessionStatus>('/api/session/start', {}),
 	stopApiRecording: () => postJson<ApiRecordingStatus>('/api/api-recording/stop', {}),
+	stopSession: () => postJson<SessionStatus>('/api/session/stop', {}),
 };
 
 // Preset tabs the capture button can target (label → URL substring).

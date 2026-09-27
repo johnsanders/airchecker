@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto';
-
 import type { RaceObservation } from '../reconcile/reconcile.js';
 import type { ApiRecording } from '../replay/apiRecording.js';
 import type { CaptureMode } from '../sources/air/captureScheduler.js';
@@ -10,7 +8,6 @@ import type { WebApiRecording } from '../web/server.js';
 
 import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
 import { loadApiRecording, resolveApiRecordingFile } from '../replay/apiRecording.js';
-import makeRecorder from '../replay/recorder.js';
 import { makeSessionFiles } from '../replay/sessionFiles.js';
 import { makeSettingsStore } from '../settings/settingsStore.js';
 import { makeAirSource } from '../sources/air/airSource.js';
@@ -33,6 +30,7 @@ import { makeAlertLog } from './alertLog.js';
 import { makeAnomalyTracker } from './anomalyTracker.js';
 import { makeApiRecorder } from './apiRecorder.js';
 import makeComposition from './composition.js';
+import { makeLiveSession } from './liveSession.js';
 import { observationChanged } from './observationChanged.js';
 
 //   CAPTURE_MODE=interval|manual     air cadence (default interval)
@@ -69,8 +67,15 @@ const liveMain = async (): Promise<void> => {
 		);
 		process.exit(1);
 	}
-	const sessionId = `live-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`;
-	const recorder = makeRecorder({ baseDir: 'recordings', sessionId });
+	// Pollers and the air scheduler are created further down; the session only needs
+	// them once monitoring is started or stopped.
+	const monitored: { start: () => void; stop: () => void }[] = [];
+	const session = makeLiveSession({
+		baseDir: 'recordings',
+		onStart: () => monitored.forEach((scheduler) => scheduler.start()),
+		onStop: () => monitored.forEach((scheduler) => scheduler.stop()),
+	});
+	const recorder = session.recorder;
 	const composition = makeComposition({ onRecord: recorder.recordObservation });
 
 	// Persistent config (survives restarts), separate from the session-scoped recorder DB.
@@ -226,7 +231,7 @@ const liveMain = async (): Promise<void> => {
 			onError: (error) => console.error('[provider] poll error', error),
 			onSkip: () => console.warn('[provider] poll skipped — previous still in flight'),
 		});
-		providerScheduler.start();
+		monitored.push(providerScheduler);
 		console.log(
 			`[provider] DDHQ polling every ${provider.intervalMs}ms (queries set via web view).`,
 		);
@@ -244,7 +249,7 @@ const liveMain = async (): Promise<void> => {
 		onError: (error) => console.error('[vendor] poll error', error),
 		onSkip: () => console.warn('[vendor] poll skipped — previous still in flight'),
 	});
-	vendorScheduler.start();
+	monitored.push(vendorScheduler);
 	console.log(`[vendor] Chameleon polling every ${vendor.intervalMs}ms.`);
 
 	const apiRecording: WebApiRecording =
@@ -288,7 +293,8 @@ const liveMain = async (): Promise<void> => {
 		onRaceRelink: applyRelink,
 		raceIdentity,
 		reconcileRace: composition.reconcileRace,
-		sessions: makeSessionFiles('recordings', sessionId),
+		session,
+		sessions: makeSessionFiles('recordings', session.currentId),
 		setCadence: airScheduler.reconfigure,
 		store: composition.store,
 		triggerCapture: airScheduler.triggerCapture,
@@ -300,23 +306,21 @@ const liveMain = async (): Promise<void> => {
 	const shutdown = (): void => {
 		if (shuttingDown) return;
 		shuttingDown = true;
-		airScheduler.stop();
-		apiRecorder.stop();
-		providerScheduler?.stop();
-		vendorScheduler.stop();
+		session.stop();
 		void airSource.close();
 		void web.close();
-		recorder.close();
 		settings.close();
 		process.exit(0);
 	};
 	process.on('SIGINT', shutdown);
 	process.on('SIGTERM', shutdown);
 
-	airScheduler.start();
+	// An API recording is fed by the pollers, so it can't outlive monitoring.
+	monitored.push(airScheduler, { start: () => undefined, stop: apiRecorder.stop });
+	const started = session.start();
 	await web.listen({ port: webPort });
 	console.log(
-		`[live] session ${sessionId} ready · air mode=${mode}${mode === 'interval' ? ` every ${intervalMs}ms` : ' (manual)'} · web http://localhost:${webPort}`,
+		`[live] session ${started.id} ready · air mode=${mode}${mode === 'interval' ? ` every ${intervalMs}ms` : ' (manual)'} · web http://localhost:${webPort}`,
 	);
 };
 

@@ -51,7 +51,10 @@ const countRows = (db: Database.Database, table: string): number =>
 		? (db.prepare(`SELECT COUNT(*) AS n FROM ${table}`).get() as { n: number }).n
 		: 0;
 
-export const makeSessionFiles = (baseDir: string, currentSessionId?: string): SessionFiles => {
+export const makeSessionFiles = (
+	baseDir: string,
+	currentSessionId: () => string | undefined = () => undefined,
+): SessionFiles => {
 	const sessionIds = (): string[] =>
 		existsSync(baseDir)
 			? readdirSync(baseDir)
@@ -69,7 +72,7 @@ export const makeSessionFiles = (baseDir: string, currentSessionId?: string): Se
 			: undefined;
 		const summary = {
 			alerts: countRows(db, 'alert_events'),
-			current: id === currentSessionId,
+			current: id === currentSessionId(),
 			endedAt: session?.ended_at ?? null,
 			frames: countRows(db, 'frames'),
 			framesBytes: dirSize(join(baseDir, id, 'frames')),
@@ -86,7 +89,7 @@ export const makeSessionFiles = (baseDir: string, currentSessionId?: string): Se
 	// The id comes from the web request, so only a listed session name is accepted.
 	const assertDeletable = (id: string): void => {
 		if (!sessionIds().includes(id)) throw new Error(`no session ${id}`);
-		if (id === currentSessionId) throw new Error(`session ${id} is being recorded`);
+		if (id === currentSessionId()) throw new Error(`session ${id} is being recorded`);
 	};
 
 	return {
