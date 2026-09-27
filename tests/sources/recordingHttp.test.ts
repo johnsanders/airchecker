@@ -81,6 +81,28 @@ describe('makeRecordingHttp', () => {
 			},
 		]);
 	});
+
+	it("records a failure's cause chain, not just fetch's bare message", async () => {
+		const rows: ApiResponseRow[] = [];
+		const http = makeRecordingHttp(
+			{
+				getJson: () =>
+					Promise.reject(
+						new TypeError('fetch failed', {
+							cause: new Error('getaddrinfo ENOTFOUND chameleon.test'),
+						}),
+					),
+				postJson: () => Promise.resolve({}),
+			},
+			'Ross',
+			(r) => rows.push(r),
+			() => 42,
+		);
+		await expect(http.getJson('http://chameleon.test/playlist')).rejects.toThrow('fetch failed');
+		expect(rows.map((recorded) => recorded.error)).toEqual([
+			'fetch failed (getaddrinfo ENOTFOUND chameleon.test)',
+		]);
+	});
 });
 
 describe('makePlaybackHttp', () => {
