@@ -1,3 +1,5 @@
+import { existsSync, rmSync, statSync } from 'node:fs';
+
 import type {
 	ApiRecordingDetail,
 	ApiRecordingSummary,
@@ -6,6 +8,7 @@ import type {
 	ApiResponseRow,
 	ApiResponseSummary,
 } from '../replay/apiRecording.js';
+import type { ApiPlaybackStatus } from './apiPlayback.js';
 
 import {
 	listApiRecordings,
@@ -18,6 +21,7 @@ import {
 // The web view's Record button. `record` is handed to both sources' recording HTTP
 // wrappers and drops rows unless a recording is active. meta/responses/body browse a
 // recording by name (undefined when there's no such recording), finished or not.
+// remove deletes one the same way, refusing the one being written.
 
 export type ActiveApiRecording = {
 	name: string;
@@ -30,6 +34,8 @@ export type ApiRecorder = {
 	list: () => ApiRecordingSummary[];
 	meta: (name: string) => ApiRecordingDetail | undefined;
 	record: (row: ApiResponseRow) => void;
+	// Bytes freed; throws for the recording in progress.
+	remove: (name: string) => number | undefined;
 	responses: (name: string, query: ApiResponseQuery) => ApiResponseSummary[] | undefined;
 	start: (name?: string) => ApiRecorderStatus;
 	status: () => ApiRecorderStatus;
@@ -45,15 +51,8 @@ export type ApiRecorderConfig = {
 };
 
 export type ApiRecorderStatus =
-	| {
-			durationMs: number;
-			elapsedMs: number;
-			ended: boolean;
-			mode: 'playback';
-			name: string;
-			speed: number;
-	  }
-	| { mode: 'live'; recording: ActiveApiRecording | null };
+	| { mode: 'live'; recording: ActiveApiRecording | null }
+	| ({ mode: 'playback' } & ApiPlaybackStatus);
 
 const defaultName = (at: number): string =>
 	`api-${new Date(at).toISOString().replace(/[:.]/g, '-')}`;
@@ -91,6 +90,16 @@ export const makeApiRecorder = (config: ApiRecorderConfig): ApiRecorder => {
 		list: () => listApiRecordings(config.baseDir),
 		meta: (name) => withFile(name, readApiRecordingMeta),
 		record: (row) => active?.writer.append(row),
+		remove: (name) => {
+			if (active?.name === name) throw new Error(`${name} is still recording`);
+			return withFile(name, (file) => {
+				const files = ['', '-wal', '-shm'].map((suffix) => `${file}${suffix}`).filter(existsSync);
+				const freed = files.reduce((total, path) => total + statSync(path).size, 0);
+				files.forEach((path) => rmSync(path));
+				console.log(`[api-record] deleted ${name}`);
+				return freed;
+			});
+		},
 		responses: (name, query) => withFile(name, (file) => listApiResponses(file, query)),
 		start: (name) => {
 			if (active !== undefined) throw new Error(`already recording ${active.name}`);

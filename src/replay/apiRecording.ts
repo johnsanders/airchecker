@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { existsSync, mkdirSync, readdirSync } from 'node:fs';
-import { basename, join } from 'node:path';
+import { join } from 'node:path';
 
 // Raw DDHQ + Chameleon response bodies, captured behind the web view's Record
 // button so a night can be played back through the real pollers, schemas and
@@ -250,6 +250,3 @@ export const readApiResponseBody = (file: string, seq: number): null | string =>
 					| undefined
 			)?.body ?? null,
 	);
-
-export const resolveApiRecordingFile = (baseDir: string, nameOrPath: string): string =>
-	nameOrPath.endsWith('.sqlite') ? nameOrPath : apiRecordingFile(baseDir, basename(nameOrPath));

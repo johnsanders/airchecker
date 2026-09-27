@@ -1,6 +1,7 @@
 import type { RaceObservation, SourceName } from '../reconcile/reconcile.js';
 
 export type Store = {
+	clear: () => void;
 	getAirHistory: (raceKey: string) => RaceObservation[];
 	getHistory: (source: SourceName, raceKey: string) => RaceObservation[];
 	getProviderHistory: (raceKey: string) => RaceObservation[];
@@ -60,6 +61,10 @@ const makeStore = (config: StoreConfig = {}): Store => {
 	};
 
 	return {
+		clear: () => {
+			retained.splice(0);
+			rebuildBuckets();
+		},
 		getAirHistory: (raceKey) => getHistory('air', raceKey),
 		getHistory,
 		getProviderHistory: (raceKey) => getHistory('DDHQ', raceKey),

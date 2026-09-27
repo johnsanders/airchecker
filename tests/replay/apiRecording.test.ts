@@ -12,7 +12,6 @@ import {
 	openApiRecordingWriter,
 	readApiRecordingMeta,
 	readApiResponseBody,
-	resolveApiRecordingFile,
 	stripOrigin,
 } from '../../src/replay/apiRecording.js';
 
@@ -103,7 +102,6 @@ describe('apiRecording', () => {
 			['newer', 0],
 			['older', 1],
 		]);
-		expect(resolveApiRecordingFile(baseDir, 'older')).toBe(older.file);
 		expect(listApiRecordings(join(baseDir, 'missing'))).toEqual([]);
 	});
 

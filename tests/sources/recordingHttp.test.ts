@@ -127,6 +127,30 @@ describe('makePlaybackHttp', () => {
 		expect(await http.getJson('http://anyhost/p')).toBe('third');
 	});
 
+	it('pauses, resumes and restarts the clock', async () => {
+		let wall = 0;
+		const recording = recordingOf([row(0, '/p', 'first'), row(60_000, '/p', 'second')]);
+		const clock = makePlaybackClock(recording, { now: () => wall, speed: 2 });
+		const http = makePlaybackHttp(recording, 'Ross', clock);
+		wall = 10_000;
+		clock.pause();
+		expect(clock.paused()).toBe(true);
+		wall = 100_000; // paused: the recording stays at 20 s
+		expect(clock.elapsedMs()).toBe(20_000);
+		expect(await http.getJson('http://h/p')).toBe('first');
+		clock.resume();
+		wall = 115_000; // 20 s + 15 s × 2
+		expect(clock.elapsedMs()).toBe(50_000);
+		expect(await http.getJson('http://h/p')).toBe('second');
+		clock.restart();
+		expect(clock.elapsedMs()).toBe(0);
+		expect(await http.getJson('http://h/p')).toBe('first');
+		clock.pause();
+		clock.restart();
+		wall = 200_000;
+		expect(clock.elapsedMs()).toBe(0); // a restart while paused stays paused
+	});
+
 	it('rethrows recorded errors, refuses unknown or not-yet-recorded paths, and fakes the token', async () => {
 		let wall = 0;
 		const recording = recordingOf([
@@ -185,8 +209,8 @@ describe('API record → playback round trip through the real pollers', () => {
 		const pollBoth = async (ddhqHttp: HttpJson, vendorHttp: HttpJson, baseUrl: string) => {
 			const observed: RaceObservation[] = [];
 			const auth = makeDdhqAuth({
-				credentials: { clientId: 'id', clientSecret: 's', grantType: 'g' },
 				getBaseUrl: () => baseUrl,
+				getCredentials: () => ({ clientId: 'id', clientSecret: 's', grantType: 'g' }),
 				http: ddhqHttp,
 			});
 			const provider = makeProviderPoller({

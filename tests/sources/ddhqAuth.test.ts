@@ -30,8 +30,8 @@ describe('makeDdhqAuth', () => {
 	it('POSTs credentials to the token endpoint and returns the access_token', async () => {
 		const { http, posts } = makeHttp([{ access_token: 'tok-1', expires_in: 300 }]);
 		const auth = makeDdhqAuth({
-			credentials,
 			getBaseUrl: () => 'https://api.test',
+			getCredentials: () => credentials,
 			http,
 			now: () => 0,
 		});
@@ -49,8 +49,8 @@ describe('makeDdhqAuth', () => {
 		const { http, posts } = makeHttp([{ access_token: 'tok-1', expires_in: 300 }]);
 		let clock = 0;
 		const auth = makeDdhqAuth({
-			credentials,
 			getBaseUrl: () => 'https://api.test',
+			getCredentials: () => credentials,
 			http,
 			now: () => clock,
 		});
@@ -67,8 +67,8 @@ describe('makeDdhqAuth', () => {
 		]);
 		let clock = 0;
 		const auth = makeDdhqAuth({
-			credentials,
 			getBaseUrl: () => 'https://api.test',
+			getCredentials: () => credentials,
 			http,
 			now: () => clock,
 			refreshSkewMs: 60_000,
@@ -85,8 +85,8 @@ describe('makeDdhqAuth', () => {
 			{ access_token: 'tok-2', expires_in: 300 },
 		]);
 		const auth = makeDdhqAuth({
-			credentials,
 			getBaseUrl: () => 'https://api.test',
+			getCredentials: () => credentials,
 			http,
 			now: () => 0,
 		});
@@ -102,7 +102,12 @@ describe('makeDdhqAuth', () => {
 			{ access_token: 'tok-test', expires_in: 300 },
 		]);
 		let baseUrl = 'https://prod.test';
-		const auth = makeDdhqAuth({ credentials, getBaseUrl: () => baseUrl, http, now: () => 0 });
+		const auth = makeDdhqAuth({
+			getBaseUrl: () => baseUrl,
+			getCredentials: () => credentials,
+			http,
+			now: () => 0,
+		});
 		expect(await auth.getToken()).toBe('tok-prod');
 		baseUrl = 'https://integration.test';
 		expect(await auth.getToken()).toBe('tok-test');

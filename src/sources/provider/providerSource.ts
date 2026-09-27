@@ -30,6 +30,9 @@ export const ddhqBaseUrl = (environment: DdhqEnvironment): string =>
 
 export type ProviderSource = {
 	intervalMs: number;
+	// Drop the cached bearer token, so switching between API playback and live never
+	// sends one side's token to the other.
+	invalidateToken: () => void;
 	poller: ProviderPoller;
 	queryStore: QueryStore; // exposed so the web server can get/set the query list
 };
@@ -38,10 +41,10 @@ export type ProviderSourceOptions = {
 	fixedIntervalMs?: number; // overrides DDHQ_POLL_INTERVAL_MS (API recording pins 60 s)
 	getEnvironment?: () => DdhqEnvironment; // default production
 	http?: HttpJson;
+	isPlayback?: () => boolean; // answers come from an API recording: no credentials needed
 	// One query failing doesn't fail the poll (the others still run), so it's reported
 	// here rather than thrown.
 	onQueryError?: (query: string, error: unknown) => void;
-	playback?: boolean; // answers come from an API recording: no credentials needed
 };
 
 const PLAYBACK_CREDENTIALS = {
@@ -64,11 +67,12 @@ export const makeProviderSource = (
 	queryStore: QueryStore = makeQueryStore(),
 	options: ProviderSourceOptions = {},
 ): ProviderSource => {
-	const credentials = options.playback === true ? PLAYBACK_CREDENTIALS : readCredentials();
+	const getCredentials = () =>
+		options.isPlayback?.() === true ? PLAYBACK_CREDENTIALS : readCredentials();
 	const getEnvironment = options.getEnvironment ?? (() => 'production');
 	const getBaseUrl = (): string => ddhqBaseUrl(getEnvironment());
 	const http = options.http ?? makeFetchHttp();
-	const auth = makeDdhqAuth({ credentials, getBaseUrl, http });
+	const auth = makeDdhqAuth({ getBaseUrl, getCredentials, http });
 	const intervalRaw = Number(process.env.DDHQ_POLL_INTERVAL_MS);
 	const intervalMs =
 		options.fixedIntervalMs ??
@@ -83,5 +87,5 @@ export const makeProviderSource = (
 		onObservations,
 	});
 
-	return { intervalMs, poller, queryStore };
+	return { intervalMs, invalidateToken: auth.invalidate, poller, queryStore };
 };

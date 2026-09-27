@@ -47,13 +47,9 @@ Air alerts fire on the **first** bad graphic seen; they clear after three clean 
 
 ## Recording the APIs for rehearsal
 
-The **API recording** panel's red **Record** button saves every DDHQ and Chameleon response (once a minute) until **Stop**. It is separate from the always-on session recording and costs about 20 MB per hour. To rehearse later against that night's data, with no VPN and no DDHQ credentials:
+The **API recording** panel's red **Record** button saves every DDHQ and Chameleon response (once a minute) until **Stop**. It is separate from the always-on session recording and costs about 20 MB per hour. To rehearse later against that night's data, with no VPN and no DDHQ credentials, pick a speed (1×, 2×, 5×, 10×) and click **▶ Play** next to the recording in the same panel.
 
-```bash
-npm run backend -- --api-playback <name> --speed=1
-```
-
-Air capture stays live, so this pairs a recorded night of data with a live feed. The header shows `API playback: <name>`, and the query list is locked to what was recorded.
+Play clears the races and alerts on screen and starts a new session; polls speed up with the playback, so every recorded minute is visited. **Pause**, **Restart** (from the top, cleared again) and **Stop playback** (clears and goes back to the live APIs) sit in the banner. Air capture stays live throughout, so this pairs a recorded night of data with a live feed. The header shows `API playback: <name>`, the query list and DDHQ environment are locked, and race links made during playback are never saved.
 
 ## When something looks wrong
 

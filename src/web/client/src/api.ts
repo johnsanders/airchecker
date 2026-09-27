@@ -35,7 +35,7 @@ export interface ApiRecordingDetail {
 	stoppedAt: null | number;
 }
 
-// Raw DDHQ + Chameleon response recording (Record button) / playback (--api-playback).
+// Raw DDHQ + Chameleon response recording (Record button) / playback (Play button).
 export type ApiRecordingStatus =
 	| {
 			durationMs: number;
@@ -43,6 +43,7 @@ export type ApiRecordingStatus =
 			ended: boolean;
 			mode: 'playback';
 			name: string;
+			paused: boolean;
 			speed: number;
 	  }
 	| { mode: 'live'; recording: { name: string; responseCount: number; startedAt: number } | null };
@@ -254,6 +255,12 @@ export const api = {
 		const res = await fetch('/api/capture', { method: 'POST' });
 		return res.json() as Promise<{ error?: string; ran: boolean; status: string }>;
 	},
+	deleteApiRecording: async (name: string): Promise<{ freedBytes: number }> => {
+		const url = apiRecordingUrl(name);
+		const res = await fetch(url, { method: 'DELETE' });
+		if (!res.ok) throw new Error(`${res.status} ${url}`);
+		return res.json() as Promise<{ freedBytes: number }>;
+	},
 	deleteSession: async (id: string): Promise<{ freedBytes: number }> => {
 		const url = `/api/sessions/${encodeURIComponent(id)}`;
 		const res = await fetch(url, { method: 'DELETE' });
@@ -289,7 +296,6 @@ export const api = {
 			`${apiRecordingUrl(name)}/responses?${params.toString()}`,
 		);
 	},
-	// Surfaces the server's message: the usual failure is the debug Chrome not running.
 	openTestVideo: async (file: string): Promise<void> => {
 		const res = await fetch('/api/test-video', {
 			body: JSON.stringify({ file }),
@@ -301,6 +307,10 @@ export const api = {
 			throw new Error(body.error ?? `${res.status} /api/test-video`);
 		}
 	},
+	// Surfaces the server's message: the usual failure is the debug Chrome not running.
+	// pause | resume | restart | stop; stop goes back to the live APIs.
+	playbackAction: (action: 'pause' | 'restart' | 'resume' | 'stop') =>
+		postJson<ApiRecordingStatus>(`/api/api-playback/${action}`, {}),
 	pruneSessionFrames: (id: string) =>
 		postJson<{ freedBytes: number }>(`/api/sessions/${encodeURIComponent(id)}/prune-frames`, {}),
 	rejectRaceProposal: (id: string) =>
@@ -315,6 +325,8 @@ export const api = {
 	setQueries: (queries: string[]) => postJson<{ queries: string[] }>('/api/queries', { queries }),
 	setRaceAlias: (body: { canonicalRaceKey: string; source: SourceName; sourceRaceKey: string }) =>
 		postJson<{ raceLinks: RaceLinksResponse }>('/api/race-links/aliases', body),
+	startApiPlayback: (name: string, speed: number) =>
+		postJson<ApiRecordingStatus>('/api/api-playback/start', { name, speed }),
 	startApiRecording: (name?: string) =>
 		postJson<ApiRecordingStatus>('/api/api-recording/start', name === undefined ? {} : { name }),
 	startSession: () => postJson<SessionStatus>('/api/session/start', {}),

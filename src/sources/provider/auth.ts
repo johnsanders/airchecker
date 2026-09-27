@@ -19,8 +19,9 @@ export type DdhqAuth = {
 };
 
 export type DdhqAuthConfig = {
-	credentials: DdhqCredentials;
 	getBaseUrl: () => string;
+	// Read at each token fetch: API playback answers with placeholders, live with process.env.
+	getCredentials: () => DdhqCredentials;
 	http: HttpJson;
 	now?: () => number; // injectable clock for tests
 	refreshSkewMs?: number; // refresh this long before expiry
@@ -44,10 +45,11 @@ export const makeDdhqAuth = (config: DdhqAuthConfig): DdhqAuth => {
 		const baseUrl = config.getBaseUrl();
 		if (cached !== undefined && cached.baseUrl === baseUrl && cached.expiresAt - skewMs > current)
 			return cached.token;
+		const credentials = config.getCredentials();
 		const raw = await config.http.postJson(`${baseUrl}/api/v4/oauth/token`, {
-			client_id: config.credentials.clientId,
-			client_secret: config.credentials.clientSecret,
-			grant_type: config.credentials.grantType,
+			client_id: credentials.clientId,
+			client_secret: credentials.clientSecret,
+			grant_type: credentials.grantType,
 		});
 		const parsed = tokenResponseSchema.parse(raw);
 		const ttlMs = (parsed.expires_in ?? DEFAULT_TTL_SECONDS) * 1000;

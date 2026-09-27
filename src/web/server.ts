@@ -18,6 +18,7 @@ import type {
 } from '../replay/apiRecording.js';
 import type { SessionFiles } from '../replay/sessionFiles.js';
 import type { AlertEvent } from '../runtime/alertLog.js';
+import type { ApiPlayback } from '../runtime/apiPlayback.js';
 import type { ApiRecorderStatus } from '../runtime/apiRecorder.js';
 import type { SessionStatus } from '../runtime/liveSession.js';
 import type { SourceError } from '../runtime/sourceErrors.js';
@@ -47,13 +48,14 @@ export type LastFrameView = {
 	ts: number;
 };
 
-// The Record button (live) or the playback banner (--api-playback). start/stop are
-// omitted in playback: recording a playback would just copy the recording. Browsing
+// The Record button, and the status behind the playback banner. start is refused during
+// playback: recording a playback would just copy the recording. Browsing
 // (body/meta/responses) works in both; each returns undefined for an unknown name.
 export type WebApiRecording = {
 	body: (name: string, seq: number) => null | string | undefined;
 	list: () => ApiRecordingSummary[];
 	meta: (name: string) => ApiRecordingDetail | undefined;
+	remove?: (name: string) => number | undefined;
 	responses: (name: string, query: ApiResponseQuery) => ApiResponseSummary[] | undefined;
 	start?: (name?: string) => ApiRecorderStatus;
 	status: () => ApiRecorderStatus;
@@ -61,12 +63,14 @@ export type WebApiRecording = {
 };
 
 export type WebServerConfig = {
+	// Start/pause/resume/restart/stop API playback; its status is apiRecording.status().
+	apiPlayback?: Pick<ApiPlayback, 'pause' | 'restart' | 'resume' | 'start' | 'status' | 'stop'>;
 	apiRecording?: WebApiRecording;
 	// When present, the server opens a /ws endpoint and pushes a "changed" nudge over
 	// it on every state change, so the client refetches on demand instead of polling.
 	changeBus?: ChangeBus;
-	// Which DDHQ host is polled (production or integration), switchable live; omitted
-	// if DDHQ isn't configured or in API playback.
+	// Which DDHQ host is polled (production or integration), switchable live but not
+	// during API playback; omitted if DDHQ isn't wired.
 	ddhqEnvironment?: { get: () => DdhqEnvironment; set: (next: DdhqEnvironment) => void };
 	// Newest-first raise/clear events; omitted if alert history isn't wired.
 	getAlertHistory?: (limit?: number) => AlertEvent[];
@@ -97,6 +101,7 @@ const SOURCES: readonly SourceName[] = ['DDHQ', 'Ross', 'air'];
 const API_SOURCES: readonly ApiSource[] = ['DDHQ', 'Ross'];
 const RESPONSES_PAGE = 200;
 const RESPONSES_PAGE_MAX = 1000;
+const PLAYBACK_SPEED_MAX = 100;
 const WHOLE_NUMBER = /^\d+$/;
 
 const historyFor = (store: Store, source: SourceName, raceKey: string): RaceObservation[] => {
@@ -159,6 +164,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	// guarantees the hook is installed before the route is added — the route then
 	// upgrades to a websocket. Each connection just relays bus "changed" nudges.
 	const changeBus = config.changeBus;
+	const playing = (): boolean => config.apiPlayback?.status() !== undefined;
 	if (changeBus !== undefined) {
 		void app.register(fastifyWebsocket);
 		void app.register(async (instance) => {
@@ -194,7 +200,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			airMatch: config.matchStore?.get() ?? null,
 			alerts: config.getRecentAlerts().slice(-100).reverse(),
 			cadence: config.getCadence?.() ?? null,
-			ddhqEnvironment: config.ddhqEnvironment?.get() ?? null,
+			ddhqEnvironment: playing() ? null : (config.ddhqEnvironment?.get() ?? null),
 			lastFrame:
 				lastFrame === undefined
 					? null
@@ -391,7 +397,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	app.post<{ Body: { queries?: unknown } }>('/api/queries', (req, reply) => {
 		if (config.queryStore === undefined)
 			return reply.code(503).send({ error: 'DDHQ not configured' });
-		if (config.apiRecording?.status().mode === 'playback')
+		if (playing())
 			return reply
 				.code(409)
 				.send({ error: 'queries are fixed by the API recording during playback' });
@@ -454,8 +460,29 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		},
 	);
 
+	// A playing recording is refused too, though it's already in memory: deleting what's
+	// on air would leave the banner naming a file that's gone.
+	app.delete<{ Params: { name: string } }>('/api/api-recordings/:name', (req, reply) => {
+		if (config.apiRecording?.remove === undefined)
+			return reply.code(503).send({ error: 'API recording not wired' });
+		if (config.apiPlayback?.status()?.name === req.params.name)
+			return reply.code(409).send({ error: `${req.params.name} is playing back` });
+		try {
+			const freedBytes = config.apiRecording.remove(req.params.name);
+			if (freedBytes === undefined) return reply.code(404).send({ error: 'no such API recording' });
+			changeBus?.broadcast({ type: 'changed' });
+			return { freedBytes };
+		} catch (error) {
+			return reply
+				.code(409)
+				.send({ error: error instanceof Error ? error.message : String(error) });
+		}
+	});
+
 	app.post<{ Body: { name?: unknown } | null }>('/api/api-recording/start', (req, reply) => {
 		if (config.apiRecording?.start === undefined)
+			return reply.code(503).send({ error: 'API recording not wired' });
+		if (playing())
 			return reply.code(409).send({ error: 'recording is unavailable in API playback' });
 		const name = typeof req.body?.name === 'string' ? req.body.name : undefined;
 		try {
@@ -471,14 +498,51 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 
 	app.post('/api/api-recording/stop', (_req, reply) => {
 		if (config.apiRecording?.stop === undefined)
-			return reply.code(409).send({ error: 'recording is unavailable in API playback' });
+			return reply.code(503).send({ error: 'API recording not wired' });
 		const status = config.apiRecording.stop();
 		changeBus?.broadcast({ type: 'changed' });
 		return status;
 	});
 
+	// Answer DDHQ + Chameleon from a recording instead of the live APIs. Each reply is the
+	// same status GET /api/api-recording returns.
+	app.post<{ Body: { name?: unknown; speed?: unknown } | null }>(
+		'/api/api-playback/start',
+		(req, reply) => {
+			if (config.apiPlayback === undefined || config.apiRecording === undefined)
+				return reply.code(503).send({ error: 'API playback not wired' });
+			const name = req.body?.name;
+			const speed = req.body?.speed ?? 1;
+			if (typeof name !== 'string') return reply.code(400).send({ error: 'name is required' });
+			if (typeof speed !== 'number' || !(speed > 0 && speed <= PLAYBACK_SPEED_MAX))
+				return reply
+					.code(400)
+					.send({ error: `speed must be a number above 0, at most ${PLAYBACK_SPEED_MAX}` });
+			try {
+				config.apiPlayback.start(name, speed);
+			} catch (error) {
+				return reply
+					.code(404)
+					.send({ error: error instanceof Error ? error.message : String(error) });
+			}
+			changeBus?.broadcast({ type: 'changed' });
+			return config.apiRecording.status();
+		},
+	);
+
+	(['pause', 'resume', 'restart', 'stop'] as const).forEach((action) =>
+		app.post(`/api/api-playback/${action}`, (_req, reply) => {
+			if (config.apiPlayback === undefined || config.apiRecording === undefined)
+				return reply.code(503).send({ error: 'API playback not wired' });
+			if (!playing()) return reply.code(409).send({ error: 'no API playback running' });
+			config.apiPlayback[action]();
+			changeBus?.broadcast({ type: 'changed' });
+			return config.apiRecording.status();
+		}),
+	);
+
 	app.post<{ Body: { environment?: unknown } }>('/api/ddhq-environment', (req, reply) => {
-		if (config.ddhqEnvironment === undefined)
+		if (config.ddhqEnvironment === undefined || playing())
 			return reply.code(409).send({ error: 'DDHQ environment is not switchable here' });
 		const environment = req.body.environment;
 		if (environment !== 'production' && environment !== 'integration')

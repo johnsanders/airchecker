@@ -434,7 +434,7 @@ describe('web server', () => {
 		);
 	});
 
-	it('refuses a DDHQ environment switch when none is wired (playback)', async () => {
+	it('refuses a DDHQ environment switch when none is wired', async () => {
 		app = makeWebServer({ getRecentAlerts: () => [], store: makeStore() });
 		const res = await app.inject({
 			method: 'POST',
@@ -624,40 +624,96 @@ describe('web server', () => {
 		expect(list.json()).toMatchObject({ recordings: [{ name: 'a', responseCount: 3 }] });
 	});
 
-	it('in API playback, refuses recording and query edits', async () => {
+	it('starts, steers and stops API playback, refusing recording and live edits meanwhile', async () => {
+		const calls: string[] = [];
+		let playing: { name: string; paused: boolean; speed: number } | undefined;
+		const apiPlayback = {
+			pause: () => {
+				calls.push('pause');
+				if (playing !== undefined) playing.paused = true;
+			},
+			restart: () => calls.push('restart'),
+			resume: () => {
+				calls.push('resume');
+				if (playing !== undefined) playing.paused = false;
+			},
+			start: (name: string, speed: number) => {
+				if (name !== 'night') throw new Error(`no API recording named ${name}`);
+				calls.push(`start ${name} ${speed}`);
+				playing = { name, paused: false, speed };
+			},
+			status: () =>
+				playing === undefined
+					? undefined
+					: { durationMs: 60_000, elapsedMs: 0, ended: false, ...playing },
+			stop: () => {
+				calls.push('stop');
+				playing = undefined;
+			},
+		};
 		const queryStore = makeQueryStore(['state=TX']);
+		let environment: DdhqEnvironment = 'production';
 		app = makeWebServer({
+			apiPlayback,
 			apiRecording: {
 				...notBrowsable,
 				list: () => [],
-				status: () => ({
-					durationMs: 60_000,
-					elapsedMs: 0,
-					ended: false,
-					mode: 'playback',
-					name: 'a',
-					speed: 2,
-				}),
+				start: () => ({ mode: 'live', recording: { name: 'x', responseCount: 0, startedAt: 1 } }),
+				status: (): ApiRecorderStatus => {
+					const status = apiPlayback.status();
+					return status === undefined
+						? { mode: 'live', recording: null }
+						: { mode: 'playback', ...status };
+				},
 			},
+			ddhqEnvironment: { get: () => environment, set: (next) => (environment = next) },
 			getRecentAlerts: () => [],
 			queryStore,
 			store: makeStore(),
 		});
-		expect(
-			(await app.inject({ method: 'POST', payload: {}, url: '/api/api-recording/start' }))
-				.statusCode,
-		).toBe(409);
-		const edit = await app.inject({
-			method: 'POST',
-			payload: { queries: ['state=GA'] },
-			url: '/api/queries',
-		});
-		expect(edit.statusCode).toBe(409);
-		expect(queryStore.get()).toEqual(['state=TX']);
-		expect((await app.inject({ method: 'GET', url: '/api/api-recording' })).json()).toMatchObject({
+		const post = (url: string, payload: unknown = {}) =>
+			app!.inject({ method: 'POST', payload: payload as Record<string, unknown>, url });
+
+		expect((await post('/api/api-playback/pause')).statusCode).toBe(409);
+		expect((await post('/api/api-playback/start', { speed: 2 })).statusCode).toBe(400);
+		expect((await post('/api/api-playback/start', { name: 'night', speed: 0 })).statusCode).toBe(
+			400,
+		);
+		expect((await post('/api/api-playback/start', { name: 'night', speed: 101 })).statusCode).toBe(
+			400,
+		);
+		expect((await post('/api/api-playback/start', { name: 'nope' })).statusCode).toBe(404);
+
+		const started = await post('/api/api-playback/start', { name: 'night', speed: 5 });
+		expect(started.json()).toMatchObject({
 			mode: 'playback',
-			speed: 2,
+			name: 'night',
+			paused: false,
+			speed: 5,
 		});
+		expect((await post('/api/api-playback/pause')).json()).toMatchObject({ paused: true });
+		expect((await post('/api/api-playback/resume')).json()).toMatchObject({ paused: false });
+		expect((await post('/api/api-playback/restart')).statusCode).toBe(200);
+
+		expect((await post('/api/api-recording/start')).statusCode).toBe(409);
+		expect((await post('/api/queries', { queries: ['state=GA'] })).statusCode).toBe(409);
+		expect(queryStore.get()).toEqual(['state=TX']);
+		expect((await post('/api/ddhq-environment', { environment: 'integration' })).statusCode).toBe(
+			409,
+		);
+		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().ddhqEnvironment).toBe(
+			null,
+		);
+
+		expect((await post('/api/api-playback/stop')).json()).toEqual({
+			mode: 'live',
+			recording: null,
+		});
+		expect(calls).toEqual(['start night 5', 'pause', 'resume', 'restart', 'stop']);
+		expect((await post('/api/api-recording/start')).statusCode).toBe(200);
+		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().ddhqEnvironment).toBe(
+			'production',
+		);
 	});
 
 	it('browses an API recording: meta, a page of responses, and one raw body', async () => {
@@ -715,6 +771,48 @@ describe('web server', () => {
 			(await app.inject({ method: 'GET', url: '/api/api-recordings/night/responses/99/body' }))
 				.statusCode,
 		).toBe(404);
+	});
+
+	it('deletes an API recording, refusing the one being recorded or played back', async () => {
+		const recorder = browsableRecorder();
+		const playing = {
+			durationMs: 1,
+			elapsedMs: 0,
+			ended: false,
+			name: 'open',
+			paused: false,
+			speed: 1,
+		};
+		const noop = (): void => undefined;
+		app = makeWebServer({
+			apiPlayback: {
+				pause: noop,
+				restart: noop,
+				resume: noop,
+				start: noop,
+				status: () => playing,
+				stop: noop,
+			},
+			apiRecording: recorder,
+			getRecentAlerts: () => [],
+			store: makeStore(),
+		});
+		const remove = (name: string) =>
+			app!.inject({ method: 'DELETE', url: `/api/api-recordings/${name}` });
+
+		expect((await remove('open')).statusCode).toBe(409);
+		expect((await remove('missing')).statusCode).toBe(404);
+		expect((await remove('..%2Fsettings')).statusCode).toBe(404);
+		const deleted = await remove('night');
+		expect(deleted.statusCode).toBe(200);
+		expect((deleted.json() as { freedBytes: number }).freedBytes).toBeGreaterThan(0);
+		expect(recorder.list().map((summary) => summary.name)).toEqual(['open']);
+		expect((await remove('night')).statusCode).toBe(404);
+
+		recorder.start('live');
+		expect(() => recorder.remove('live')).toThrow('still recording');
+		recorder.stop();
+		expect(recorder.remove('live')).toBeGreaterThan(0);
 	});
 
 	it('browses a recording that is still being written', async () => {

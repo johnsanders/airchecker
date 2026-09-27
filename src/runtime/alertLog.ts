@@ -18,6 +18,7 @@ export type AlertEvent = {
 };
 
 export type AlertLog = {
+	clear: () => void;
 	// Newest first.
 	recent: (limit?: number) => AlertEvent[];
 	record: (diff: AnomalyDiff, ts: number) => AlertEvent[];
@@ -45,6 +46,9 @@ export const makeAlertLog = (config: AlertLogConfig = {}): AlertLog => {
 	const capacity = config.capacity ?? DEFAULT_CAPACITY;
 	const ring: AlertEvent[] = [];
 	return {
+		clear: () => {
+			ring.splice(0);
+		},
 		recent: (limit = 100) => ring.slice(-limit).reverse(),
 		record: (diff, ts) => {
 			const events = [
