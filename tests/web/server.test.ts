@@ -9,6 +9,8 @@ import type { Anomaly, RaceObservation } from '../../src/reconcile/reconcile.js'
 import type { ApiRecorderStatus } from '../../src/runtime/apiRecorder.js';
 
 import { makeRaceIdentityResolver } from '../../src/identity/raceIdentity.js';
+import { openApiRecordingWriter } from '../../src/replay/apiRecording.js';
+import { makeApiRecorder } from '../../src/runtime/apiRecorder.js';
 import { makeMatchStore } from '../../src/sources/air/matchStore.js';
 import { makeQueryStore } from '../../src/sources/provider/queryStore.js';
 import makeStore from '../../src/store/store.js';
@@ -40,6 +42,32 @@ afterEach(async () => {
 	await app?.close();
 	app = undefined;
 });
+
+const notBrowsable = { body: () => undefined, meta: () => undefined, responses: () => undefined };
+
+// A finished recording "night" (seq 1 DDHQ ok, 2 Ross ok, 3 DDHQ error) plus an
+// unfinished one, served through a real recorder so names resolve the way they do live.
+const browsableRecorder = (): ReturnType<typeof makeApiRecorder> => {
+	const baseDir = mkdtempSync(join(tmpdir(), 'web-api-recording-'));
+	const night = openApiRecordingWriter(baseDir, {
+		ddhqQueries: ['state=TX'],
+		name: 'night',
+		startedAt: 1,
+	});
+	night.append({ body: { page: 1 }, error: null, path: '/races', source: 'DDHQ', ts: 10 });
+	night.append({ body: { contests: [] }, error: null, path: '/playlist', source: 'Ross', ts: 11 });
+	night.append({ body: null, error: 'HTTP 503', path: '/races', source: 'DDHQ', ts: 70 });
+	night.close(100, ['state=TX']);
+	openApiRecordingWriter(baseDir, { ddhqQueries: [], name: 'open', startedAt: 200 }).append({
+		body: { page: 1 },
+		error: null,
+		path: '/races',
+		source: 'DDHQ',
+		ts: 201,
+	});
+	writeFileSync(join(baseDir, 'settings.sqlite'), 'not a recording');
+	return makeApiRecorder({ baseDir, getQueries: () => [] });
+};
 
 describe('web server', () => {
 	it('reports per-source state', async () => {
@@ -501,6 +529,7 @@ describe('web server', () => {
 		const names: (string | undefined)[] = [];
 		app = makeWebServer({
 			apiRecording: {
+				...notBrowsable,
 				list: () => [
 					{
 						file: 'recordings/api/a.sqlite',
@@ -556,6 +585,7 @@ describe('web server', () => {
 		const queryStore = makeQueryStore(['state=TX']);
 		app = makeWebServer({
 			apiRecording: {
+				...notBrowsable,
 				list: () => [],
 				status: () => ({
 					durationMs: 60_000,
@@ -585,6 +615,100 @@ describe('web server', () => {
 			mode: 'playback',
 			speed: 2,
 		});
+	});
+
+	it('browses an API recording: meta, a page of responses, and one raw body', async () => {
+		app = makeWebServer({
+			apiRecording: browsableRecorder(),
+			getRecentAlerts: () => [],
+			store: makeStore(),
+		});
+		const meta = await app.inject({ method: 'GET', url: '/api/api-recordings/night' });
+		expect(meta.json()).toEqual({
+			ddhqQueries: ['state=TX'],
+			name: 'night',
+			sources: [
+				{ errors: 1, responses: 2, source: 'DDHQ' },
+				{ errors: 0, responses: 1, source: 'Ross' },
+			],
+			startedAt: 1,
+			stoppedAt: 100,
+		});
+
+		const seqs = async (query: string): Promise<number[]> =>
+			(
+				(
+					await app!.inject({ method: 'GET', url: `/api/api-recordings/night/responses${query}` })
+				).json() as { responses: { seq: number }[] }
+			).responses.map((row) => row.seq);
+		expect(await seqs('')).toEqual([3, 2, 1]);
+		expect(await seqs('?source=DDHQ')).toEqual([3, 1]);
+		expect(await seqs('?errors=1')).toEqual([3]);
+		expect(await seqs('?before=3&limit=1')).toEqual([2]);
+		expect(await seqs('?limit=5000')).toEqual([3, 2, 1]);
+
+		const page = await app.inject({ method: 'GET', url: '/api/api-recordings/night/responses' });
+		expect((page.json() as { responses: unknown[] }).responses[2]).toEqual({
+			bytes: '{"page":1}'.length,
+			error: null,
+			path: '/races',
+			seq: 1,
+			source: 'DDHQ',
+			ts: 10,
+		});
+
+		const body = await app.inject({
+			method: 'GET',
+			url: '/api/api-recordings/night/responses/2/body',
+		});
+		expect(body.statusCode).toBe(200);
+		expect(body.headers['content-type']).toMatch(/^application\/json/);
+		expect(body.body).toBe('{"contests":[]}');
+		expect(
+			(await app.inject({ method: 'GET', url: '/api/api-recordings/night/responses/3/body' }))
+				.statusCode,
+		).toBe(404);
+		expect(
+			(await app.inject({ method: 'GET', url: '/api/api-recordings/night/responses/99/body' }))
+				.statusCode,
+		).toBe(404);
+	});
+
+	it('browses a recording that is still being written', async () => {
+		app = makeWebServer({
+			apiRecording: browsableRecorder(),
+			getRecentAlerts: () => [],
+			store: makeStore(),
+		});
+		expect(
+			(await app.inject({ method: 'GET', url: '/api/api-recordings/open' })).json(),
+		).toMatchObject({ sources: [{ errors: 0, responses: 1, source: 'DDHQ' }], stoppedAt: null });
+		expect(
+			(await app.inject({ method: 'GET', url: '/api/api-recordings/open/responses/1/body' })).body,
+		).toBe('{"page":1}');
+	});
+
+	it('answers 404 for unknown or path-like recording names and 400 for bad queries', async () => {
+		app = makeWebServer({
+			apiRecording: browsableRecorder(),
+			getRecentAlerts: () => [],
+			store: makeStore(),
+		});
+		const status = async (url: string): Promise<number> =>
+			(await app!.inject({ method: 'GET', url })).statusCode;
+		expect(await status('/api/api-recordings/missing')).toBe(404);
+		expect(await status('/api/api-recordings/missing/responses')).toBe(404);
+		expect(await status('/api/api-recordings/missing/responses/1/body')).toBe(404);
+		expect(await status('/api/api-recordings/settings')).toBe(404);
+		expect(await status('/api/api-recordings/..%2Fsettings')).toBe(404);
+		expect(await status('/api/api-recordings/..%2Fapi%2Fnight')).toBe(404);
+		expect(await status('/api/api-recordings/..%2Fsettings/responses/1/body')).toBe(404);
+
+		expect(await status('/api/api-recordings/night/responses?source=air')).toBe(400);
+		expect(await status('/api/api-recordings/night/responses?limit=ten')).toBe(400);
+		expect(await status('/api/api-recordings/night/responses?limit=-1')).toBe(400);
+		expect(await status('/api/api-recordings/night/responses?before=1.5')).toBe(400);
+		expect(await status('/api/api-recordings/night/responses/x/body')).toBe(400);
 	});
 
 	it('lists sessions and maps prune and delete refusals to 409', async () => {

@@ -12,6 +12,8 @@ export type ApiRecording = {
 	responses: ApiResponseRow[];
 };
 
+export type ApiRecordingDetail = { sources: ApiSourceCounts[] } & ApiRecordingMeta;
+
 export type ApiRecordingMeta = {
 	ddhqQueries: string[];
 	name: string;
@@ -34,6 +36,13 @@ export type ApiRecordingWriter = {
 	file: string;
 };
 
+export type ApiResponseQuery = {
+	beforeSeq?: number;
+	errorsOnly?: boolean;
+	limit: number;
+	source?: ApiSource;
+};
+
 export type ApiResponseRow = {
 	body: unknown; // parsed JSON; null when the call failed
 	error: null | string; // the thrown error message, replayed verbatim
@@ -42,7 +51,18 @@ export type ApiResponseRow = {
 	ts: number;
 };
 
+export type ApiResponseSummary = {
+	bytes: number; // stored JSON size; 0 when the call failed
+	error: null | string;
+	path: string;
+	seq: number;
+	source: ApiSource;
+	ts: number;
+};
+
 export type ApiSource = 'DDHQ' | 'Ross';
+
+export type ApiSourceCounts = { errors: number; responses: number; source: ApiSource };
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS meta (
@@ -135,9 +155,19 @@ const readMeta = (db: Database.Database): ApiRecordingMeta => {
 	};
 };
 
-export const loadApiRecording = (file: string): ApiRecording => {
+// A read-only connection also works while the writer still has the file open in WAL
+// mode (its -wal/-shm exist then), so a recording in progress can be browsed.
+const readOnly = <T>(file: string, read: (db: Database.Database) => T): T => {
 	const db = new Database(file, { readonly: true });
 	try {
+		return read(db);
+	} finally {
+		db.close();
+	}
+};
+
+export const loadApiRecording = (file: string): ApiRecording =>
+	readOnly(file, (db) => {
 		const rows = db
 			.prepare('SELECT ts, source, path, error, body FROM responses ORDER BY ts, seq')
 			.all() as ResponseRow[];
@@ -151,10 +181,7 @@ export const loadApiRecording = (file: string): ApiRecording => {
 				ts: row.ts,
 			})),
 		};
-	} finally {
-		db.close();
-	}
-};
+	});
 
 export const listApiRecordings = (baseDir: string): ApiRecordingSummary[] => {
 	const dir = apiRecordingDir(baseDir);
@@ -163,8 +190,7 @@ export const listApiRecordings = (baseDir: string): ApiRecordingSummary[] => {
 		.filter((entry) => entry.endsWith('.sqlite'))
 		.map((entry) => {
 			const file = join(dir, entry);
-			const db = new Database(file, { readonly: true });
-			try {
+			return readOnly(file, (db) => {
 				const meta = readMeta(db);
 				const counted = db.prepare('SELECT COUNT(*) AS n FROM responses').get() as { n: number };
 				return {
@@ -174,12 +200,56 @@ export const listApiRecordings = (baseDir: string): ApiRecordingSummary[] => {
 					startedAt: meta.startedAt,
 					stoppedAt: meta.stoppedAt,
 				};
-			} finally {
-				db.close();
-			}
+			});
 		})
 		.sort((left, right) => right.startedAt - left.startedAt);
 };
+
+export const readApiRecordingMeta = (file: string): ApiRecordingDetail =>
+	readOnly(file, (db) => ({
+		...readMeta(db),
+		sources: db
+			.prepare(
+				'SELECT source, COUNT(*) AS responses, SUM(error IS NOT NULL) AS errors FROM responses GROUP BY source ORDER BY source',
+			)
+			.all() as ApiSourceCounts[],
+	}));
+
+// Never selects body: a Chameleon body is ~350 KB and a night holds thousands of rows.
+// octet_length reads a value's size without loading it.
+export const listApiResponses = (file: string, query: ApiResponseQuery): ApiResponseSummary[] =>
+	readOnly(
+		file,
+		(db) =>
+			db
+				.prepare(
+					`SELECT seq, ts, source, path, error, COALESCE(octet_length(body), 0) AS bytes
+					FROM responses
+					WHERE (@source IS NULL OR source = @source)
+						AND (@errorsOnly = 0 OR error IS NOT NULL)
+						AND (@beforeSeq IS NULL OR seq < @beforeSeq)
+					ORDER BY seq DESC
+					LIMIT @limit`,
+				)
+				.all({
+					beforeSeq: query.beforeSeq ?? null,
+					errorsOnly: query.errorsOnly === true ? 1 : 0,
+					limit: query.limit,
+					source: query.source ?? null,
+				}) as ApiResponseSummary[],
+	);
+
+// The JSON text as stored; null for a failed call or an unknown seq.
+export const readApiResponseBody = (file: string, seq: number): null | string =>
+	readOnly(
+		file,
+		(db) =>
+			(
+				db.prepare('SELECT body FROM responses WHERE seq = ?').get(seq) as
+					| { body: null | string }
+					| undefined
+			)?.body ?? null,
+	);
 
 export const resolveApiRecordingFile = (baseDir: string, nameOrPath: string): string =>
 	nameOrPath.endsWith('.sqlite') ? nameOrPath : apiRecordingFile(baseDir, basename(nameOrPath));

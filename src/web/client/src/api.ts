@@ -27,6 +27,14 @@ export interface Anomaly {
 	type: string;
 }
 
+export interface ApiRecordingDetail {
+	ddhqQueries: string[];
+	name: string;
+	sources: { errors: number; responses: number; source: ApiSource }[];
+	startedAt: number;
+	stoppedAt: null | number;
+}
+
 // Raw DDHQ + Chameleon response recording (Record button) / playback (--api-playback).
 export type ApiRecordingStatus =
 	| {
@@ -46,6 +54,24 @@ export interface ApiRecordingSummary {
 	startedAt: number;
 	stoppedAt: null | number;
 }
+
+export interface ApiResponseQuery {
+	before?: number;
+	errorsOnly?: boolean;
+	limit?: number;
+	source?: ApiSource;
+}
+
+export interface ApiResponseSummary {
+	bytes: number; // stored JSON size; 0 when the call failed
+	error: null | string;
+	path: string;
+	seq: number;
+	source: ApiSource;
+	ts: number;
+}
+
+export type ApiSource = 'DDHQ' | 'Ross';
 
 export interface Cadence {
 	intervalMs: number;
@@ -192,6 +218,12 @@ export interface StateResponse {
 	sources: SourceStat[];
 }
 
+const apiRecordingUrl = (name: string): string => `/api/api-recordings/${encodeURIComponent(name)}`;
+
+// A plain URL, so the raw stored JSON also opens in a new tab.
+export const apiResponseBodyUrl = (name: string, seq: number): string =>
+	`${apiRecordingUrl(name)}/responses/${seq}/body`;
+
 const getJson = async <T>(url: string): Promise<T> => {
 	const res = await fetch(url);
 	if (!res.ok) throw new Error(`${res.status} ${url}`);
@@ -228,6 +260,13 @@ export const api = {
 	getAlertHistory: (limit = 100) =>
 		getJson<{ events: AlertEvent[] }>(`/api/alert-history?limit=${limit}`),
 	getApiRecording: () => getJson<ApiRecordingStatus>('/api/api-recording'),
+	getApiRecordingMeta: (name: string) => getJson<ApiRecordingDetail>(apiRecordingUrl(name)),
+	getApiResponseBody: async (name: string, seq: number): Promise<string> => {
+		const url = apiResponseBodyUrl(name, seq);
+		const res = await fetch(url);
+		if (!res.ok) throw new Error(`${res.status} ${url}`);
+		return res.text();
+	},
 	getQueries: () => getJson<{ queries: string[] }>('/api/queries'),
 	getRace: (raceKey: string) =>
 		getJson<RaceDetailResponse>(`/api/race/${encodeURIComponent(raceKey)}`),
@@ -237,6 +276,16 @@ export const api = {
 	getState: () => getJson<StateResponse>('/api/state'),
 	getTestVideos: () => getJson<{ files: string[] }>('/api/test-videos'),
 	listApiRecordings: () => getJson<{ recordings: ApiRecordingSummary[] }>('/api/api-recordings'),
+	listApiResponses: (name: string, query: ApiResponseQuery) => {
+		const params = new URLSearchParams();
+		if (query.before !== undefined) params.set('before', String(query.before));
+		if (query.errorsOnly === true) params.set('errors', '1');
+		if (query.limit !== undefined) params.set('limit', String(query.limit));
+		if (query.source !== undefined) params.set('source', query.source);
+		return getJson<{ responses: ApiResponseSummary[] }>(
+			`${apiRecordingUrl(name)}/responses?${params.toString()}`,
+		);
+	},
 	// Surfaces the server's message: the usual failure is the debug Chrome not running.
 	openTestVideo: async (file: string): Promise<void> => {
 		const res = await fetch('/api/test-video', {

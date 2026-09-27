@@ -9,7 +9,13 @@ import { fileURLToPath } from 'node:url';
 
 import type { RaceAlias, RaceIdentityResolver } from '../identity/raceIdentity.js';
 import type { Anomaly, RaceObservation, SourceName } from '../reconcile/reconcile.js';
-import type { ApiRecordingSummary } from '../replay/apiRecording.js';
+import type {
+	ApiRecordingDetail,
+	ApiRecordingSummary,
+	ApiResponseQuery,
+	ApiResponseSummary,
+	ApiSource,
+} from '../replay/apiRecording.js';
 import type { SessionFiles } from '../replay/sessionFiles.js';
 import type { AlertEvent } from '../runtime/alertLog.js';
 import type { ApiRecorderStatus } from '../runtime/apiRecorder.js';
@@ -41,9 +47,13 @@ export type LastFrameView = {
 };
 
 // The Record button (live) or the playback banner (--api-playback). start/stop are
-// omitted in playback: recording a playback would just copy the recording.
+// omitted in playback: recording a playback would just copy the recording. Browsing
+// (body/meta/responses) works in both; each returns undefined for an unknown name.
 export type WebApiRecording = {
+	body: (name: string, seq: number) => null | string | undefined;
 	list: () => ApiRecordingSummary[];
+	meta: (name: string) => ApiRecordingDetail | undefined;
+	responses: (name: string, query: ApiResponseQuery) => ApiResponseSummary[] | undefined;
 	start?: (name?: string) => ApiRecorderStatus;
 	status: () => ApiRecorderStatus;
 	stop?: () => ApiRecorderStatus;
@@ -80,6 +90,10 @@ export type WebServerConfig = {
 };
 
 const SOURCES: readonly SourceName[] = ['DDHQ', 'Ross', 'air'];
+const API_SOURCES: readonly ApiSource[] = ['DDHQ', 'Ross'];
+const RESPONSES_PAGE = 200;
+const RESPONSES_PAGE_MAX = 1000;
+const WHOLE_NUMBER = /^\d+$/;
 
 const historyFor = (store: Store, source: SourceName, raceKey: string): RaceObservation[] => {
 	if (source === 'DDHQ') return store.getProviderHistory(raceKey);
@@ -392,6 +406,48 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	});
 
 	app.get('/api/api-recordings', () => ({ recordings: config.apiRecording?.list() ?? [] }));
+
+	app.get<{ Params: { name: string } }>('/api/api-recordings/:name', (req, reply) => {
+		const meta = config.apiRecording?.meta(req.params.name);
+		if (meta === undefined) return reply.code(404).send({ error: 'no such API recording' });
+		return meta;
+	});
+
+	// Newest first, without bodies; page back with before=<last seq>.
+	app.get<{
+		Params: { name: string };
+		Querystring: { before?: string; errors?: string; limit?: string; source?: string };
+	}>('/api/api-recordings/:name/responses', (req, reply) => {
+		const source = req.query.source;
+		if (source !== undefined && !API_SOURCES.includes(source as ApiSource))
+			return reply.code(400).send({ error: 'source must be DDHQ or Ross' });
+		if (req.query.before !== undefined && !WHOLE_NUMBER.test(req.query.before))
+			return reply.code(400).send({ error: 'before must be a whole number' });
+		if (req.query.limit !== undefined && !WHOLE_NUMBER.test(req.query.limit))
+			return reply.code(400).send({ error: 'limit must be a whole number' });
+		const query: ApiResponseQuery = {
+			errorsOnly: req.query.errors === '1',
+			limit: Math.min(Number(req.query.limit ?? RESPONSES_PAGE), RESPONSES_PAGE_MAX),
+			...(req.query.before === undefined ? {} : { beforeSeq: Number(req.query.before) }),
+			...(source === undefined ? {} : { source: source as ApiSource }),
+		};
+		const responses = config.apiRecording?.responses(req.params.name, query);
+		if (responses === undefined) return reply.code(404).send({ error: 'no such API recording' });
+		return { responses };
+	});
+
+	// The stored JSON text, sent as is (a Chameleon body is ~350 KB; no re-serializing).
+	app.get<{ Params: { name: string; seq: string } }>(
+		'/api/api-recordings/:name/responses/:seq/body',
+		(req, reply) => {
+			if (!WHOLE_NUMBER.test(req.params.seq))
+				return reply.code(400).send({ error: 'seq must be a whole number' });
+			const body = config.apiRecording?.body(req.params.name, Number(req.params.seq));
+			if (body === undefined) return reply.code(404).send({ error: 'no such API recording' });
+			if (body === null) return reply.code(404).send({ error: 'no body for that response' });
+			return reply.type('application/json').send(body);
+		},
+	);
 
 	app.post<{ Body: { name?: unknown } | null }>('/api/api-recording/start', (req, reply) => {
 		if (config.apiRecording?.start === undefined)

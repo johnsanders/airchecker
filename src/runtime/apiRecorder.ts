@@ -1,13 +1,23 @@
 import type {
+	ApiRecordingDetail,
 	ApiRecordingSummary,
 	ApiRecordingWriter,
+	ApiResponseQuery,
 	ApiResponseRow,
+	ApiResponseSummary,
 } from '../replay/apiRecording.js';
 
-import { listApiRecordings, openApiRecordingWriter } from '../replay/apiRecording.js';
+import {
+	listApiRecordings,
+	listApiResponses,
+	openApiRecordingWriter,
+	readApiRecordingMeta,
+	readApiResponseBody,
+} from '../replay/apiRecording.js';
 
 // The web view's Record button. `record` is handed to both sources' recording HTTP
-// wrappers and drops rows unless a recording is active.
+// wrappers and drops rows unless a recording is active. meta/responses/body browse a
+// recording by name (undefined when there's no such recording), finished or not.
 
 export type ActiveApiRecording = {
 	name: string;
@@ -16,8 +26,11 @@ export type ActiveApiRecording = {
 };
 
 export type ApiRecorder = {
+	body: (name: string, seq: number) => null | string | undefined;
 	list: () => ApiRecordingSummary[];
+	meta: (name: string) => ApiRecordingDetail | undefined;
 	record: (row: ApiResponseRow) => void;
+	responses: (name: string, query: ApiResponseQuery) => ApiResponseSummary[] | undefined;
 	start: (name?: string) => ApiRecorderStatus;
 	status: () => ApiRecorderStatus;
 	stop: () => ApiRecorderStatus;
@@ -66,9 +79,19 @@ export const makeApiRecorder = (config: ApiRecorderConfig): ApiRecorder => {
 				: { name: active.name, responseCount: active.writer.count(), startedAt: active.startedAt },
 	});
 
+	// Names come from the web view; resolving them only through the listing means a
+	// name can never reach outside the recordings directory.
+	const withFile = <T>(name: string, read: (file: string) => T): T | undefined => {
+		const file = listApiRecordings(config.baseDir).find((summary) => summary.name === name)?.file;
+		return file === undefined ? undefined : read(file);
+	};
+
 	return {
+		body: (name, seq) => withFile(name, (file) => readApiResponseBody(file, seq)),
 		list: () => listApiRecordings(config.baseDir),
+		meta: (name) => withFile(name, readApiRecordingMeta),
 		record: (row) => active?.writer.append(row),
+		responses: (name, query) => withFile(name, (file) => listApiResponses(file, query)),
 		start: (name) => {
 			if (active !== undefined) throw new Error(`already recording ${active.name}`);
 			const startedAt = now();
