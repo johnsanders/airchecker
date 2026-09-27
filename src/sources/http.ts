@@ -5,6 +5,15 @@ export type HttpJson = {
 	postJson: (url: string, body: unknown, headers?: Record<string, string>) => Promise<unknown>;
 };
 
+// fetch's own message is just "fetch failed"; the reason (ECONNREFUSED, a timeout, a
+// TLS error) is on the cause chain.
+export const errorMessage = (error: unknown): string => {
+	if (!(error instanceof Error)) return String(error);
+	return error.cause === undefined
+		? error.message
+		: `${error.message} (${errorMessage(error.cause)})`;
+};
+
 const ensureOk = async (response: Response, url: string): Promise<unknown> => {
 	if (!response.ok) {
 		const text = await response.text().catch(() => '');

@@ -16,7 +16,7 @@ import { DEFAULT_BROWSER_URL } from '../sources/air/browserCapturer.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import { makeMatchStore } from '../sources/air/matchStore.js';
 import { openTestPlayer, TEST_PLAYER_PATH } from '../sources/air/testPlayer.js';
-import { makeFetchHttp } from '../sources/http.js';
+import { errorMessage, makeFetchHttp } from '../sources/http.js';
 import { ddhqBaseUrl, makeProviderSource } from '../sources/provider/providerSource.js';
 import { makeQueryStore } from '../sources/provider/queryStore.js';
 import {
@@ -35,7 +35,7 @@ import { makeApiRecorder } from './apiRecorder.js';
 import makeComposition from './composition.js';
 import { makeLiveSession } from './liveSession.js';
 import { observationChanged } from './observationChanged.js';
-import { errorMessage, makeSourceErrors } from './sourceErrors.js';
+import { makeSourceErrors } from './sourceErrors.js';
 
 //   CAPTURE_MODE=interval|manual     air cadence (default interval)
 //   CAPTURE_INTERVAL_MS=<n>          default 5000; interval mode only

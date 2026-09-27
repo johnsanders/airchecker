@@ -69,6 +69,22 @@ describe('makeRecordingHttp', () => {
 		);
 		await http.getJson('https://a.test/ok?x=1');
 		await expect(http.getJson('https://a.test/missing')).rejects.toThrow('HTTP 404');
+		const offVpn: HttpJson = {
+			getJson: async () => {
+				throw new Error('fetch failed', {
+					cause: new Error('getaddrinfo ENOTFOUND vpn-only.test'),
+				});
+			},
+			postJson: async () => ({}),
+		};
+		await expect(
+			makeRecordingHttp(
+				offVpn,
+				'Ross',
+				(r) => rows.push(r),
+				() => 43,
+			).getJson('http://vpn-only.test/playlist'),
+		).rejects.toThrow('fetch failed');
 		await http.postJson('https://a.test/api/v4/oauth/token', { client_secret: 'shh' });
 		expect(rows).toEqual([
 			{ body: { ok: true }, error: null, path: '/ok?x=1', source: 'DDHQ', ts: 42 },
@@ -78,6 +94,13 @@ describe('makeRecordingHttp', () => {
 				path: '/missing',
 				source: 'DDHQ',
 				ts: 42,
+			},
+			{
+				body: null,
+				error: 'fetch failed (getaddrinfo ENOTFOUND vpn-only.test)',
+				path: '/playlist',
+				source: 'Ross',
+				ts: 43,
 			},
 		]);
 	});

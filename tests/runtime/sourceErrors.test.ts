@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { errorMessage, makeSourceErrors } from '../../src/runtime/sourceErrors.js';
+import { makeSourceErrors } from '../../src/runtime/sourceErrors.js';
+import { errorMessage } from '../../src/sources/http.js';
 
 afterEach(() => {
 	vi.restoreAllMocks();

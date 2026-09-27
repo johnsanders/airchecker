@@ -1,5 +1,7 @@
 import type { SourceName } from '../reconcile/reconcile.js';
 
+import { errorMessage } from '../sources/http.js';
+
 // Each source's current failure, for the log and the web view. A poll loop retries
 // every few seconds, so logging every failure buries the log in identical lines:
 // log once when a failure starts or its message changes, stay quiet while it repeats,
@@ -18,15 +20,6 @@ export type SourceErrors = {
 };
 
 const LOG_TAG: Record<SourceName, string> = { air: 'air', DDHQ: 'provider', Ross: 'vendor' };
-
-// fetch's own message is just "fetch failed"; the reason (ECONNREFUSED, a timeout, a
-// TLS error) is on the cause chain.
-export const errorMessage = (error: unknown): string => {
-	if (!(error instanceof Error)) return String(error);
-	return error.cause === undefined
-		? error.message
-		: `${error.message} (${errorMessage(error.cause)})`;
-};
 
 export const makeSourceErrors = (
 	config: { now?: () => number; onChange?: () => void } = {},
