@@ -302,6 +302,39 @@ describe('web server', () => {
 		]);
 	});
 
+	it('lists air reads newest first, and every observation of a race from all sources', async () => {
+		const store = makeStore();
+		const at = (observation: RaceObservation, observedAt: number): RaceObservation => ({
+			...observation,
+			observedAt,
+		});
+		store.record(at(obs('air', 'TX-SEN', { pctIn: 10 }), 1_000));
+		store.record(at(obs('DDHQ', 'TX-SEN', { pctIn: 20 }), 2_000));
+		store.record(at(obs('air', 'GA-SEN', { pctIn: 30 }), 3_000));
+		store.record(at(obs('Ross', 'TX-SEN', { pctIn: 40 }), 4_000));
+		store.record(at(obs('air', 'TX-SEN', { pctIn: 50 }), 5_000));
+		app = makeWebServer({ getRecentAlerts: () => [], store });
+
+		const reads = (await app.inject({ method: 'GET', url: '/api/air-reads' })).json() as {
+			reads: RaceObservation[];
+		};
+		expect(reads.reads.map((read) => [read.raceKey, read.observedAt])).toEqual([
+			['TX-SEN', 5_000],
+			['GA-SEN', 3_000],
+			['TX-SEN', 1_000],
+		]);
+
+		const race = (await app.inject({ method: 'GET', url: '/api/race/TX-SEN' })).json() as {
+			observations: RaceObservation[];
+		};
+		expect(race.observations.map((read) => [read.source, read.observedAt])).toEqual([
+			['air', 5_000],
+			['Ross', 4_000],
+			['DDHQ', 2_000],
+			['air', 1_000],
+		]);
+	});
+
 	it('aligns candidates across sources by normalized name in /api/race/:key', async () => {
 		const store = makeStore();
 		// Same candidate, different casing/source; air missed the call, DDHQ has it.

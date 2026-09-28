@@ -17,6 +17,7 @@ import { api } from '../api.js';
 import { sourceLabel } from '../api.js';
 import { pct } from '../format.js';
 import { useLiveQuery } from '../useLiveQuery.js';
+import ObservationTable from './ObservationTable.js';
 
 interface Props {
 	raceKey: string;
@@ -148,6 +149,15 @@ const RaceDetail: React.FC<Props> = (props) => {
 					))}
 				</Paper>
 			)}
+
+			<Typography
+				color="text.secondary"
+				sx={{ display: 'block', letterSpacing: '.06em', mt: 2 }}
+				variant="overline"
+			>
+				Every observation ({data.observations.length}, last 30 min, newest first)
+			</Typography>
+			<ObservationTable observations={data.observations} show="source" />
 		</Box>
 	);
 };

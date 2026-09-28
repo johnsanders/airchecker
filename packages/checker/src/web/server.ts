@@ -177,6 +177,19 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 
 	// Race list, most recently aired first: per-source summary (pctIn + ranked candidates),
 	// last air read, alert count.
+	// Every air read still retained (the store keeps 30 min), newest first.
+	app.get<{ Querystring: { limit?: string } }>('/api/air-reads', (req) => {
+		const limit = Math.min(Math.max(Number(req.query.limit) || 200, 1), 1000);
+		return {
+			reads: config.store
+				.getRaceKeys()
+				.flatMap((raceKey) => config.store.getAirHistory(raceKey))
+				.sort((left, right) => right.observedAt - left.observedAt)
+				.slice(0, limit)
+				.map(serializeObservation),
+		};
+	});
+
 	app.get('/api/races', () => {
 		const store = config.store;
 		const now = Date.now();
@@ -297,6 +310,10 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		return {
 			anomalies: config.reconcileRace?.(raceKey, Date.now()) ?? [],
 			candidates: Array.from(rows.values()),
+			// Every retained observation of the race from all three sources, newest first.
+			observations: SOURCES.flatMap((source) => historyFor(store, source, raceKey))
+				.sort((left, right) => right.observedAt - left.observedAt)
+				.map(serializeObservation),
 			raceKey,
 			sources: perSource.map(({ observation, source }) => ({
 				aliasMethod: aliasFor(config.raceIdentity, observation)?.method ?? null,

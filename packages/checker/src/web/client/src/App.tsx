@@ -12,6 +12,7 @@ import React from 'react';
 import type { RaceSummary, StateResponse } from './api.js';
 
 import { api } from './api.js';
+import AirReads from './components/AirReads.js';
 import AlertHistory from './components/AlertHistory.js';
 import Alerts from './components/Alerts.js';
 import BackendBanner from './components/BackendBanner.js';
@@ -141,6 +142,11 @@ const App: React.FC = () => {
 							mode={state?.mode ?? null}
 						/>
 					</Section>
+					<Box sx={{ mt: 2 }}>
+						<Section title="Air reads">
+							<AirReads onSelectRace={setSelected} />
+						</Section>
+					</Box>
 				</Box>
 
 				<Box hidden={tab !== 'setup'}>

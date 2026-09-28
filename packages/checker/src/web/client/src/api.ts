@@ -61,6 +61,7 @@ export interface Observation {
 	candidates: Candidate[];
 	observedAt: number;
 	pctIn: number;
+	pctInIsMinimum?: boolean; // air: the graphic printed ">N% IN"
 	raceKey: string;
 	reportedAt: null | number;
 	source: SourceName;
@@ -93,6 +94,7 @@ export interface RaceDescriptor {
 export interface RaceDetailResponse {
 	anomalies: Anomaly[];
 	candidates: { cells: Partial<Record<SourceName, RaceCell>>; name: string }[];
+	observations: Observation[]; // every retained observation, all sources, newest first
 	raceKey: string;
 	sources: {
 		aliasMethod: null | string;
@@ -212,6 +214,7 @@ export const api = {
 		if (!res.ok) throw new Error(`${res.status} ${url}`);
 		return res.json() as Promise<{ freedBytes: number }>;
 	},
+	getAirReads: () => getJson<{ reads: Observation[] }>('/api/air-reads'),
 	getAlertHistory: (limit = 100) =>
 		getJson<{ events: AlertEvent[] }>(`/api/alert-history?limit=${limit}`),
 	getQueries: () => getJson<{ queries: string[] }>('/api/queries'),
