@@ -235,6 +235,16 @@ describe('air feed', () => {
 		expect((await app.inject({ method: 'GET', url: '/api/status' })).json()).toMatchObject({
 			air: null,
 		});
+		// The stopped night still answers for the time it was on air, and only then.
+		const aired = async (ts: number) =>
+			(await app.inject({ method: 'GET', url: `/api/air/aired?ts=${ts}` })).json<{
+				onAir: unknown;
+			}>().onAir;
+		expect(await aired(59_999)).toMatchObject({ ticker: { raceKey: expect.any(String) } });
+		expect(await aired(60_000)).toBeNull(); // stopped then
+		expect((await app.inject({ method: 'GET', url: '/api/air/aired?ts=soon' })).statusCode).toBe(
+			400,
+		);
 	});
 
 	it('rejects a bad duration', async () => {

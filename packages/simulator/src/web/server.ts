@@ -213,6 +213,14 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 
 	app.get('/api/air/now', () => ({ onAir: config.airShow.onAir() }));
 
+	// What was on air at a wall-clock time (epoch ms), in any night this process ran: the
+	// ground truth for scoring the checker's reads of frames it captured from /air/.
+	app.get<{ Querystring: { ts?: string } }>('/api/air/aired', (req, reply) => {
+		if (req.query.ts === undefined || !WHOLE_NUMBER.test(req.query.ts))
+			return reply.code(400).send({ error: 'ts must be a whole number of epoch ms' });
+		return { onAir: config.airShow.airedAt(Number(req.query.ts)) };
+	});
+
 	app.post<{ Body: { durationMinutes?: unknown } | null }>('/api/air/start', (req, reply) => {
 		const durationMinutes = req.body?.durationMinutes;
 		if (
