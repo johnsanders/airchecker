@@ -109,12 +109,16 @@ export const batchByObservedAt = (observations: RaceObservation[]): ObservationB
 // the golden freeze and the live replay so both batch a session identically.
 export const buildTimeline = (inputs: SessionTimelineInputs): TimelineItem[] =>
 	[
-		...batchByObservedAt(inputs.observations).map(
-			(batch): TimelineItem => ({ batch, kind: 'batch', ts: batch.ts }),
-		),
-		...inputs.identityEvents.map(
-			(timed): TimelineItem => ({ event: timed, kind: 'event', ts: timed.ts }),
-		),
+		...batchByObservedAt(inputs.observations).map((batch): TimelineItem => ({
+			batch,
+			kind: 'batch',
+			ts: batch.ts,
+		})),
+		...inputs.identityEvents.map((timed): TimelineItem => ({
+			event: timed,
+			kind: 'event',
+			ts: timed.ts,
+		})),
 	].sort((a, b) => a.ts - b.ts || (a.kind === 'batch' ? 0 : 1) - (b.kind === 'batch' ? 0 : 1));
 
 export const replaySessionTimeline = (inputs: SessionTimelineInputs): SessionExpectations => {

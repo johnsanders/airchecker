@@ -67,8 +67,7 @@ export const makeSessionFiles = (
 		const db = new Database(join(baseDir, `${id}.sqlite`), { fileMustExist: true, readonly: true });
 		const session = hasTable(db, 'sessions')
 			? (db.prepare('SELECT started_at, ended_at FROM sessions WHERE id = ?').get(id) as
-					| { ended_at: null | number; started_at: number }
-					| undefined)
+					{ ended_at: null | number; started_at: number } | undefined)
 			: undefined;
 		const summary = {
 			alerts: countRows(db, 'alert_events'),

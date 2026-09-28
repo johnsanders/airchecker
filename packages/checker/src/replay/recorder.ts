@@ -205,8 +205,7 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 			frameHash === null
 				? (selectLlmNoFrame.get(promptHash) as { model: string; response: string } | undefined)
 				: (selectLlmWithFrame.get(frameHash, promptHash) as
-						| { model: string; response: string }
-						| undefined);
+						{ model: string; response: string } | undefined);
 		if (row === undefined) return undefined;
 		return { model: row.model, response: JSON.parse(row.response) as unknown };
 	};

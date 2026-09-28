@@ -18,9 +18,7 @@ export type CaptureMode = 'interval' | 'manual';
 // 'error' = the capture itself threw (carries the message). The manual web button
 // needs this distinction — reporting "captured" on a failed grab is misleading.
 export type CaptureResult =
-	| { message: string; status: 'error' }
-	| { status: 'ran' }
-	| { status: 'skipped' };
+	{ message: string; status: 'error' } | { status: 'ran' } | { status: 'skipped' };
 
 export type CaptureScheduler = {
 	getConfig: () => CadenceConfig;
