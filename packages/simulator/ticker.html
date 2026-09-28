@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Election Ticker</title>
+<style>
+  @font-face { font-family: "Proxima Nova"; font-weight: 500; src: url("fonts/ProximaNova-Medium.ttf") format("truetype"); }
+  @font-face { font-family: "Proxima Nova"; font-weight: 600; src: url("fonts/ProximaNova-Semibold.ttf") format("truetype"); }
+  @font-face { font-family: "Proxima Nova"; font-weight: 700; src: url("fonts/ProximaNova-Bold.ttf") format("truetype"); }
+  @font-face { font-family: "Proxima Nova"; font-weight: 800; src: url("fonts/ProximaNova-Extrabold.ttf") format("truetype"); }
+  @font-face { font-family: "Proxima Nova"; font-weight: 900; src: url("fonts/ProximaNova-Black.ttf") format("truetype"); }
+
+  /* All measurements are in 1920x1080 broadcast pixels, taken from ticker.psd.
+     The stage is scaled to the window width in the script at the bottom. */
+  :root {
+    --navy: #041a8c;
+    --navy-box: #021789;
+    --dem-top: #004bef;
+    --dem-bottom: #0037b0;
+    --rep-top: #be0b0a;
+    --rep-bottom: #8e0404;
+    --oth-top: #6b6b6b;          /* any party letter other than D or R */
+    --oth-bottom: #3e3e3e;
+    --check: #ecb81c;
+    --font: "Proxima Nova", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; overflow: hidden; }
+
+  .stage {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1920px;
+    height: 120px;               /* bar (96) + base strip (24) */
+    transform-origin: 0 100%;
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    font-kerning: none;          /* the master was set without pair kerning */
+  }
+
+  /* ---------- light bar ---------- */
+  .bar {
+    position: absolute;
+    inset: 0 0 24px 0;
+    background: linear-gradient(#fefefe, #bcbcbc);
+    border-top: 1px solid #f0f0f0;
+  }
+  .base {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 24px;
+    background: #a3a3a3;
+  }
+
+  /* Text boxes use line-height:1 so `top` = cap-top - 0.144em for Proxima Nova. */
+  .t { position: absolute; line-height: 1; white-space: nowrap; }
+
+  /* ---------- race label ---------- */
+  .race { color: var(--navy); font-weight: 800; font-size: 37.5px; }
+  .race .state { left: 112px; top: 32px; letter-spacing: 0; }
+  .race .office { left: 193px; top: 32px; letter-spacing: 0.005em; }
+  .race .divider {
+    position: absolute;
+    left: 179px; top: 20px;
+    width: 2px; height: 57px;
+    background: var(--navy);
+  }
+
+  /* Right edge is fixed at x=580; the box grows leftward if the text needs more than 103px. */
+  .reporting {
+    position: absolute;
+    right: 1340px; top: 10px;
+    min-width: 103px; height: 34px;
+    background: var(--navy-box);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2px 2.5px 0 7.5px;
+    white-space: nowrap;
+    font-weight: 700; font-size: 31px; line-height: 1;
+    letter-spacing: 0;
+  }
+  /* One inline run so ">", "95" and "% IN" share a baseline inside the flex box. */
+  .reporting .gt { font-size: 0.9em; margin-right: -1px; position: relative; top: -1.5px; }
+  .reporting small { font-size: 22.5px; font-weight: 700; margin-left: 0; }
+  .reporting small span { margin-left: 3px; }
+
+  /* ---------- candidate panels ---------- */
+  .cand {
+    position: absolute;
+    top: 4px;
+    height: 92px;
+    color: #fff;
+    box-shadow: inset 0 -2px 0 rgba(0, 20, 60, 0.45);
+  }
+  .cand.c1 { left: 592px; width: 614px; }
+  .cand.c2 { left: 1210px; width: 613px; }
+
+  .cand.dem { background: linear-gradient(var(--dem-top), var(--dem-bottom)); }
+  .cand.rep { background: linear-gradient(var(--rep-top), var(--rep-bottom)); box-shadow: inset 0 -2px 0 rgba(60, 0, 0, 0.45); }
+  .cand.oth { background: linear-gradient(var(--oth-top), var(--oth-bottom)); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.4); }
+
+  .party {
+    position: absolute;
+    top: 6px;
+    width: 35px; height: 34px;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 34.5px; line-height: 1;
+    padding-top: 2px;
+  }
+  .c1 .party { left: 10px; }
+  .c2 .party { left: 8px; width: 36px; height: 35px; font-size: 33px; padding-top: 3px; }
+  .dem .party { color: #0049e0; }
+  .rep .party { color: #b30f1a; }
+  .oth .party { color: #555; }
+
+  .check {
+    position: absolute;
+    left: 21px; top: 41px;
+    width: 34px; height: 34px;
+  }
+  .c2 .check { left: 19px; }
+  .cand:not(.winner) .check { display: none; }
+
+  .first  { font-weight: 600; font-size: 34.5px; top: 8px;  letter-spacing: 0.05em; }
+  .last   { font-weight: 700; font-size: 42px; top: 42px; letter-spacing: 0.063em; }
+  .first, .last { transform-origin: 0 50%; }   /* squeezed horizontally by the script if too long */
+  .c1 .first { left: 56px; } .c1 .last { left: 56px; }
+  .c2 .first { left: 55px; } .c2 .last { left: 55px; }
+  .race .office { transform-origin: 0 50%; }
+
+  .pct   { right: 18px; top: 8px;  font-weight: 800; font-size: 46.5px; letter-spacing: 0.02em; }
+  .pct small { font-size: 32.5px; font-weight: 800; margin-left: 0; }
+  .votes { right: 18px; top: 53px; font-weight: 600; font-size: 28.5px; letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <div class="bar">
+    <div class="race">
+      <span class="t state" id="state"></span>
+      <span class="divider" id="divider"></span>
+      <span class="t office" id="office"></span>
+    </div>
+
+    <div class="reporting"><span><span class="gt" id="pctInSign"></span><span id="pctInNum"></span><small>%<span>IN</span></small></span></div>
+
+    <div class="cand c1" id="c1">
+      <div class="party"></div>
+      <svg class="check" viewBox="0 0 34 34" aria-label="Projected winner">
+        <path d="M1.5 23 L11.5 31.5 L30.5 1.5" fill="none" stroke="var(--check)" stroke-width="6" stroke-linejoin="miter"/>
+      </svg>
+      <span class="t first"></span>
+      <span class="t last"></span>
+      <span class="t pct"><span class="num"></span><small>%</small></span>
+      <span class="t votes"></span>
+    </div>
+
+    <div class="cand c2" id="c2">
+      <div class="party"></div>
+      <svg class="check" viewBox="0 0 34 34" aria-label="Projected winner">
+        <path d="M1.5 23 L11.5 31.5 L30.5 1.5" fill="none" stroke="var(--check)" stroke-width="6" stroke-linejoin="miter"/>
+      </svg>
+      <span class="t first"></span>
+      <span class="t last"></span>
+      <span class="t pct"><span class="num"></span><small>%</small></span>
+      <span class="t votes"></span>
+    </div>
+  </div>
+  <div class="base"></div>
+</div>
+
+<script>
+  // Data comes from window.TICKER_DATA (injected by render-ticker.mjs); otherwise the
+  // example from ticker.psd is shown, which is what compare.html overlays on the master.
+  const EXAMPLE = {
+    state: 'NC',
+    race: 'U.S. Senate',
+    pctIn: '>95',
+    cand1: { name: 'Roy Cooper',      party: 'D', votePercent: 51.0, votes: 2788152, isWinner: true },
+    cand2: { name: 'Michael Whatley', party: 'R', votePercent: 49.0, votes: 2675388, isWinner: false },
+  };
+
+  const PARTY_CLASS = { D: 'dem', R: 'rep' };
+  const NAME_TRIGGER = 10;  // squeeze a name once it comes within this many px of the numbers
+  const OFFICE_GAP = 14;    // min px between the race name and the reporting box
+
+  // "Roy Cooper" -> ["ROY", "COOPER"]; a "|" forces the split: "Mary Kay|Smith".
+  function splitName(name) {
+    const s = String(name).trim().toUpperCase();
+    const i = s.includes('|') ? s.indexOf('|') : s.lastIndexOf(' ');
+    return i < 0 ? ['', s] : [s.slice(0, i).trim(), s.slice(i + 1).trim()];
+  }
+
+  // Sub-pixel geometry in stage (1920px) units; offsetLeft/offsetWidth round to whole pixels.
+  const stageScale = () => stage.getBoundingClientRect().width / 1920;
+  const rect = el => {
+    const r = el.getBoundingClientRect(), k = stageScale();
+    return { left: r.left / k, right: r.right / k, width: r.width / k };
+  };
+
+  // Width of the letters themselves, minus the letter-spacing after the last glyph.
+  function inkWidth(el) {
+    return rect(el).width - (parseFloat(getComputedStyle(el).letterSpacing) || 0);
+  }
+
+  // Squeeze an element horizontally so its letters are at most maxWidth px wide.
+  function squeeze(el, maxWidth) {
+    el.style.transform = '';
+    const w = inkWidth(el);
+    if (w > maxWidth) el.style.transform = `scaleX(${maxWidth / w})`;
+  }
+
+  function fillCandidate(el, c) {
+    el.classList.remove('dem', 'rep', 'oth');
+    el.classList.add(PARTY_CLASS[c.party] || 'oth');
+    el.classList.toggle('winner', !!c.isWinner);
+    el.querySelector('.party').textContent = c.party;
+    const [first, last] = splitName(c.name);
+    el.querySelector('.first').textContent = first;
+    el.querySelector('.last').textContent = last;
+    el.querySelector('.pct .num').textContent = Number(c.votePercent).toFixed(1);
+    el.querySelector('.votes').textContent = Math.round(Number(c.votes)).toLocaleString('en-US');
+
+    // A name that comes within NAME_TRIGGER px of the numbers is squeezed until the gap on
+    // its right matches the gap on its left (party box to name).
+    const party = el.querySelector('.party');
+    const pct = el.querySelector('.pct'), votes = el.querySelector('.votes');
+    const numbersLeft = Math.min(rect(pct).left, rect(votes).left);
+    for (const name of el.querySelectorAll('.first, .last')) {
+      name.style.transform = '';
+      const leftMargin = rect(name).left - rect(party).right;
+      const available = numbersLeft - rect(name).left;
+      if (available - inkWidth(name) < NAME_TRIGGER) squeeze(name, available - leftMargin);
+    }
+  }
+
+  function render(d) {
+    const $ = id => document.getElementById(id);
+
+    // Race label: the divider and office follow the state's width (tuned for "NC").
+    const state = $('state'), divider = $('divider'), office = $('office');
+    state.textContent = 'NC';
+    const ncWidth = state.offsetWidth;
+    state.textContent = String(d.state).toUpperCase();
+    const shift = state.offsetWidth - ncWidth;
+    divider.style.left = `${179 + shift}px`;
+    office.style.left = `${193 + shift}px`;
+    office.textContent = String(d.race).toUpperCase();
+
+    // Percent in: ">95" -> small ">" + "95".
+    const m = String(d.pctIn).trim().match(/^([<>]?)\s*(\d+(?:\.\d+)?)/);
+    $('pctInSign').textContent = m ? m[1] : '';
+    $('pctInNum').textContent = m ? m[2] : String(d.pctIn);
+
+    fillCandidate($('c1'), d.cand1);
+    fillCandidate($('c2'), d.cand2);
+
+    squeeze(office, rect(document.querySelector('.reporting')).left - rect(office).left - OFFICE_GAP);
+  }
+
+  // Scale the 1920px-wide stage to the window width, keeping it pinned to the bottom.
+  const stage = document.getElementById('stage');
+  const fit = () => { stage.style.transform = `scale(${window.innerWidth / 1920})`; };
+  addEventListener('resize', fit);
+  fit();
+
+  // Measure only after every weight has loaded. document.fonts.ready alone isn't enough: a face
+  // isn't requested until text uses it, and the text is still empty at that point.
+  Promise.all([600, 700, 800].map(w => document.fonts.load(`${w} 40px "Proxima Nova"`))).then(() => {
+    render(window.TICKER_DATA || EXAMPLE);
+    window.tickerReady = true;
+  });
+</script>
+</body>
+</html>

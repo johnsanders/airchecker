@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Graphics Compare</title>
+<style>
+  :root {
+    --bg: #111;
+    --panel: #1c1c1c;
+    --text: #e8e8e8;
+    --muted: #9a9a9a;
+    --accent: #3d8bff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .controls {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px;
+    padding: 14px 20px;
+    background: var(--panel);
+    border-bottom: 1px solid #2a2a2a;
+  }
+  .controls label { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+  .controls input[type=range] { width: min(420px, 60vw); accent-color: var(--accent); }
+  .controls input[type=checkbox] { accent-color: var(--accent); }
+  .controls select { background: #2a2a2a; color: var(--text); border: 1px solid #3a3a3a; border-radius: 4px; padding: 4px 8px; font: inherit; }
+  .value { font-variant-numeric: tabular-nums; min-width: 3.5em; color: var(--muted); }
+  .hint { color: var(--muted); font-size: 12px; margin-left: auto; }
+  .ends { color: var(--muted); font-size: 12px; }
+
+  /* The viewport shows a window onto the 1920x1080 frame. `--crop-top` and
+     `--crop-h` pick which rows are visible; the frame is scaled to fit width. */
+  .viewport {
+    --crop-top: 0px;
+    --crop-h: 1080px;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #000;
+  }
+  .frame {
+    position: absolute; left: 0; top: 0;
+    width: 1920px; height: 1080px;
+    transform-origin: 0 0;
+  }
+  .frame > * { position: absolute; inset: 0; width: 1920px; height: 1080px; border: 0; display: block; }
+  .master { image-rendering: auto; }
+  .build { background: transparent; pointer-events: none; }
+  .build.diff { mix-blend-mode: difference; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <label>Template
+    <select id="template">
+      <option value="ticker">Ticker (ticker.psd)</option>
+      <option value="fullscreen">Fullscreen (fs.psd)</option>
+      <option value="l3">Lower third (l3.psd)</option>
+    </select>
+  </label>
+  <label>
+    <span class="ends">Master</span>
+    <input id="opacity" type="range" min="0" max="100" value="50">
+    <span class="ends">HTML</span>
+    <span class="value" id="opacityVal">50%</span>
+  </label>
+  <label><input id="barOnly" type="checkbox" checked> <span id="cropLabel">Bar only</span></label>
+  <label><input id="diff" type="checkbox"> Difference blend</label>
+  <span class="hint">← / → nudge 5% · 0 / 1 jump to master / HTML · D toggles difference · T cycles templates</span>
+</div>
+
+<div class="viewport" id="viewport">
+  <div class="frame" id="frame">
+    <img class="master" id="master" src="ticker.png" alt="Master frame">
+    <iframe class="build" id="build" src="ticker.html" title="HTML build" scrolling="no"></iframe>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const viewport = $('viewport'), frame = $('frame'), build = $('build');
+  const opacity = $('opacity'), opacityVal = $('opacityVal'), barOnly = $('barOnly'), diff = $('diff');
+  const master = $('master'), template = $('template'), cropLabel = $('cropLabel');
+
+  // Each template: master image, HTML build, and the crop region the checkbox zooms to.
+  const TEMPLATES = {
+    ticker:     { master: 'ticker.png', build: 'ticker.html',     cropLabel: 'Bar only',    crop: { top: 940, height: 140 }, cropByDefault: true },
+    fullscreen: { master: 'fs.png',     build: 'fullscreen.html', cropLabel: 'Header only', crop: { top: 0,   height: 190 }, cropByDefault: false },
+    l3:         { master: 'l3.png',     build: 'l3.html',         cropLabel: 'Graphic only', crop: { top: 790, height: 250 }, cropByDefault: true },
+  };
+  let current = TEMPLATES.ticker;
+
+  function setTemplate(name) {
+    if (!TEMPLATES[name]) name = 'ticker';
+    current = TEMPLATES[name];
+    template.value = name;
+    master.src = current.master;
+    master.alt = `Master frame (${current.master})`;
+    build.src = current.build;
+    cropLabel.textContent = current.cropLabel;
+    barOnly.checked = current.cropByDefault;
+    history.replaceState(null, '', `#${name}`);
+    layout();
+  }
+
+  function layout() {
+    const crop = barOnly.checked ? current.crop : { top: 0, height: 1080 };
+    const scale = viewport.clientWidth / 1920;
+    viewport.style.height = `${crop.height * scale}px`;
+    frame.style.transform = `scale(${scale}) translateY(${-crop.top}px)`;
+  }
+
+  function setOpacity(v) {
+    v = Math.max(0, Math.min(100, v));
+    opacity.value = v;
+    opacityVal.textContent = `${v}%`;
+    build.style.opacity = v / 100;
+  }
+
+  opacity.addEventListener('input', () => setOpacity(+opacity.value));
+  barOnly.addEventListener('change', layout);
+  template.addEventListener('change', () => { setTemplate(template.value); template.blur(); });
+  diff.addEventListener('change', () => build.classList.toggle('diff', diff.checked));
+  addEventListener('resize', layout);
+
+  addEventListener('keydown', e => {
+    if (e.target === opacity && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return; // native slider step
+    if (e.key === 'ArrowLeft')  setOpacity(+opacity.value - 5);
+    if (e.key === 'ArrowRight') setOpacity(+opacity.value + 5);
+    if (e.key === '0') setOpacity(0);
+    if (e.key === '1') setOpacity(100);
+    if (e.target === template) return;
+    if (e.key === 'd' || e.key === 'D') { diff.checked = !diff.checked; diff.dispatchEvent(new Event('change')); }
+    if (e.key === 't' || e.key === 'T') {
+      const names = Object.keys(TEMPLATES);
+      setTemplate(names[(names.indexOf(template.value) + 1) % names.length]);
+    }
+  });
+
+  setOpacity(+opacity.value);
+  setTemplate(location.hash.slice(1));
+</script>
+</body>
+</html>

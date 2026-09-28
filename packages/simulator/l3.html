@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Race Lower Third</title>
+<style>
+  @font-face { font-family: "Proxima Nova"; font-weight: 500; src: url("fonts/ProximaNova-Medium.ttf") format("truetype"); }
+  @font-face { font-family: "Proxima Nova"; font-weight: 600; src: url("fonts/ProximaNova-Semibold.ttf") format("truetype"); }
+  @font-face { font-family: "Proxima Nova"; font-weight: 700; src: url("fonts/ProximaNova-Bold.ttf") format("truetype"); }
+  @font-face { font-family: "Proxima Nova"; font-weight: 800; src: url("fonts/ProximaNova-Extrabold.ttf") format("truetype"); }
+  @font-face { font-family: "Proxima Nova"; font-weight: 900; src: url("fonts/ProximaNova-Black.ttf") format("truetype"); }
+  @font-face { font-family: "Proxima Nova Cond"; font-weight: 600; src: url("fonts/ProximaNovaCond-Semibold.ttf") format("truetype"); }
+
+  :root {
+    --dem-top: #0256ec;  --dem-bottom: #023ca5;
+    --rep-top: #c21616;  --rep-bottom: #880f0f;
+    --oth-top: #6b6b6b;  --oth-bottom: #3e3e3e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; overflow: hidden; }
+
+  .stage {
+    position: absolute; left: 0; top: 0;
+    width: 1920px; height: 1080px;
+    transform-origin: 0 0;
+    font-family: "Proxima Nova", sans-serif;
+    font-kerning: none;
+    line-height: 1;
+    white-space: nowrap;
+    -webkit-font-smoothing: antialiased;
+  }
+  .stage > *, .race-panel > *, .cand > *, .box > *, .names > * { position: absolute; }
+
+  .frame { left: 384px; top: 804px; width: 1440px; height: 222px; background: #fff; }
+
+  /* ---------- race panel (static textured navy art) ---------- */
+  .race-panel { left: 404px; top: 824px; width: 360px; height: 182px; background: url("l3-assets/race-panel.png") 0 0 / 360px 182px; color: #fff; }
+  .state { left: 16.8px; top: 10.3px; font-weight: 800; font-size: 67.5px; letter-spacing: 2px; }
+  .race  { left: 17px; top: 73.1px; font-weight: 700; font-size: 27px; letter-spacing: 1px; transform-origin: 0 50%; }
+  /* Same treatment as the fullscreen "% IN": Cond Semibold, squeezed and faux-bolded. */
+  .pctin {
+    left: 13px; top: 131.3px; letter-spacing: 2px;
+    font-family: "Proxima Nova Cond", sans-serif; font-weight: 600; font-size: 51px;
+    transform: scaleX(0.91); transform-origin: 0 50%;
+    -webkit-text-stroke: 3.2px currentColor;
+  }
+  .pctin small { font-size: 21px; margin-right: 2.3px; -webkit-text-stroke-width: 0.4px; }
+
+  /* ---------- candidates ---------- */
+  .cand { top: 824px; width: 511px; height: 182px; }
+  .c1 { left: 774px; }
+  .c2 { left: 1295px; }
+  .dem { --top: var(--dem-top); --bottom: var(--dem-bottom); }
+  .rep { --top: var(--rep-top); --bottom: var(--rep-bottom); }
+  .oth { --top: var(--oth-top); --bottom: var(--oth-bottom); }
+
+  .photo-area { left: 0; top: 0; width: 182px; height: 182px; overflow: hidden; background: linear-gradient(var(--top), var(--bottom)); }
+  .photo-area img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+  .bracket { left: 6px; top: 4px; width: 11px; height: 11px; border-top: 3px solid #fff; border-left: 3px solid #fff; }
+  .party { left: 10.3px; top: 6.9px; font-weight: 800; font-size: 28.5px; color: #fff; }
+
+  .names { left: 192px; top: 0; width: 319px; height: 97px; color: var(--top); }
+  .names > * { transform-origin: 0 50%; }
+  .first { left: 18px; top: 16.7px; font-weight: 600; font-size: 30px; }
+  .last  { left: 6.5px; top: 40.1px; font-weight: 800; font-size: 48px; }
+
+  .box {
+    left: 192px; top: 97px; width: 319px; height: 85px; color: #fff;
+    background:
+      linear-gradient(rgba(0,0,0,.047), transparent 43px, rgba(0,0,0,.14) 84px, transparent 84px),
+      var(--top);
+  }
+  .pct { left: 15px; top: 4px; font-weight: 800; font-size: 55.5px; letter-spacing: 1.2px; }
+  .pct small { font-size: 37px; }
+  .votes { left: 15px; top: 58.3px; font-weight: 700; font-size: 25.5px; letter-spacing: 0.25px; transform-origin: 0 50%; }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="frame"></div>
+  <div class="race-panel">
+    <div class="state" id="state"></div>
+    <div class="race" id="race"></div>
+    <div class="pctin" id="pctin"></div>
+  </div>
+
+  <div class="cand c1" id="cand1">
+    <div class="photo-area"><img alt=""></div>
+    <div class="bracket"></div><div class="party"></div>
+    <div class="names"><div class="first"></div><div class="last"></div></div>
+    <div class="box"><div class="pct"></div><div class="votes"></div></div>
+  </div>
+  <div class="cand c2" id="cand2">
+    <div class="photo-area"><img alt=""></div>
+    <div class="bracket"></div><div class="party"></div>
+    <div class="names"><div class="first"></div><div class="last"></div></div>
+    <div class="box"><div class="pct"></div><div class="votes"></div></div>
+  </div>
+</div>
+
+<script>
+  const EXAMPLE = {
+    state: 'TX', race: 'U.S. Senate', pctIn: '88',
+    cand1: { name: 'James Talarico', party: 'D', votePercent: 50.5, votes: 5566104, isWinner: false, photo: 'l3-assets/talarico.png' },
+    cand2: { name: 'Ken Paxton',     party: 'R', votePercent: 49.5, votes: 5455885, isWinner: false, photo: 'l3-assets/paxton.png' },
+  };
+
+  const PARTY_CLASS = { D: 'dem', R: 'rep' };
+  const NAME_TRIGGER = 10;   // squeeze when a line comes within this many px of its limit
+
+  const $ = id => document.getElementById(id);
+  const stage = $('stage');
+
+  function splitName(full) {
+    const s = String(full).trim();
+    const i = s.includes('|') ? s.indexOf('|') : s.lastIndexOf(' ');
+    if (i < 0) return ['', s.toUpperCase()];
+    return [s.slice(0, i).replace(/\|/g, ' ').trim().toUpperCase(), s.slice(i + 1).trim().toUpperCase()];
+  }
+
+  const stageScale = () => stage.getBoundingClientRect().width / 1920;
+  function rect(el) {
+    const r = el.getBoundingClientRect(), s = stageScale();
+    return { left: r.left / s, right: r.right / s, width: r.width / s };
+  }
+  const inkWidth = el => rect(el).width - (parseFloat(getComputedStyle(el).letterSpacing) || 0);
+
+  // Horizontally squeeze `el` (scaleX from its left edge) so its ink fits in `maxWidth`.
+  function squeeze(el, maxWidth) {
+    el.style.transform = '';
+    const w = inkWidth(el);
+    if (w > maxWidth) el.style.transform = `scaleX(${maxWidth / w})`;
+  }
+
+  // Squeeze if within NAME_TRIGGER px of `limit`; the result keeps `margin` px before the limit.
+  function fitBefore(el, limit, margin) {
+    el.style.transform = '';
+    const left = rect(el).left;
+    if (limit - left - inkWidth(el) < NAME_TRIGGER) squeeze(el, limit - left - margin);
+  }
+
+  function fillCandidate(n, c) {
+    const el = $(`cand${n}`);
+    el.classList.remove('dem', 'rep', 'oth');
+    el.classList.add(PARTY_CLASS[String(c.party).toUpperCase()] || 'oth');
+    el.classList.toggle('winner', !!c.isWinner);
+    el.querySelector('.party').textContent = String(c.party).toUpperCase();
+
+    const img = el.querySelector('img');
+    if (c.photo) { img.src = c.photo; img.style.display = ''; }
+    else { img.removeAttribute('src'); img.style.display = 'none'; }
+
+    const [first, last] = splitName(c.name);
+    const firstEl = el.querySelector('.first'), lastEl = el.querySelector('.last');
+    firstEl.textContent = first;
+    lastEl.textContent = last;
+
+    const box = el.querySelector('.box');
+    box.querySelector('.pct').innerHTML = `${Number(c.votePercent).toFixed(1)}<small>%</small>`;
+    const votes = box.querySelector('.votes');
+    votes.textContent = Number(c.votes).toLocaleString('en-US');
+
+    // Names and votes keep the same margin on the right as on the left of their area.
+    const names = el.querySelector('.names');
+    for (const line of [firstEl, lastEl]) {
+      fitBefore(line, rect(names).right, rect(line).left - rect(names).left);
+    }
+    fitBefore(votes, rect(box).right, rect(votes).left - rect(box).left);
+  }
+
+  function render(d) {
+    $('state').textContent = String(d.state).toUpperCase();
+    const race = $('race');
+    race.textContent = String(d.race).toUpperCase();
+
+    const m = String(d.pctIn).match(/^([<>]?)\s*(\d+(?:\.\d+)?)/);
+    const pctin = $('pctin');
+    pctin.innerHTML = '';
+    pctin.append(m ? `${m[1]}${m[2]}` : String(d.pctIn));
+    pctin.append(Object.assign(document.createElement('small'), { textContent: '%' }), 'IN');
+
+    fillCandidate(1, d.cand1);
+    fillCandidate(2, d.cand2);
+
+    const panel = race.parentElement;
+    fitBefore(race, rect(panel).right, rect(race).left - rect(panel).left);
+  }
+
+  function fit() {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `scale(${s})`;
+  }
+  addEventListener('resize', fit);
+  fit();
+
+  const data = window.L3_DATA || EXAMPLE;
+  const photos = [data.cand1.photo, data.cand2.photo].filter(Boolean).map(src => new Promise(res => {
+    const im = new Image(); im.onload = im.onerror = res; im.src = src;
+  }));
+  Promise.all([
+    ...[600, 700, 800, 900].map(w => document.fonts.load(`${w} 40px "Proxima Nova"`)),
+    document.fonts.load('600 40px "Proxima Nova Cond"'),
+    ...photos,
+  ]).then(async () => {
+    render(data);
+    await Promise.all([...document.querySelectorAll('.photo-area img[src]')].map(im => im.decode().catch(() => {})));
+    window.l3Ready = true;
+  });
+</script>
+</body>
+</html>

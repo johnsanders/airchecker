@@ -5,18 +5,18 @@ dist
 .env
 .env.*
 !.env.example
-
-# Recordings are large and per-machine, except golden replays and the curated
-# reference frames (calibration source-of-truth) that we commit for tests
-recordings/*
-!recordings/goldens/
-!recordings/reference-frames/
+*.tsbuildinfo
 
 # Claude Code machine-local runtime state
 .claude/
 
-# Web client build artifacts
-src/web/client/node_modules
-src/web/client/dist
-src/web/client/tsconfig.tsbuildinfo
-*.tsbuildinfo
+# checker: recordings are large and per-machine, except golden replays and the
+# curated reference frames (calibration source-of-truth) that we commit for tests
+packages/checker/recordings/*
+!packages/checker/recordings/goldens/
+!packages/checker/recordings/reference-frames/
+
+# simulator: API recordings, fonts and settings are per-machine
+packages/simulator/recordings/
+packages/simulator/fonts
+packages/simulator/settings.json

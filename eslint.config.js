@@ -4,12 +4,19 @@ import prettierPlugin from 'eslint-plugin-prettier';
 import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
-// React lives in the (planned) Fastify web view. Scope JSX-aware rules there only.
-const reactFiles = ['src/web/**/*.{ts,tsx,js,jsx,mjs,cjs}'];
+// React lives in each package's web view. Scope JSX-aware rules there only.
+const reactFiles = ['packages/*/src/web/**/*.{ts,tsx,js,jsx,mjs,cjs}'];
 
 export default defineConfig(
 	{
-		ignores: ['node_modules/', '**/dist/', 'recordings/', 'coverage/'],
+		// The simulator's graphics render scripts are standalone and predate the TS setup.
+		ignores: [
+			'**/node_modules/',
+			'**/dist/',
+			'packages/*/recordings/',
+			'coverage/',
+			'packages/simulator/*.mjs',
+		],
 	},
 	...tseslint.configs.recommended,
 	{
