@@ -60,6 +60,9 @@ const AirPanel: React.FC<Props> = (props) => {
 						■ Stop
 					</Button>
 				)}
+				<Button href="/air/" target="_blank" variant="outlined">
+					Watch live feed ↗
+				</Button>
 				<Typography variant="body2">
 					{air === null
 						? 'Off air'
@@ -70,11 +73,12 @@ const AirPanel: React.FC<Props> = (props) => {
 				</Typography>
 			</Stack>
 			<Typography color="text.secondary" sx={{ display: 'block' }} variant="caption">
+				Open the feed (
 				<Link href="/air/" target="_blank">
-					Open /air/
-				</Link>{' '}
-				in the checker's debug Chrome and pick its "Sim air" capture preset. The newscast under the
-				graphics is recordings/air/background.mp4.
+					/air/
+				</Link>
+				) in the checker's debug Chrome and pick its "Sim air" capture preset. The newscast under
+				the graphics is recordings/air/background.mp4.
 			</Typography>
 		</Box>
 	);

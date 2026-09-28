@@ -16,8 +16,13 @@
     overflow: hidden;
   }
 
-  /* Everything under the ticker, kept together so it can be squeezed back later. */
-  #program { position: absolute; inset: 0; }
+  /* Everything under the ticker (the newscast, L3 and FS) is squeezed back as on air:
+     pushed up 42px and scaled to .979 tall from the top, lifting its bottom toward the ticker. */
+  #program {
+    position: absolute; inset: 0;
+    transform-origin: 0 0;
+    transform: translateY(-42px) scaleY(0.979);
+  }
 
   video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
