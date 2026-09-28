@@ -16,6 +16,7 @@ import AlertHistory from './components/AlertHistory.js';
 import Alerts from './components/Alerts.js';
 import BackendBanner from './components/BackendBanner.js';
 import CapturePanel from './components/CapturePanel.js';
+import ModeSwitch from './components/ModeSwitch.js';
 import MonitorControl from './components/MonitorControl.js';
 import QueryEditor from './components/QueryEditor.js';
 import RaceDetailDialog from './components/RaceDetailDialog.js';
@@ -67,16 +68,25 @@ const App: React.FC = () => {
 	};
 
 	const races = racesData?.races ?? [];
+	const simulating = state?.mode === 'sim';
 
 	return (
 		<Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
 			<BackendBanner />
-			<AppBar color="default" elevation={0} position="static">
+			{/* Sim turns the whole bar amber, so a rehearsal can't be mistaken for air. */}
+			<AppBar color={simulating ? 'warning' : 'default'} elevation={0} position="static">
 				<Toolbar variant="dense">
 					<Typography sx={{ fontWeight: 700 }}>Eagle Eye</Typography>
-					<Typography color="text.secondary" sx={{ ml: 2 }} variant="caption">
-						election-graphics observer · {state?.ddhqEnvironment === 'sim' ? 'sim' : 'live'}
+					<Typography
+						color={simulating ? 'inherit' : 'text.secondary'}
+						sx={{ fontWeight: simulating ? 700 : 400, ml: 2 }}
+						variant="caption"
+					>
+						{simulating
+							? 'SIMULATION: watching the simulator, not air'
+							: 'election-graphics observer'}
 					</Typography>
+					<ModeSwitch mode={state?.mode ?? null} monitoring={state?.session?.running ?? false} />
 					<MonitorControl status={state?.session ?? null} />
 				</Toolbar>
 			</AppBar>
@@ -128,6 +138,7 @@ const App: React.FC = () => {
 							airMatch={state?.airMatch ?? null}
 							cadence={state?.cadence ?? null}
 							lastFrame={state?.lastFrame ?? null}
+							mode={state?.mode ?? null}
 						/>
 					</Section>
 				</Box>
@@ -136,7 +147,7 @@ const App: React.FC = () => {
 					<Grid container spacing={2}>
 						<Grid size={{ xs: 12 }}>
 							<Section title="DDHQ queries">
-								<QueryEditor environment={state?.ddhqEnvironment ?? null} />
+								<QueryEditor ddhqHost={state?.ddhqHost ?? null} mode={state?.mode ?? null} />
 							</Section>
 						</Grid>
 

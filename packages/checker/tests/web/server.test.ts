@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import type { Anomaly, RaceObservation } from '../../src/reconcile/reconcile.js';
-import type { DdhqEnvironment } from '../../src/sources/provider/providerSource.js';
+import type { DdhqHost, Mode } from '../../src/sources/provider/providerSource.js';
 
 import { makeRaceIdentityResolver } from '../../src/identity/raceIdentity.js';
 import { makeMatchStore } from '../../src/sources/air/matchStore.js';
@@ -373,52 +373,68 @@ describe('web server', () => {
 		);
 	});
 
-	it('switches the DDHQ environment and reports it in /api/state', async () => {
-		let environment: DdhqEnvironment = 'production';
-		app = makeWebServer({
-			ddhqEnvironment: {
-				get: () => environment,
+	it('switches the DDHQ host and reports it in /api/state', async () => {
+		let host: DdhqHost = 'production';
+		const server = makeWebServer({
+			ddhqHost: {
+				get: () => host,
 				set: (next) => {
-					environment = next;
+					host = next;
 				},
 			},
 			getRecentAlerts: () => [],
 			store: makeStore(),
 		});
-		const bad = await app.inject({
-			method: 'POST',
-			payload: { environment: 'staging' },
-			url: '/api/ddhq-environment',
-		});
-		expect(bad.statusCode).toBe(400);
-		const res = await app.inject({
-			method: 'POST',
-			payload: { environment: 'integration' },
-			url: '/api/ddhq-environment',
-		});
-		expect(res.json()).toEqual({ environment: 'integration' });
-		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().ddhqEnvironment).toBe(
+		app = server;
+		const post = (payload: unknown) =>
+			server.inject({ method: 'POST', payload: payload as object, url: '/api/ddhq-host' });
+		expect((await post({ host: 'sim' })).statusCode).toBe(400);
+		expect((await post({ host: 'integration' })).json()).toEqual({ host: 'integration' });
+		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().ddhqHost).toBe(
 			'integration',
 		);
-		const sim = await app.inject({
-			method: 'POST',
-			payload: { environment: 'sim' },
-			url: '/api/ddhq-environment',
-		});
-		expect(sim.json()).toEqual({ environment: 'sim' });
 	});
 
-	it('refuses a DDHQ environment switch when none is wired', async () => {
-		app = makeWebServer({ getRecentAlerts: () => [], store: makeStore() });
-		const res = await app.inject({
-			method: 'POST',
-			payload: { environment: 'integration' },
-			url: '/api/ddhq-environment',
+	it('switches between Live and Sim only while monitoring is stopped', async () => {
+		let mode: Mode = 'live';
+		let running = false;
+		const status = () => ({ id: running ? 's' : null, running, startedAt: running ? 1 : null });
+		const server = makeWebServer({
+			getRecentAlerts: () => [],
+			mode: {
+				get: () => mode,
+				set: (next) => {
+					mode = next;
+				},
+			},
+			session: { start: status, status, stop: status },
+			store: makeStore(),
 		});
-		expect(res.statusCode).toBe(409);
-		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().ddhqEnvironment).toBe(
-			null,
-		);
+		app = server;
+		const post = (payload: unknown) =>
+			server.inject({ method: 'POST', payload: payload as object, url: '/api/mode' });
+		expect((await post({ mode: 'integration' })).statusCode).toBe(400);
+		expect((await post({ mode: 'sim' })).json()).toEqual({ mode: 'sim' });
+		expect((await app.inject({ method: 'GET', url: '/api/state' })).json().mode).toBe('sim');
+		running = true;
+		const refused = await post({ mode: 'live' });
+		expect(refused.statusCode).toBe(409);
+		expect(mode).toBe('sim');
+	});
+
+	it('refuses mode and host switches when neither is wired', async () => {
+		app = makeWebServer({ getRecentAlerts: () => [], store: makeStore() });
+		const mode = await app.inject({ method: 'POST', payload: { mode: 'sim' }, url: '/api/mode' });
+		const host = await app.inject({
+			method: 'POST',
+			payload: { host: 'integration' },
+			url: '/api/ddhq-host',
+		});
+		expect([mode.statusCode, host.statusCode]).toEqual([409, 409]);
+		expect((await app.inject({ method: 'GET', url: '/api/state' })).json()).toMatchObject({
+			ddhqHost: null,
+			mode: null,
+		});
 	});
 
 	it("reports each source's current failure in /api/state", async () => {

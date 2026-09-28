@@ -1,3 +1,7 @@
+import Database from 'better-sqlite3';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { makeSettingsStore } from '../src/settings/settingsStore.js';
@@ -34,12 +38,31 @@ describe('settings store', () => {
 		settings.close();
 	});
 
-	it('persists the DDHQ environment, production until set', () => {
+	it('persists the mode and DDHQ host, Live on production until set', () => {
 		const settings = makeSettingsStore(':memory:');
-		expect(settings.getDdhqEnvironment()).toBe('production');
-		settings.setDdhqEnvironment('integration');
-		expect(settings.getDdhqEnvironment()).toBe('integration');
+		expect(settings.getMode()).toBe('live');
+		expect(settings.getDdhqHost()).toBe('production');
+		settings.setMode('sim');
+		settings.setDdhqHost('integration');
+		expect(settings.getMode()).toBe('sim');
+		expect(settings.getDdhqHost()).toBe('integration');
 		settings.close();
+	});
+
+	it('reads Sim saved as the old DDHQ environment as Sim mode on production', () => {
+		const dir = mkdtempSync(join(tmpdir(), 'eagle-eye-settings-'));
+		const path = join(dir, 'settings.sqlite');
+		const before = new Database(path);
+		before.exec('CREATE TABLE kv (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+		before.prepare('INSERT INTO kv (key, value) VALUES (?, ?)').run('ddhq_environment', '"sim"');
+		before.close();
+		const settings = makeSettingsStore(path);
+		expect(settings.getMode()).toBe('sim');
+		expect(settings.getDdhqHost()).toBe('production');
+		settings.setMode('live');
+		expect(settings.getMode()).toBe('live');
+		settings.close();
+		rmSync(dir, { force: true, recursive: true });
 	});
 
 	it('round-trips queries through a file across reopen (survives restart)', () => {

@@ -5,7 +5,7 @@ One page for the truck. Dev context lives in [`CLAUDE.md`](../CLAUDE.md); what w
 ## Before the night
 
 1. **Machine.** Working copy at `~/Developer/airchecker` (this package is `packages/checker`; run every command below from there), `npm install` done at the repo root, `npm run frontend:build` done (rebuild after any client change). `npm test` green.
-2. **`.env`** (gitignored, at the repo root) with `ANTHROPIC_API_KEY` (pass 1, Haiku), `GEMINI_API_KEY` (the crop read, Gemini 3.8 Flash direct from Google — a prepaid AI Studio project; keep its credits topped up, a depleted project answers 402 and `live` refuses to start without both keys), `DDHQ_CLIENT_ID`, `DDHQ_CLIENT_SECRET`, `DDHQ_GRANT_TYPE`. Optional: `OPENROUTER_API_KEY` (only for `verify` / `measure-call` trials of `vendor/model` IDs), `DDHQ_BASE_URL` (the production host; DDHQ's integration host `resultsapi-integration.decisiondeskhq.com` is picked with the Production / Integration toggle on the Setup tab, saved in settings.sqlite, and takes effect on the next poll), `DDHQ_POLL_INTERVAL_MS` (default 60000), `CAPTURE_MODE` (`interval` | `manual`), `CAPTURE_INTERVAL_MS` (default 5000), `WEB_PORT` (default 8787).
+2. **`.env`** (gitignored, at the repo root) with `ANTHROPIC_API_KEY` (pass 1, Haiku), `GEMINI_API_KEY` (the crop read, Gemini 3.8 Flash direct from Google — a prepaid AI Studio project; keep its credits topped up, a depleted project answers 402 and `live` refuses to start without both keys), `DDHQ_CLIENT_ID`, `DDHQ_CLIENT_SECRET`, `DDHQ_GRANT_TYPE`. Optional: `OPENROUTER_API_KEY` (only for `verify` / `measure-call` trials of `vendor/model` IDs), `DDHQ_BASE_URL` (the production host; DDHQ's integration host `resultsapi-integration.decisiondeskhq.com` is picked with the Production / Integration toggle on the Setup tab in Live mode, saved in settings.sqlite, and takes effect on the next poll), `SIM_BASE_URL` (the simulator for Sim mode, default `http://localhost:8788`), `DDHQ_POLL_INTERVAL_MS` (default 60000), `CAPTURE_MODE` (`interval` | `manual`), `CAPTURE_INTERVAL_MS` (default 5000), `WEB_PORT` (default 8787).
 3. **VPN up** — the Chameleon playlist URL is reachable only on the corporate network. Without it the Ross source logs poll errors every minute and the reconciler has nothing to compare air against.
 4. **Disk.** Frames cost ~1 GB per broadcast hour at the 5 s cadence, session sqlites tens of MB per hour. The web view's **Recordings** panel shows free space (red below 10 GB) and each session's size, and **Prune** drops an old session's frame PNGs (its sqlite still replays and freezes). Check it right after launch.
 5. **DDHQ queries.** The list persists in `recordings/settings.sqlite` and is edited in the web view ("DDHQ queries"). Each entry is a `/api/v4/races?…` query string, e.g. `race_date=2026-11-03&state=TX&office_id=3`. Nothing is polled until the list is non-empty.
@@ -45,9 +45,19 @@ In the web view's "Air capture" panel pick the tab to grab (DirecTV is the only 
 
 Air alerts fire on the **first** bad graphic seen; they clear after three clean reconciles. Severity: high = act now, medium = look, low = note.
 
-## Rehearsing against a recorded night
+## Rehearsing against the simulator
 
-Recording the APIs and playing them back live in the simulator package, `packages/simulator` (see its CLAUDE.md; `npm run server` there). While the simulator plays a recording, pick **Sim** as the environment on the Setup tab: DDHQ and Chameleon are both polled from the simulator's mirror (`SIM_BASE_URL`, default `http://localhost:8788`), with no VPN and no DDHQ credentials. Paste the recording's DDHQ queries (shown in the simulator's playback banner) into the query list. Playback runs at 1×; after restarting it in the simulator, stop and start monitoring here. Race links made in Sim are saved like any others.
+The **Live / Sim** switch in the app bar picks what all three sources watch. It's locked while monitoring (stop first), and the whole bar turns amber in Sim.
+
+- **Live:** DDHQ on the host picked on the Setup tab (Production or Integration) with the saved query list; Chameleon's real blade (VPN); air from the tab picked on the Air capture tab (DirecTV).
+- **Sim:** all three come from the simulator, `packages/simulator` (`npm run server -w simulator`; see its CLAUDE.md), with no VPN and no DDHQ credentials. DDHQ and Chameleon are its mirror; the DDHQ races to poll come from the simulator each poll; air is its `/air/` page, which must be open in the debug Chrome. Live's query list, host and tab are left as they were.
+
+What the simulator serves:
+
+- **A simulated night** (its "Simulated air" panel): one invented night behind all three sources, with Chameleon 30 s behind DDHQ and the graphics 19 s behind Chameleon, like the real pipeline. Score how well the air was read with `node --env-file-if-exists=../../.env --import tsx src/tools/scoreSimAir.ts <sessionId>` (from `packages/checker`, while that simulator is still running).
+- **A recorded night** (its recordings list): the recorded DDHQ and Chameleon responses at 1×; air isn't part of a recording. After restarting playback there, stop and start monitoring here.
+
+Each session records which mode it ran in. Race links made in Sim are saved like any others; the simulated night uses the real Nov 3 races, so its links stay valid in Live.
 
 ## When something looks wrong
 

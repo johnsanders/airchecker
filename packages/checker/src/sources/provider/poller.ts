@@ -21,7 +21,7 @@ export type ProviderPollerConfig = {
 	// Read FRESH each tick — queries are runtime state edited via the web UI, so a
 	// getter (not a static array) lets edits take effect on the next poll with no
 	// restart. Each string becomes /api/v4/races?<query>, e.g. 'race_ids=123,456'.
-	getQueries: () => string[];
+	getQueries: () => Promise<string[]> | string[];
 	http: HttpJson;
 	now?: () => number; // observedAt clock; default Date.now
 	onError?: (query: string, error: unknown) => void;
@@ -76,8 +76,9 @@ export const makeProviderPoller = (config: ProviderPollerConfig): ProviderPoller
 	const pollOnce = async (): Promise<void> => {
 		// Queries run independently — one failing query is reported and skipped, the
 		// rest still land. (parallel: DDHQ tolerates it and a tick is once/minute.)
+		const queries = await config.getQueries();
 		await Promise.all(
-			config.getQueries().map(async (query) => {
+			queries.map(async (query) => {
 				try {
 					await runQuery(query);
 				} catch (error) {

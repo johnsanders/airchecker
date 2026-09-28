@@ -6,18 +6,19 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import type { DdhqEnvironment } from '../api.js';
+import type { DdhqHost, Mode } from '../api.js';
 
 import { api } from '../api.js';
 
 interface Props {
-	environment: DdhqEnvironment | null; // null: not switchable (DDHQ off)
+	ddhqHost: DdhqHost | null; // null: not switchable (DDHQ off)
+	mode: Mode | null;
 }
 
-// Editable DDHQ query list — one /api/v4/races query string per line — and which DDHQ
-// host it runs against. Sim points DDHQ and Chameleon at the simulator's mirror, which plays
-// a recorded night back; the queries must match the recording's. Both are runtime state on the server; the poller picks up
-// edits on its next tick. The environment isn't copied locally: the server's value
+// Live mode's editable DDHQ query list — one /api/v4/races query string per line — and
+// which DDHQ host it runs against. In Sim both are set aside: the simulator names the races
+// it's serving and DDHQ is its mirror. Both are runtime state on the server; the poller
+// picks up edits on its next tick. The host isn't copied locally: the server's value
 // arrives with every state push, so the toggle can't drift from what's polled.
 const QueryEditor: React.FC<Props> = (props) => {
 	const [text, setText] = React.useState('');
@@ -37,10 +38,10 @@ const QueryEditor: React.FC<Props> = (props) => {
 		setMsg(`saved ${r.queries.length}`);
 	};
 
-	const switchEnvironment = (next: DdhqEnvironment | null): void => {
-		if (next === null || next === props.environment) return;
+	const switchHost = (next: DdhqHost | null): void => {
+		if (next === null || next === props.ddhqHost) return;
 		api
-			.setDdhqEnvironment(next)
+			.setDdhqHost(next)
 			.then(() => setMsg(`switched to ${next} — takes effect on the next poll`))
 			.catch((e: unknown) =>
 				setMsg(e instanceof Error ? `switch failed: ${e.message}` : 'switch failed'),
@@ -49,23 +50,26 @@ const QueryEditor: React.FC<Props> = (props) => {
 
 	return (
 		<Box>
-			{props.environment !== null && (
+			{props.mode === 'sim' && (
+				<Typography color="warning.main" sx={{ display: 'block', mb: 1.5 }} variant="body2">
+					Sim mode: DDHQ is the simulator's mirror, polled for the races the simulator names. This
+					list and host are Live's, kept for when you switch back.
+				</Typography>
+			)}
+			{props.ddhqHost !== null && props.mode !== 'sim' && (
 				<Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mb: 1.5 }}>
 					<Typography color="text.secondary" variant="caption">
-						environment:
+						DDHQ host:
 					</Typography>
 					<ToggleButtonGroup
 						exclusive={true}
-						onChange={(_event, next: DdhqEnvironment | null) => switchEnvironment(next)}
+						onChange={(_event, next: DdhqHost | null) => switchHost(next)}
 						size="small"
-						value={props.environment}
+						value={props.ddhqHost}
 					>
 						<ToggleButton value="production">Production</ToggleButton>
 						<ToggleButton color="warning" value="integration">
 							Integration (test)
-						</ToggleButton>
-						<ToggleButton color="secondary" value="sim">
-							Sim
 						</ToggleButton>
 					</ToggleButtonGroup>
 				</Box>

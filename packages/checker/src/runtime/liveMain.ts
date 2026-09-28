@@ -1,7 +1,7 @@
 import type { RaceObservation } from '../reconcile/reconcile.js';
 import type { CaptureMode } from '../sources/air/captureScheduler.js';
 import type { MatchStore } from '../sources/air/matchStore.js';
-import type { DdhqEnvironment } from '../sources/provider/providerSource.js';
+import type { DdhqHost, Mode } from '../sources/provider/providerSource.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
 
 import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
@@ -11,7 +11,7 @@ import { makeAirSource } from '../sources/air/airSource.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import { makeMatchStore } from '../sources/air/matchStore.js';
 import { errorMessage } from '../sources/http.js';
-import { ddhqBaseUrl, makeProviderSource } from '../sources/provider/providerSource.js';
+import { ddhqBaseUrl, makeProviderSource, simBaseUrl } from '../sources/provider/providerSource.js';
 import { makeQueryStore } from '../sources/provider/queryStore.js';
 import { makeVendorSource } from '../sources/vendor/vendorSource.js';
 import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
@@ -46,22 +46,33 @@ const liveMain = async (): Promise<void> => {
 	// Pollers and the air scheduler are created further down; the session only needs
 	// them once monitoring is started or stopped.
 	const monitored: { start: () => void; stop: () => void }[] = [];
+
+	// Persistent config (survives restarts), separate from the session-scoped recorder DB.
+	const settings = makeSettingsStore('recordings/settings.sqlite');
+
+	// Live watches the real sources; Sim watches the simulator on all three. In Live, DDHQ
+	// is production or its integration host. Both persist; the mode can only change while
+	// monitoring is stopped, so a session never mixes the two.
+	let mode = settings.getMode();
+	let ddhqHost = settings.getDdhqHost();
+
 	const session = makeLiveSession({
 		baseDir: 'recordings',
+		meta: () => ({ mode }),
 		onStart: () => monitored.forEach((scheduler) => scheduler.start()),
 		onStop: () => monitored.forEach((scheduler) => scheduler.stop()),
 	});
 	const recorder = session.recorder;
 	const composition = makeComposition({ onRecord: recorder.recordObservation });
 
-	// Persistent config (survives restarts), separate from the session-scoped recorder DB.
-	const settings = makeSettingsStore('recordings/settings.sqlite');
-
 	const llmClient = makeRecordingLlmClient(makeLiveLlmClient(), recorder);
 	const raceIdentity = makeRaceIdentityResolver({
 		llmClient,
 		onError: (error) => console.error('[identity] resolver error', error),
 		onEvent: recorder.recordIdentityEvent,
+		// Arrow, not a reference: applyRelink is defined below, once the store exists.
+		onRelink: (source, sourceRaceKey, canonicalRaceKey) =>
+			applyRelink(source, sourceRaceKey, canonicalRaceKey),
 		settings,
 	});
 
@@ -145,13 +156,23 @@ const liveMain = async (): Promise<void> => {
 			settings.setAirMatch(memoryMatch.get());
 		},
 	};
-	const airSource = makeAirSource({ llmClient, matchStore, onObservations: ingest, recorder });
-	const mode = readCaptureMode();
+	// In Sim the capturer grabs the simulator's /air/ page; the saved tab is Live's.
+	const simAirMatch = `${simBaseUrl().replace(/^https?:\/\//, '')}/air`;
+	const airSource = makeAirSource({
+		llmClient,
+		matchStore: {
+			get: () => (mode === 'sim' ? simAirMatch : matchStore.get()),
+			set: matchStore.set,
+		},
+		onObservations: ingest,
+		recorder,
+	});
+	const captureMode = readCaptureMode();
 	const intervalMs = readIntervalMs();
 	const airScheduler = makeCaptureScheduler({
 		captureOnce: () => airSource.captureOnce().then(() => sourceErrors.ok('air')),
 		intervalMs,
-		mode,
+		mode: captureMode,
 		onError: (error) => sourceErrors.fail('air', error),
 		onSkip: () => console.warn('[air] capture skipped — previous still in flight'),
 	});
@@ -169,25 +190,31 @@ const liveMain = async (): Promise<void> => {
 
 	// DDHQ provider source — queries are runtime state (queryStore), set via the web
 	// view; nothing polls until queries are added. Live polling needs the DDHQ_* creds;
-	// the Sim environment (the simulator) doesn't.
+	// Sim mode (the simulator) doesn't.
 	if (process.env.DDHQ_CLIENT_ID === undefined)
-		console.warn('[provider] DDHQ_CLIENT_ID not set — DDHQ works in the Sim environment only.');
+		console.warn('[provider] DDHQ_CLIENT_ID not set — DDHQ works in Sim mode only.');
 	// A poll with any failed query counts as failed, so one bad query can't hide
 	// behind the others succeeding.
 	let queryFailures: string[] = [];
-	// Production, DDHQ's integration host, or the simulator's mirror (Chameleon follows it
-	// there too); persisted.
-	let environment = settings.getDdhqEnvironment();
 	const provider = makeProviderSource(ingest, liveQueryStore, {
-		getEnvironment: () => environment,
+		getHost: () => ddhqHost,
+		getMode: () => mode,
 		onQueryError: (query, error) => queryFailures.push(`query ${query}: ${errorMessage(error)}`),
 	});
-	const ddhqEnvironment = {
-		get: () => environment,
-		set: (next: DdhqEnvironment) => {
-			environment = next;
-			settings.setDdhqEnvironment(next);
-			console.log(`[provider] DDHQ environment → ${next} (${ddhqBaseUrl(next)})`);
+	const modeControl = {
+		get: () => mode,
+		set: (next: Mode) => {
+			mode = next;
+			settings.setMode(next);
+			console.log(`[mode] ${next} (DDHQ ${ddhqBaseUrl(mode, ddhqHost)})`);
+		},
+	};
+	const ddhqHostControl = {
+		get: () => ddhqHost,
+		set: (next: DdhqHost) => {
+			ddhqHost = next;
+			settings.setDdhqHost(next);
+			console.log(`[provider] DDHQ host → ${next} (${ddhqBaseUrl(mode, ddhqHost)})`);
 		},
 	};
 	const providerScheduler = makeCaptureScheduler({
@@ -205,11 +232,11 @@ const liveMain = async (): Promise<void> => {
 	});
 	monitored.push(providerScheduler);
 	console.log(
-		`[provider] DDHQ ${environment} (${ddhqBaseUrl(environment)}) polling every ${provider.intervalMs}ms (queries set via web view).`,
+		`[provider] ${mode} mode, DDHQ ${ddhqBaseUrl(mode, ddhqHost)} polling every ${provider.intervalMs}ms.`,
 	);
 
 	// Chameleon vendor source — fixed playlist URL, always on, once per minute (VPN-only).
-	const vendor = makeVendorSource(ingest, { getEnvironment: () => environment });
+	const vendor = makeVendorSource(ingest, { getMode: () => mode });
 	const vendorScheduler = makeCaptureScheduler({
 		captureOnce: () => vendor.poller.pollOnce().then(() => sourceErrors.ok('Ross')),
 		immediate: true,
@@ -226,13 +253,14 @@ const liveMain = async (): Promise<void> => {
 	const webPort = Number(process.env.WEB_PORT) || 8787;
 	const web = makeWebServer({
 		changeBus,
-		ddhqEnvironment,
+		ddhqHost: ddhqHostControl,
 		getAlertHistory: alertLog.recent,
 		getCadence: airScheduler.getConfig,
 		getLastFrame: airSource.getLastFrame,
 		getRecentAlerts: anomalies.list,
 		getSourceError: sourceErrors.get,
-		matchStore: airSource.matchStore,
+		matchStore,
+		mode: modeControl,
 		onRaceRelink: applyRelink,
 		queryStore: provider.queryStore,
 		raceIdentity,
@@ -261,7 +289,7 @@ const liveMain = async (): Promise<void> => {
 	monitored.push(airScheduler);
 	await web.listen({ port: webPort });
 	console.log(
-		`[live] ready, monitoring stopped (Start in the web view) · air mode=${mode}${mode === 'interval' ? ` every ${intervalMs}ms` : ' (manual)'} · web http://localhost:${webPort}`,
+		`[live] ready, monitoring stopped (Start in the web view) · ${mode} mode · air ${captureMode}${captureMode === 'interval' ? ` every ${intervalMs}ms` : ''} · web http://localhost:${webPort}`,
 	);
 };
 

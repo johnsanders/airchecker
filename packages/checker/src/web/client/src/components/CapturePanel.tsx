@@ -7,15 +7,16 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import type { Cadence, Observation } from '../api.js';
+import type { Cadence, Mode, Observation } from '../api.js';
 
 import { AIR_PRESETS, api } from '../api.js';
 import { ago, pct } from '../format.js';
 
 interface Props {
-	airMatch: null | string; // which tab the capturer targets (URL substring), as the server has it
+	airMatch: null | string; // which tab Live mode captures (URL substring), as the server has it
 	cadence: Cadence | null;
 	lastFrame: { observations: Observation[]; ts: number } | null;
+	mode: Mode | null;
 }
 
 // Manual capture + live cadence control + the last captured frame and what the VLM
@@ -97,28 +98,33 @@ const CapturePanel: React.FC<Props> = (props) => {
 				</Typography>
 			</Stack>
 
-			<Stack alignItems="center" direction="row" spacing={1} sx={{ mb: 1.5 }}>
-				<Typography color="text.secondary" variant="caption">
-					source tab:
+			{props.mode === 'sim' ? (
+				<Typography color="warning.main" sx={{ display: 'block', mb: 1.5 }} variant="body2">
+					Sim mode: capturing the simulator's /air/ page. Keep it open in the debug Chrome.
 				</Typography>
-				<ToggleButtonGroup exclusive size="small" value={props.airMatch}>
-					{AIR_PRESETS.map((preset) => (
-						<ToggleButton
-							key={preset.match}
-							onClick={() => pickPreset(preset.match)}
-							value={preset.match}
-						>
-							{preset.label}
-						</ToggleButton>
-					))}
-				</ToggleButtonGroup>
-				{props.airMatch !== null && !AIR_PRESETS.some((p) => p.match === props.airMatch) && (
+			) : (
+				<Stack alignItems="center" direction="row" spacing={1} sx={{ mb: 1.5 }}>
 					<Typography color="text.secondary" variant="caption">
-						({props.airMatch})
+						source tab:
 					</Typography>
-				)}
-			</Stack>
-
+					<ToggleButtonGroup exclusive size="small" value={props.airMatch}>
+						{AIR_PRESETS.map((preset) => (
+							<ToggleButton
+								key={preset.match}
+								onClick={() => pickPreset(preset.match)}
+								value={preset.match}
+							>
+								{preset.label}
+							</ToggleButton>
+						))}
+					</ToggleButtonGroup>
+					{props.airMatch !== null && !AIR_PRESETS.some((p) => p.match === props.airMatch) && (
+						<Typography color="text.secondary" variant="caption">
+							({props.airMatch})
+						</Typography>
+					)}
+				</Stack>
+			)}
 			{frameSrc ? (
 				<Box>
 					<Box

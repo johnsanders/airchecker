@@ -46,12 +46,15 @@ export interface CanonicalRace {
 	provisional: boolean;
 }
 
-export type DdhqEnvironment = 'integration' | 'production' | 'sim';
+export type DdhqHost = 'integration' | 'production';
 
 export interface DiskUsage {
 	freeBytes: number;
 	totalBytes: number;
 }
+
+// Live watches the real sources; Sim watches the simulator standing in for all three.
+export type Mode = 'live' | 'sim';
 
 export interface Observation {
 	calledFor: string[];
@@ -168,8 +171,9 @@ export interface StateResponse {
 	airMatch: null | string;
 	alerts: Anomaly[];
 	cadence: Cadence | null;
-	ddhqEnvironment: DdhqEnvironment | null; // null: DDHQ not configured
+	ddhqHost: DdhqHost | null; // Live mode's DDHQ host; null: DDHQ not configured
 	lastFrame: { observations: Observation[]; ts: number } | null;
+	mode: Mode | null; // null: not switchable
 	pendingLinkCount: number;
 	session: null | SessionStatus;
 	sources: SourceStat[];
@@ -226,8 +230,8 @@ export const api = {
 		),
 	setAirMatch: (match: string) => postJson<{ match: string }>('/api/air-match', { match }),
 	setCadence: (next: Partial<Cadence>) => postJson<Cadence>('/api/cadence', next),
-	setDdhqEnvironment: (environment: DdhqEnvironment) =>
-		postJson<{ environment: DdhqEnvironment }>('/api/ddhq-environment', { environment }),
+	setDdhqHost: (host: DdhqHost) => postJson<{ host: DdhqHost }>('/api/ddhq-host', { host }),
+	setMode: (mode: Mode) => postJson<{ mode: Mode }>('/api/mode', { mode }),
 	setQueries: (queries: string[]) => postJson<{ queries: string[] }>('/api/queries', { queries }),
 	setRaceAlias: (body: { canonicalRaceKey: string; source: SourceName; sourceRaceKey: string }) =>
 		postJson<{ raceLinks: RaceLinksResponse }>('/api/race-links/aliases', body),
@@ -235,8 +239,8 @@ export const api = {
 	stopSession: () => postJson<SessionStatus>('/api/session/stop', {}),
 };
 
-// Preset tabs the capture button can target (label → URL substring).
+// Preset tabs Live mode's capture can target (label → URL substring). Sim mode always
+// captures the simulator's /air/ page.
 export const AIR_PRESETS: { label: string; match: string }[] = [
 	{ label: 'DirecTV', match: 'directv' },
-	{ label: 'Sim air', match: 'localhost:8788/air' },
 ];

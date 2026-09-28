@@ -156,6 +156,62 @@ describe('race identity resolver', () => {
 		expect(counter.calls).toBe(1);
 	});
 
+	it('links an air race by its heading when exactly one DDHQ race fits, without Haiku', async () => {
+		const counter = { calls: 0 };
+		const resolver = makeRaceIdentityResolver({ llmClient: matchClient(counter) });
+		await resolver.resolveObservation(obs('DDHQ', '2026-TX-US_House-15-NP-General_Election'));
+		await resolver.resolveObservation(obs('DDHQ', '2026-TX-US_House-1-NP-General_Election'));
+		await resolver.resolveObservation(obs('DDHQ', '2026-TX-US_Senate-AL-NP-General_Election'));
+
+		const house = await resolver.resolveObservation(obs('air', 'TX-15 U.S. HOUSE', 2_000));
+		const senate = await resolver.resolveObservation(obs('air', 'TX U.S. SENATE', 2_000));
+		await resolver.whenIdle();
+		expect(house.raceKey).toBe('2026-TX-US_House-15-NP-General_Election');
+		expect(senate.raceKey).toBe('2026-TX-US_Senate-AL-NP-General_Election');
+		expect(resolver.getAlias('air', 'TX-15 U.S. HOUSE')?.method).toBe('deterministic');
+		expect(counter.calls).toBe(0);
+	});
+
+	it('leaves a heading to Haiku when its names are not on that race (a misread district)', async () => {
+		const counter = { calls: 0 };
+		const resolver = makeRaceIdentityResolver({ llmClient: matchClient(counter) });
+		await resolver.resolveObservation(obs('DDHQ', '2026-TX-US_House-15-NP-General_Election'));
+		await resolver.resolveObservation({
+			...obs('DDHQ', '2026-TX-US_House-16-NP-General_Election'),
+			candidates: [{ key: 'c', name: 'Pat Other', party: 'D', pct: 50, votes: 10 }],
+		});
+
+		// Jane Smith and John Doe run in TX-15, so a "TX-16" heading over them is a misread.
+		const misread = await resolver.resolveObservation(obs('air', 'TX-16 U.S. HOUSE', 2_000));
+		await resolver.whenIdle();
+		expect(misread.raceKey).toBe('provisional:air:TX-16-U-S-HOUSE');
+		expect(counter.calls).toBe(1);
+	});
+
+	it('reports a race that leaves its provisional bucket, so the store can move it', async () => {
+		const relinks: string[] = [];
+		const resolver = makeRaceIdentityResolver({
+			onRelink: (source, sourceRaceKey, canonicalRaceKey) =>
+				relinks.push(`${source} ${sourceRaceKey} → ${canonicalRaceKey}`),
+		});
+		await resolver.resolveObservation(obs('Ross', '2026-TX-US_Senate-AL-NP-General_Election'));
+		await resolver.resolveObservation(obs('air', 'TX U.S. SENATE'));
+		await resolver.resolveObservation(
+			obs('DDHQ', '2026-TX-US_Senate-AL-NP-General_Election', 2_000),
+		);
+		await resolver.resolveObservation(
+			obs('Ross', '2026-TX-US_Senate-AL-NP-General_Election', 3_000),
+		);
+		await resolver.resolveObservation(obs('air', 'TX U.S. SENATE', 3_000));
+		// Linked from the start: nothing to move.
+		await resolver.resolveObservation(obs('air', 'TX U.S. SENATE', 4_000));
+
+		expect(relinks).toEqual([
+			'Ross 2026-TX-US_Senate-AL-NP-General_Election → 2026-TX-US_Senate-AL-NP-General_Election',
+			'air TX U.S. SENATE → 2026-TX-US_Senate-AL-NP-General_Election',
+		]);
+	});
+
 	it('keeps Haiku matches pending until accepted', async () => {
 		const counter = { calls: 0 };
 		const resolver = makeRaceIdentityResolver({ llmClient: matchClient(counter) });

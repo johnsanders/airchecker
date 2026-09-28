@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import type { RaceObservation } from '../../reconcile/reconcile.js';
 import type { HttpJson } from '../http.js';
 import type { ProviderPoller } from './poller.js';
@@ -14,24 +16,29 @@ import { makeQueryStore } from './queryStore.js';
 // web UI. The caller may inject a persistent queryStore (settings-backed) so edits
 // survive restarts; the default is in-memory and starts empty.
 //   DDHQ_BASE_URL      production host (default https://resultsapi.decisiondeskhq.com)
-//   SIM_BASE_URL       the simulator's mirror, for the Sim environment (default http://localhost:8788)
+//   SIM_BASE_URL       the simulator, for Sim mode (default http://localhost:8788)
 //   DDHQ_CLIENT_ID / DDHQ_CLIENT_SECRET / DDHQ_GRANT_TYPE  (required, except in Sim)
 //   DDHQ_POLL_INTERVAL_MS  (default 60000 — once per minute)
 
 const DEFAULT_POLL_INTERVAL_MS = 60_000;
 
-// DDHQ's test environment serves the same paths from its own host, and the simulator serves
-// them (and Chameleon's) from a recorded night. Which one is polled is runtime state
-// (switchable in the web view), read fresh each poll.
-export type DdhqEnvironment = 'integration' | 'production' | 'sim';
+export type DdhqHost = 'integration' | 'production';
+
+// Live watches the real sources; Sim watches the simulator, which stands in for all three
+// (DDHQ and Chameleon on its mirrors, air on its /air/ page) and says which DDHQ queries
+// cover the night it's serving. In Live, DDHQ is either production or its test host.
+// Both are runtime state (switchable in the web view), read fresh each poll.
+export type Mode = 'live' | 'sim';
 
 export const simBaseUrl = (): string => process.env.SIM_BASE_URL ?? 'http://localhost:8788';
 
-export const ddhqBaseUrl = (environment: DdhqEnvironment): string => {
-	if (environment === 'integration') return 'https://resultsapi-integration.decisiondeskhq.com';
-	if (environment === 'sim') return simBaseUrl();
+export const ddhqBaseUrl = (mode: Mode, host: DdhqHost): string => {
+	if (mode === 'sim') return simBaseUrl();
+	if (host === 'integration') return 'https://resultsapi-integration.decisiondeskhq.com';
 	return process.env.DDHQ_BASE_URL ?? 'https://resultsapi.decisiondeskhq.com';
 };
+
+const simQueriesSchema = z.object({ queries: z.array(z.string()) });
 
 export type ProviderSource = {
 	intervalMs: number;
@@ -40,7 +47,8 @@ export type ProviderSource = {
 };
 
 export type ProviderSourceOptions = {
-	getEnvironment?: () => DdhqEnvironment; // default production
+	getHost?: () => DdhqHost; // default production
+	getMode?: () => Mode; // default live
 	http?: HttpJson;
 	// One query failing doesn't fail the poll (the others still run), so it's reported
 	// here rather than thrown.
@@ -68,10 +76,16 @@ export const makeProviderSource = (
 	queryStore: QueryStore = makeQueryStore(),
 	options: ProviderSourceOptions = {},
 ): ProviderSource => {
-	const getEnvironment = options.getEnvironment ?? (() => 'production');
-	const getCredentials = () => (getEnvironment() === 'sim' ? SIM_CREDENTIALS : readCredentials());
-	const getBaseUrl = (): string => ddhqBaseUrl(getEnvironment());
+	const getMode = options.getMode ?? (() => 'live');
+	const getHost = options.getHost ?? (() => 'production');
+	const getCredentials = () => (getMode() === 'sim' ? SIM_CREDENTIALS : readCredentials());
+	const getBaseUrl = (): string => ddhqBaseUrl(getMode(), getHost());
 	const http = options.http ?? makeFetchHttp();
+	// In Sim the saved query list is set aside: the simulator names the races it's serving.
+	const getQueries = async (): Promise<string[]> =>
+		getMode() === 'sim'
+			? simQueriesSchema.parse(await http.getJson(`${simBaseUrl()}/api/sim/queries`)).queries
+			: queryStore.get();
 	const auth = makeDdhqAuth({ getBaseUrl, getCredentials, http });
 	const intervalRaw = Number(process.env.DDHQ_POLL_INTERVAL_MS);
 	const intervalMs =
@@ -80,7 +94,7 @@ export const makeProviderSource = (
 	const poller = makeProviderPoller({
 		auth,
 		getBaseUrl,
-		getQueries: queryStore.get,
+		getQueries,
 		http,
 		...(options.onQueryError === undefined ? {} : { onError: options.onQueryError }),
 		onObservations,

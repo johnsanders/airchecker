@@ -18,6 +18,7 @@ export type LiveSession = {
 
 export type LiveSessionConfig = {
 	baseDir: string;
+	meta?: () => Record<string, unknown>; // written into each new session's recording
 	onStart: () => void; // start the pollers + air scheduler
 	onStop: () => void; // stop them
 };
@@ -58,7 +59,11 @@ export const makeLiveSession = (config: LiveSessionConfig): LiveSession => {
 		start: () => {
 			if (current !== undefined) return status();
 			current = {
-				recorder: makeRecorder({ baseDir: config.baseDir, sessionId: newSessionId() }),
+				recorder: makeRecorder({
+					baseDir: config.baseDir,
+					sessionId: newSessionId(),
+					...(config.meta === undefined ? {} : { meta: config.meta() }),
+				}),
 				startedAt: Date.now(),
 			};
 			config.onStart();

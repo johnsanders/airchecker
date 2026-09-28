@@ -15,7 +15,7 @@ import type { SessionStatus } from '../runtime/liveSession.js';
 import type { SourceError } from '../runtime/sourceErrors.js';
 import type { CadenceConfig, CaptureResult } from '../sources/air/captureScheduler.js';
 import type { MatchStore } from '../sources/air/matchStore.js';
-import type { DdhqEnvironment } from '../sources/provider/providerSource.js';
+import type { DdhqHost, Mode } from '../sources/provider/providerSource.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
 import type { Store } from '../store/store.js';
 import type { ChangeBus } from './changeBus.js';
@@ -37,16 +37,17 @@ export type WebServerConfig = {
 	// When present, the server opens a /ws endpoint and pushes a "changed" nudge over
 	// it on every state change, so the client refetches on demand instead of polling.
 	changeBus?: ChangeBus;
-	// Which DDHQ host is polled (production, integration, or the simulator's mirror, which
-	// Chameleon follows), switchable live; omitted if DDHQ isn't wired.
-	ddhqEnvironment?: { get: () => DdhqEnvironment; set: (next: DdhqEnvironment) => void };
+	// Which DDHQ host Live mode polls (production or integration); omitted if DDHQ isn't wired.
+	ddhqHost?: { get: () => DdhqHost; set: (next: DdhqHost) => void };
 	// Newest-first raise/clear events; omitted if alert history isn't wired.
 	getAlertHistory?: (limit?: number) => AlertEvent[];
 	getCadence?: () => CadenceConfig;
 	getLastFrame?: () => LastFrameView | undefined;
 	getRecentAlerts: () => Anomaly[];
 	getSourceError?: (source: SourceName) => SourceError | undefined; // current poll/capture failure
-	matchStore?: MatchStore; // air tab URL-match get/set; omitted if air isn't wired
+	matchStore?: MatchStore; // Live mode's air tab URL-match get/set; omitted if air isn't wired
+	// Live (the real sources) or Sim (the simulator on all three); omitted if not switchable.
+	mode?: { get: () => Mode; set: (next: Mode) => void };
 	onRaceRelink?: (source: SourceName, sourceRaceKey: string, canonicalRaceKey: string) => void;
 	queryStore?: QueryStore; // DDHQ queries get/set; omitted if DDHQ isn't configured
 	raceIdentity?: RaceIdentityResolver;
@@ -159,11 +160,12 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			airMatch: config.matchStore?.get() ?? null,
 			alerts: config.getRecentAlerts().slice(-100).reverse(),
 			cadence: config.getCadence?.() ?? null,
-			ddhqEnvironment: config.ddhqEnvironment?.get() ?? null,
+			ddhqHost: config.ddhqHost?.get() ?? null,
 			lastFrame:
 				lastFrame === undefined
 					? null
 					: { observations: lastFrame.observations.map(serializeObservation), ts: lastFrame.ts },
+			mode: config.mode?.get() ?? null,
 			pendingLinkCount:
 				config.raceIdentity
 					?.getSnapshot()
@@ -364,15 +366,31 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		return { queries: config.queryStore.get() };
 	});
 
-	app.post<{ Body: { environment?: unknown } }>('/api/ddhq-environment', (req, reply) => {
-		if (config.ddhqEnvironment === undefined)
-			return reply.code(409).send({ error: 'DDHQ environment is not switchable here' });
-		const environment = req.body.environment;
-		if (environment !== 'production' && environment !== 'integration' && environment !== 'sim')
-			return reply.code(400).send({ error: 'environment must be production, integration or sim' });
-		config.ddhqEnvironment.set(environment);
+	app.post<{ Body: { host?: unknown } }>('/api/ddhq-host', (req, reply) => {
+		if (config.ddhqHost === undefined)
+			return reply.code(409).send({ error: 'DDHQ host is not switchable here' });
+		const host = req.body.host;
+		if (host !== 'production' && host !== 'integration')
+			return reply.code(400).send({ error: 'host must be production or integration' });
+		config.ddhqHost.set(host);
 		changeBus?.broadcast({ type: 'changed' });
-		return { environment: config.ddhqEnvironment.get() };
+		return { host: config.ddhqHost.get() };
+	});
+
+	// Refused while monitoring, so one session never mixes live and simulated sources.
+	app.post<{ Body: { mode?: unknown } }>('/api/mode', (req, reply) => {
+		if (config.mode === undefined)
+			return reply.code(409).send({ error: 'mode is not switchable here' });
+		const mode = req.body.mode;
+		if (mode !== 'live' && mode !== 'sim')
+			return reply.code(400).send({ error: 'mode must be live or sim' });
+		if (config.session?.status().running === true && mode !== config.mode.get())
+			return reply
+				.code(409)
+				.send({ error: 'stop monitoring before switching between Live and Sim' });
+		config.mode.set(mode);
+		changeBus?.broadcast({ type: 'changed' });
+		return { mode: config.mode.get() };
 	});
 
 	// Which browser tab the air capturer grabs (URL substring), switchable live.

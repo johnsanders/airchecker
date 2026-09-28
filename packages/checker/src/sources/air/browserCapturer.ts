@@ -11,6 +11,11 @@ import puppeteer from 'puppeteer-core';
 // urlMatch is a GETTER read fresh each capture, so the web UI can switch which tab
 // is grabbed at runtime without a restart.
 //
+// Frames are always 1920×1080: the tab's viewport is pinned there at 1× (CDP emulation,
+// which lasts as long as this connection), whatever the window's size or the display's
+// pixel density. The template crop regions are fractions of a full 16:9 frame, and a
+// bigger frame only gets shrunk again before the vision calls.
+//
 // DRM caveat: stream.directv.com is Widevine-protected. A CDP screenshot of
 // protected video can come back BLACK (the protected layer doesn't composite into
 // page.screenshot). The air probe verified real pixels for this stream; if a
@@ -28,6 +33,8 @@ export type BrowserCapturerConfig = {
 
 export const DEFAULT_BROWSER_URL = 'http://localhost:9222';
 const DEFAULT_URL_MATCH = 'directv';
+const FRAME = { deviceScaleFactor: 1, height: 1080, width: 1920 };
+const RELAYOUT_MS = 500; // let the page lay itself out at the new size before the first shot
 
 export const makeBrowserCapturer = (config: BrowserCapturerConfig = {}): BrowserCapturer => {
 	const browserURL = config.browserURL ?? DEFAULT_BROWSER_URL;
@@ -52,6 +59,11 @@ export const makeBrowserCapturer = (config: BrowserCapturerConfig = {}): Browser
 	return {
 		captureOnce: async () => {
 			const page = await findPage();
+			const viewport = page.viewport();
+			if (viewport?.width !== FRAME.width || viewport.height !== FRAME.height) {
+				await page.setViewport(FRAME);
+				await new Promise((resolve) => setTimeout(resolve, RELAYOUT_MS));
+			}
 			const shot = await page.screenshot({ type: 'png' });
 			return Buffer.from(shot);
 		},
