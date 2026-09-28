@@ -18,11 +18,11 @@ npm run frontend:dev     # hot-reload control page on :5174, proxied to :8788
 ```
 src/
   main.ts           composition + listen
-  settings.ts       what the recorder polls (DDHQ query list, host, sample interval), in settings.json
+  settings.ts       what the recorder polls (DDHQ query list, host, sample interval) and a night's airSource (invented or ddhqIntegration), in settings.json
   sources/          HttpJson over fetch, DDHQ OAuth (copied from the checker)
   recording/        API recording sqlite format, recorder (Record button), record loop (sample interval from settings, default 60 s), recording HTTP wrapper
   playback/         playback clock (1× only) + the mirror's answers
-  air/              the simulated night: races.ts (races.json), night.ts (the invented results and source lags), schedule.ts (what airs when), nightMirror.ts (the night as DDHQ and Chameleon responses), airShow.ts (runs a night);
+  air/              the simulated night: races.ts (races.json), night.ts (the invented results and source lags), liveResults.ts (a night's numbers pulled from DDHQ's integration host instead), schedule.ts (what airs when), nightMirror.ts (the night as DDHQ and Chameleon responses), airShow.ts (runs a night);
                     airFeed.ts is an unused set of playback hooks for a recording-driven feed
   web/              Fastify control API + mirror (server.ts), Vite/React/MUI SPA (client/)
   tools/buildRaces.ts   takeitems.xml + one DDHQ lookup → races.json (run once; see the file header)
@@ -47,7 +47,8 @@ render-*.mjs, compare.html               render a graphic to PNG; compare a buil
   - **Lagged like the real pipeline** (`night.ts`): DDHQ has each drop first, Chameleon 30 s later, the graphics 19 s after that (the middle of the checker's 3–35 s air-to-Chameleon window). Every source carries the same whole-vote counts, so percents never disagree by rounding.
   - **Ground truth.** `GET /api/air/aired?ts=` says what was on screen at any moment of any night this process ran; the checker's `scoreSimAir.ts` scores a session against it.
   - **What airs.** The ticker is always up and moves to the next race every 8 s, through all 116 races in a shuffled order. Every 10–20 s an L3 or FS comes up over the program for 10 s.
-  - **The results are invented** (`night.ts`, seeded): each race gets hidden final numbers and a reporting window, with results landing in drops 1–2.5 min apart. % in (a whole number) and votes only rise, shares settle from an early lean, and a race is called once enough is in for its margin (a blowout at poll close, a very close one never). Once the night's length is up everything holds its final numbers and keeps cycling.
+  - **The results are invented by default** (`night.ts`, seeded): each race gets hidden final numbers and a reporting window, with results landing in drops 1–2.5 min apart. % in (a whole number) and votes only rise, shares settle from an early lean, and a race is called once enough is in for its margin (a blowout at poll close, a very close one never). Once the night's length is up everything holds its final numbers and keeps cycling.
+  - **Or, during a DDHQ testing window, pulled live from DDHQ's integration host.** The airSource setting (invented / DDHQ integration, on the control page next to Start) picks which a night uses, decided once at Start — changing it mid-night takes effect on the next one. In DDHQ integration mode, `liveResults.ts` polls every race in races.json by `race_ids` (50 per request) every 60 s (DDHQ's own integration cache interval), started and stopped with the night; air, DDHQ and Chameleon all read that cache instead of `raceAt`, so there's no lag simulation and a race not yet in the cache just reads as not started. Poll failures show on the control page.
   - **Layout rules.** The Democrat is always left (cand1) and the Republican right (cand2); with no Democrat, the likeliest opponent (I, then L) takes the left. House races read `FL-22`. No headshots.
   - **The newscast** is `recordings/air/background.mp4` (gitignored, so each machine supplies its own): a clip of NewsNation air with no election graphics in it, so everything the checker reads comes from the simulator.
   - **In the checker**, switch to Sim and open `http://localhost:8788/air/` in the debug Chrome. The program under the ticker (newscast, L3, FS) is squeezed back as on air: up 42 px and scaled to .979 tall from the top.

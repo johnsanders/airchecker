@@ -10,7 +10,7 @@ import type { AirShow } from '../air/airShow.js';
 import type { ApiPlayback, MirrorAnswer } from '../playback/apiPlayback.js';
 import type { ApiRecorder } from '../recording/apiRecorder.js';
 import type { ApiResponseQuery, ApiSource } from '../recording/apiRecording.js';
-import type { DdhqEnvironment, SettingsStore } from '../settings.js';
+import type { AirSource, DdhqEnvironment, SettingsStore } from '../settings.js';
 
 import { MAX_INTERVAL_SECONDS, MIN_INTERVAL_SECONDS } from '../settings.js';
 
@@ -29,6 +29,7 @@ export type WebServerConfig = {
 	settings: SettingsStore;
 };
 
+const AIR_SOURCES: readonly AirSource[] = ['ddhqIntegration', 'invented'];
 const API_SOURCES: readonly ApiSource[] = ['DDHQ', 'Ross'];
 const ENVIRONMENTS: readonly DdhqEnvironment[] = ['integration', 'production'];
 const RESPONSES_PAGE = 200;
@@ -88,11 +89,19 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	app.get('/api/settings', () => config.settings.get());
 
 	app.post<{
-		Body: { environment?: unknown; intervalSeconds?: unknown; queries?: unknown } | null;
+		Body: {
+			airSource?: unknown;
+			environment?: unknown;
+			intervalSeconds?: unknown;
+			queries?: unknown;
+		} | null;
 	}>('/api/settings', (req, reply) => {
+		const airSource = req.body?.airSource;
 		const environment = req.body?.environment;
 		const intervalSeconds = req.body?.intervalSeconds;
 		const queries = req.body?.queries;
+		if (!AIR_SOURCES.includes(airSource as AirSource))
+			return reply.code(400).send({ error: 'airSource must be invented or ddhqIntegration' });
 		if (!ENVIRONMENTS.includes(environment as DdhqEnvironment))
 			return reply.code(400).send({ error: 'environment must be production or integration' });
 		if (
@@ -107,6 +116,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		if (!Array.isArray(queries) || !queries.every((query) => typeof query === 'string'))
 			return reply.code(400).send({ error: 'queries must be an array of strings' });
 		return config.settings.set({
+			airSource: airSource as AirSource,
 			environment: environment as DdhqEnvironment,
 			intervalSeconds,
 			queries: queries.map((query) => query.trim()).filter((query) => query.length > 0),
@@ -115,6 +125,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 
 	const status = () => ({
 		air: config.airShow.status(),
+		liveResultErrors: config.airShow.liveResultErrors(),
 		playback: config.playback.status() ?? null,
 		recordErrors: config.recorder.status().recording === null ? [] : config.recordErrors(),
 		recording: config.recorder.status().recording,

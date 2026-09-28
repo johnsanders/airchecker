@@ -3,10 +3,12 @@ import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import type { Status } from '../api.js';
+import type { AirSource, Settings, Status } from '../api.js';
 
 import { api } from '../api.js';
 
@@ -21,12 +23,19 @@ const minutes = (ms: number): string =>
 	`${Math.floor(ms / 60_000)}m ${Math.floor((ms % 60_000) / 1000)}s`;
 
 // Runs the simulated air feed at /air/: the ticker always up, an L3 or FS every 10–20 s,
-// over a looping newscast, filled from an invented night of results. Start rolls a new
-// night (a restart is just another Start).
+// over a looping newscast, filled from a night of results — invented, or, during a DDHQ
+// testing window, pulled live from DDHQ's integration host. Start rolls a new night (a
+// restart is just another Start); the source picked at Start is what that night uses,
+// so changing it mid-night takes effect on the next one.
 const AirPanel: React.FC<Props> = (props) => {
 	const [durationMinutes, setDurationMinutes] = React.useState(String(DEFAULT_MINUTES));
+	const [settings, setSettings] = React.useState<Settings | undefined>(undefined);
 	const [msg, setMsg] = React.useState('');
 	const air = props.status?.air ?? null;
+
+	React.useEffect(() => {
+		void api.getSettings().then(setSettings);
+	}, []);
 
 	const act = async (action: () => Promise<unknown>): Promise<void> => {
 		try {
@@ -38,9 +47,30 @@ const AirPanel: React.FC<Props> = (props) => {
 		await props.onChange();
 	};
 
+	const setAirSource = async (airSource: AirSource): Promise<void> => {
+		// Refetched, not the settings this loaded with: SettingsEditor writes the same
+		// object, and a stale copy of it here would clobber that.
+		const latest = await api.getSettings();
+		setSettings(await api.setSettings({ ...latest, airSource }));
+	};
+
 	return (
 		<Box>
 			<Stack alignItems="center" direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1 }}>
+				<ToggleButtonGroup
+					disabled={air !== null}
+					exclusive={true}
+					onChange={(_event, next: AirSource | null) => {
+						if (next !== null) void setAirSource(next);
+					}}
+					size="small"
+					value={settings?.airSource ?? 'invented'}
+				>
+					<ToggleButton value="invented">Invented</ToggleButton>
+					<ToggleButton color="warning" value="ddhqIntegration">
+						DDHQ integration
+					</ToggleButton>
+				</ToggleButtonGroup>
 				<TextField
 					label="night length (min)"
 					onChange={(event) => setDurationMinutes(event.target.value)}
@@ -72,6 +102,11 @@ const AirPanel: React.FC<Props> = (props) => {
 					{msg}
 				</Typography>
 			</Stack>
+			{props.status !== undefined && props.status.liveResultErrors.length > 0 && (
+				<Typography color="error" sx={{ display: 'block', mb: 1 }} variant="caption">
+					DDHQ integration: {props.status.liveResultErrors.join('; ')}
+				</Typography>
+			)}
 			<Typography color="text.secondary" sx={{ display: 'block' }} variant="caption">
 				While a night runs, the DDHQ and Chameleon mirrors serve it too (starting one stops any
 				recording playback). Put the checker in Sim mode and open the feed (

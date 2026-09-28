@@ -29,7 +29,11 @@ const SettingsEditor: React.FC = () => {
 
 	const save = async (): Promise<void> => {
 		try {
+			// Refetched, not the settings this loaded with: AirPanel's airSource toggle writes
+			// the same object, and a stale copy of it here would clobber that.
+			const latest = await api.getSettings();
 			const saved = await api.setSettings({
+				...latest,
 				environment,
 				intervalSeconds: Number(intervalText),
 				queries: text.split('\n'),

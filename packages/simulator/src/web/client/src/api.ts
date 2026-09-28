@@ -1,6 +1,8 @@
 // Typed fetch wrappers + shared response shapes for the simulator's control API. These
 // mirror src/web/server.ts; kept narrow to what the UI renders.
 
+export type AirSource = 'ddhqIntegration' | 'invented';
+
 export interface AirStatus {
 	called: number;
 	durationMs: number;
@@ -55,6 +57,7 @@ export interface PlaybackStatus {
 }
 
 export interface Settings {
+	airSource: AirSource;
 	environment: DdhqEnvironment;
 	intervalSeconds: number;
 	queries: string[];
@@ -62,6 +65,7 @@ export interface Settings {
 
 export interface Status {
 	air: AirStatus | null;
+	liveResultErrors: string[]; // the live-results poll's last check, while a ddhqIntegration night runs
 	playback: null | PlaybackStatus;
 	recordErrors: string[]; // the record loop's last check, while recording
 	recording: { name: string; responseCount: number; startedAt: number } | null;

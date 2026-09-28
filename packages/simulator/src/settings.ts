@@ -1,12 +1,23 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
 
-// What the recorder polls: the DDHQ query list, host and sample interval. Kept in a small JSON file so
-// they survive restarts; edited from the web view.
+// Persisted, editable-from-the-web settings: what the recorder polls (the DDHQ query
+// list, host and sample interval) and what a simulated night's numbers come from.
+// Kept in a small JSON file so they survive restarts.
+
+// 'invented' makes up a night's numbers (night.ts); 'ddhqIntegration' pulls them from
+// DDHQ's integration host instead (liveResults.ts), for testing against DDHQ during
+// its testing windows.
+export type AirSource = 'ddhqIntegration' | 'invented';
 
 export type DdhqEnvironment = 'integration' | 'production';
 
-export type Settings = { environment: DdhqEnvironment; intervalSeconds: number; queries: string[] };
+export type Settings = {
+	airSource: AirSource;
+	environment: DdhqEnvironment;
+	intervalSeconds: number;
+	queries: string[];
+};
 
 // Below this a tick's paging can outrun the next one; above it nothing moves on air.
 export const MIN_INTERVAL_SECONDS = 5;
@@ -18,13 +29,20 @@ export type SettingsStore = {
 };
 
 const settingsSchema = z.object({
+	// Settings files from before airSource existed lack it.
+	airSource: z.enum(['ddhqIntegration', 'invented']).default('invented'),
 	environment: z.enum(['integration', 'production']),
 	// Settings files from before the interval was editable lack it.
 	intervalSeconds: z.number().int().min(MIN_INTERVAL_SECONDS).max(MAX_INTERVAL_SECONDS).default(60),
 	queries: z.array(z.string()),
 });
 
-const DEFAULTS: Settings = { environment: 'production', intervalSeconds: 60, queries: [] };
+const DEFAULTS: Settings = {
+	airSource: 'invented',
+	environment: 'production',
+	intervalSeconds: 60,
+	queries: [],
+};
 
 export const ddhqBaseUrl = (environment: DdhqEnvironment): string =>
 	environment === 'integration'

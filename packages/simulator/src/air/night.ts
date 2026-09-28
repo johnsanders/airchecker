@@ -65,6 +65,10 @@ export type RaceResult = {
 	totalVotes: number;
 };
 
+// What schedule.ts and nightMirror.ts read a race's result from. raceAt is one
+// (the invented night); liveResultFor (liveResults.ts) is the other.
+export type ResultResolver = (plan: RacePlan, elapsedMs: number) => RaceResult;
+
 type GraphicCandidate = {
 	isWinner: boolean;
 	name: string;

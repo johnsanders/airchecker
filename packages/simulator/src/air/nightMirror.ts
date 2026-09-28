@@ -1,4 +1,4 @@
-import type { Night, RacePlan, RaceResult } from './night.js';
+import type { Night, RacePlan, RaceResult, ResultResolver } from './night.js';
 
 import { CHAMELEON_LAG_MS, DDHQ_LAG_MS, raceAt } from './night.js';
 
@@ -69,12 +69,18 @@ const ddhqRace = (plan: RacePlan, result: RaceResult, updatedAt: string) => ({
 	year: plan.race.ddhq.year,
 });
 
-export const ddhqResponse = (night: Night, elapsedMs: number, nowMs: number, query: string) => {
+export const ddhqResponse = (
+	night: Night,
+	elapsedMs: number,
+	nowMs: number,
+	query: string,
+	resolveResult: ResultResolver = raceAt,
+) => {
 	const params = new URLSearchParams(query);
 	const updatedAt = new Date(nowMs).toISOString();
 	const data = night.plans
 		.filter((plan) => matchesQuery(plan, params))
-		.map((plan) => ddhqRace(plan, raceAt(plan, elapsedMs - DDHQ_LAG_MS), updatedAt));
+		.map((plan) => ddhqRace(plan, resolveResult(plan, elapsedMs - DDHQ_LAG_MS), updatedAt));
 	return {
 		data,
 		limit: data.length,
@@ -129,12 +135,17 @@ const chameleonContest = (plan: RacePlan, result: RaceResult, modifiedDate: stri
 	raceID: String(plan.race.ddhq.raceId),
 });
 
-export const chameleonPlaylist = (night: Night, elapsedMs: number, nowMs: number) => {
+export const chameleonPlaylist = (
+	night: Night,
+	elapsedMs: number,
+	nowMs: number,
+	resolveResult: ResultResolver = raceAt,
+) => {
 	const modifiedDate = new Date(nowMs - CHAMELEON_LAG_MS).toISOString();
 	return {
 		ElectionPlaylist: {
 			contest: night.plans.map((plan) =>
-				chameleonContest(plan, raceAt(plan, elapsedMs - CHAMELEON_LAG_MS), modifiedDate),
+				chameleonContest(plan, resolveResult(plan, elapsedMs - CHAMELEON_LAG_MS), modifiedDate),
 			),
 			id: 133,
 			name: 'DDHQ MAIN',

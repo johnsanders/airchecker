@@ -2,6 +2,7 @@ import type { ApiResponseRow } from './recording/apiRecording.js';
 
 import { makeAirFeed } from './air/airFeed.js';
 import { makeAirShow } from './air/airShow.js';
+import { makeLiveResults } from './air/liveResults.js';
 import { loadRaces } from './air/races.js';
 import { makeApiPlayback } from './playback/apiPlayback.js';
 import { makeApiRecorder } from './recording/apiRecorder.js';
@@ -14,7 +15,8 @@ import { makeWebServer } from './web/server.js';
 
 // Simulator server: records the live DDHQ + Chameleon APIs and plays recordings back
 // on mirror endpoints. Env: DDHQ_CLIENT_ID / DDHQ_CLIENT_SECRET / DDHQ_GRANT_TYPE
-// (recording only), DDHQ_BASE_URL (production host override), PORT (default 8788).
+// (recording and a live-DDHQ-integration night), DDHQ_BASE_URL (production host
+// override), PORT (default 8788).
 
 const RECORDINGS_DIR = 'recordings';
 
@@ -51,8 +53,22 @@ const main = async (): Promise<void> => {
 		onStop: recordLoop.stop,
 	});
 	const playback = makeApiPlayback({ airFeed: makeAirFeed(), baseDir: RECORDINGS_DIR });
+	const races = loadRaces('races.json');
+	const liveResults = makeLiveResults({
+		auth: makeDdhqAuth({
+			getBaseUrl: () => ddhqBaseUrl('integration'),
+			getCredentials: readCredentials,
+			http: fetchHttp,
+		}),
+		http: fetchHttp,
+		races,
+	});
 	const web = makeWebServer({
-		airShow: makeAirShow({ races: loadRaces('races.json') }),
+		airShow: makeAirShow({
+			getAirSource: () => settings.get().airSource,
+			liveResults,
+			races,
+		}),
 		playback,
 		recorder,
 		recordErrors: recordLoop.errors,

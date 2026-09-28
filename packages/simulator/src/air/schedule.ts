@@ -1,4 +1,4 @@
-import type { GraphicData, Night, RacePlan } from './night.js';
+import type { GraphicData, Night, RacePlan, ResultResolver } from './night.js';
 
 import { AIR_LAG_MS, graphicData, raceAt } from './night.js';
 import { between, makeRandom, pick, seedFrom, shuffle } from './random.js';
@@ -6,7 +6,8 @@ import { between, makeRandom, pick, seedFrom, shuffle } from './random.js';
 // What's on air at a moment of the night. The ticker is always up and moves to the next
 // race every 8 s, through every race in a shuffled order that's reshuffled each pass.
 // Over it, an L3 or FS comes up after a 10–20 s gap, holds 10 s, and the cycle repeats.
-// The numbers in them trail the night by AIR_LAG_MS, as graphics trail DDHQ.
+// The numbers in them trail the night by AIR_LAG_MS, as graphics trail DDHQ — unless
+// resolveResult is a source with no notion of lag (liveResultFor), which just ignores it.
 
 export const TICKER_SLOT_MS = 8_000;
 export const OVERLAY_MS = 10_000;
@@ -52,7 +53,11 @@ const overlayAt = (night: Night, elapsedMs: number): OverlayCycle | undefined =>
 	return elapsedMs < cycle.showAtMs ? undefined : cycle;
 };
 
-export const onAirAt = (night: Night, elapsedMs: number): OnAir => {
+export const onAirAt = (
+	night: Night,
+	elapsedMs: number,
+	resolveResult: ResultResolver = raceAt,
+): OnAir => {
 	const ticker = tickerPlan(night, elapsedMs);
 	const overlay = overlayAt(night, elapsedMs);
 	return {
@@ -60,12 +65,12 @@ export const onAirAt = (night: Night, elapsedMs: number): OnAir => {
 			overlay === undefined
 				? null
 				: {
-						data: graphicData(overlay.plan, raceAt(overlay.plan, elapsedMs - AIR_LAG_MS)),
+						data: graphicData(overlay.plan, resolveResult(overlay.plan, elapsedMs - AIR_LAG_MS)),
 						kind: overlay.kind,
 						raceKey: overlay.plan.race.key,
 					},
 		ticker: {
-			data: graphicData(ticker, raceAt(ticker, elapsedMs - AIR_LAG_MS)),
+			data: graphicData(ticker, resolveResult(ticker, elapsedMs - AIR_LAG_MS)),
 			raceKey: ticker.race.key,
 		},
 	};

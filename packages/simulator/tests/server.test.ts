@@ -169,28 +169,39 @@ describe('mirror endpoints', () => {
 });
 
 describe('control API', () => {
-	it('saves the recorder settings, trimmed, and rejects bad ones', async () => {
+	it('saves the recorder and air settings, trimmed, and rejects bad ones', async () => {
 		const { app } = setup();
 		const saved = await app.inject({
 			method: 'POST',
-			payload: { environment: 'integration', intervalSeconds: 15, queries: [' state=TX ', ''] },
+			payload: {
+				airSource: 'ddhqIntegration',
+				environment: 'integration',
+				intervalSeconds: 15,
+				queries: [' state=TX ', ''],
+			},
 			url: '/api/settings',
 		});
-		const expected = { environment: 'integration', intervalSeconds: 15, queries: ['state=TX'] };
+		const expected = {
+			airSource: 'ddhqIntegration',
+			environment: 'integration',
+			intervalSeconds: 15,
+			queries: ['state=TX'],
+		};
 		expect(saved.json()).toEqual(expected);
 		expect((await app.inject({ method: 'GET', url: '/api/settings' })).json()).toEqual(expected);
 		const statuses = await Promise.all(
 			[
-				{ environment: 'sim', intervalSeconds: 60, queries: [] },
-				{ environment: 'production', intervalSeconds: 1, queries: [] },
-				{ environment: 'production', intervalSeconds: 7.5, queries: [] },
-				{ environment: 'production', queries: [] },
+				{ airSource: 'made-up', environment: 'production', intervalSeconds: 60, queries: [] },
+				{ airSource: 'invented', environment: 'sim', intervalSeconds: 60, queries: [] },
+				{ airSource: 'invented', environment: 'production', intervalSeconds: 1, queries: [] },
+				{ airSource: 'invented', environment: 'production', intervalSeconds: 7.5, queries: [] },
+				{ airSource: 'invented', environment: 'production', queries: [] },
 			].map(
 				async (payload) =>
 					(await app.inject({ method: 'POST', payload, url: '/api/settings' })).statusCode,
 			),
 		);
-		expect(statuses).toEqual([400, 400, 400, 400]);
+		expect(statuses).toEqual([400, 400, 400, 400, 400]);
 	});
 
 	it('lists and browses recordings', async () => {

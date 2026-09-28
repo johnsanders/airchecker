@@ -54,6 +54,7 @@ describe('makeRecordLoop', () => {
 			chameleonUrl: VENDOR,
 			ddhqHttp,
 			getSettings: () => ({
+				airSource: 'invented',
 				environment: 'production',
 				intervalSeconds: 60,
 				queries: ['state=TX', 'state=ZZ'],
@@ -92,6 +93,7 @@ describe('makeRecordLoop', () => {
 			chameleonUrl: VENDOR,
 			ddhqHttp: makeRecordingHttp(routedHttp({}), 'DDHQ', (row) => rows.push(row)),
 			getSettings: () => ({
+				airSource: 'invented',
 				environment: 'production',
 				intervalSeconds: 60,
 				queries: ['state=TX'],
