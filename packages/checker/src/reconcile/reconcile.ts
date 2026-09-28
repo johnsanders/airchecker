@@ -52,6 +52,8 @@ export type RaceObservation = {
 	pctIn: number;
 	// Air only: the graphic printed ">N% IN", so pctIn is a floor, not a point value.
 	pctInIsMinimum?: boolean;
+	// DDHQ race_id. Ross carries it too (Chameleon raceID), which links the race by ID.
+	providerRaceId?: string;
 	raceKey: string; // canonical reconciliation bucket key
 	reportedAt: null | number;
 	source: SourceName;

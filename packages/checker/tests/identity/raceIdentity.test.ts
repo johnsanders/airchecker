@@ -85,6 +85,51 @@ describe('race identity resolver', () => {
 		);
 	});
 
+	it('links a vendor race by its DDHQ race_id even when the keys differ', async () => {
+		const resolver = makeRaceIdentityResolver();
+		await resolver.resolveObservation({
+			...obs('DDHQ', '2026-TX-US_House-9-NP-General_Election'),
+			providerRaceId: '295078',
+		});
+		const resolved = await resolver.resolveObservation({
+			...obs('Ross', '2026-TX-US_House-09-NP-General'),
+			providerRaceId: '295078',
+		});
+
+		expect(resolved.raceKey).toBe('2026-TX-US_House-9-NP-General_Election');
+		expect(resolver.getAlias('Ross', '2026-TX-US_House-09-NP-General')?.method).toBe(
+			'deterministic',
+		);
+	});
+
+	it('never links a vendor race with a race_id by key, nor asks Haiku; it waits for that race', async () => {
+		const counter = { calls: 0 };
+		const resolver = makeRaceIdentityResolver({ llmClient: matchClient(counter) });
+		await resolver.resolveObservation({
+			...obs('DDHQ', '2026-TX-US Senate-AL-R-General'),
+			providerRaceId: '111',
+		});
+
+		const early = await resolver.resolveObservation({
+			...obs('Ross', '2026-TX-US Senate-AL-R-General', 2_000),
+			providerRaceId: '222',
+		});
+		await resolver.whenIdle();
+		expect(early.raceKey).toBe('provisional:Ross:2026-TX-US-Senate-AL-R-General');
+		expect(counter.calls).toBe(0);
+
+		await resolver.resolveObservation({
+			...obs('DDHQ', '2026-TX-US Senate-AL-R-Special', 3_000),
+			providerRaceId: '222',
+		});
+		const linked = await resolver.resolveObservation({
+			...obs('Ross', '2026-TX-US Senate-AL-R-General', 4_000),
+			providerRaceId: '222',
+		});
+		expect(linked.raceKey).toBe('2026-TX-US Senate-AL-R-Special');
+		expect(counter.calls).toBe(0);
+	});
+
 	it('reconciles an air race seen before DDHQ once the canonical lands, exactly once', async () => {
 		const counter = { calls: 0 };
 		const resolver = makeRaceIdentityResolver({ llmClient: matchClient(counter) });

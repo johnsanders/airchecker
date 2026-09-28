@@ -290,6 +290,21 @@ describe('cross-source race key alignment on the real General samples', () => {
 		expect(vendor.raceKey).toBe(provider.raceKey);
 		expect(provider.raceKey).toBe('2026-TX-US_House-9-NP-General_Election');
 	});
+
+	it('carries the DDHQ race_id on both observations', () => {
+		const ddhq = ddhqResponseSchema.parse(ddhqGeneralJson);
+		const chameleon = chameleonResponseSchema.parse(chameleonGeneralJson);
+		const ddhqRace = ddhq.data.find((race) => race.race_id === 295078);
+		const contest = chameleon.ElectionPlaylist.contest.find((c) => c.id === 90203);
+		expect(adaptDdhqRace(ddhqRace!, 1_000).providerRaceId).toBe('295078');
+		expect(adaptContest(contest!, 1_000, 1_000).providerRaceId).toBe('295078');
+	});
+
+	it('leaves providerRaceId off contests from playlists without raceID', () => {
+		const response = chameleonResponseSchema.parse(chameleonJson);
+		const observations = adaptResponse(response, 1_000);
+		expect(observations.every((observation) => !('providerRaceId' in observation))).toBe(true);
+	});
 });
 
 describe('pctIn comes from dbVotesPercent', () => {

@@ -52,6 +52,7 @@ const adaptContest = (
 		candidates,
 		observedAt,
 		pctIn: Number.isNaN(pctInRaw) ? 0 : pctInRaw,
+		...(contest.raceID ? { providerRaceId: contest.raceID } : {}),
 		raceKey,
 		reportedAt: Number.isNaN(modifiedParsed) ? fallbackReportedAt : modifiedParsed,
 		source: 'Ross',

@@ -73,6 +73,9 @@ const contestSchema = z.object({
 	officename: z.string(),
 	party: z.string().nullable(),
 	polls: pollsSchema,
+	// The DDHQ race_id this contest mirrors. Set on the General playlist; absent
+	// on older playlists.
+	raceID: z.string().nullable().optional(),
 });
 
 const electionPlaylistSchema = z.object({

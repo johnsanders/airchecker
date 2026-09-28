@@ -4,7 +4,7 @@ A pick-up sheet for the next session. Full context: [`CLAUDE.md`](CLAUDE.md), th
 
 ## Where we left off (2026-09-25)
 
-The system is retargeted to the **September 2026 graphics package** and proven against it offline. **276 tests, typecheck and lint clean.** Working directory is `~/Developer/airchecker/packages/checker` (`recordings/settings.sqlite` and the June session recordings live here; `.env` is at the repo root; `~/Developer/nn-airchecker-old` holds only leftovers and can be deleted). Since 2026-09-28 the repo is a monorepo: this package plus `packages/simulator` (formerly the sibling repo `elex_sim`).
+The system is retargeted to the **September 2026 graphics package** and proven against it offline. **280 tests, typecheck and lint clean.** Working directory is `~/Developer/airchecker/packages/checker` (`recordings/settings.sqlite` and the June session recordings live here; `.env` is at the repo root; `~/Developer/nn-airchecker-old` holds only leftovers and can be deleted). Since 2026-09-28 the repo is a monorepo: this package plus `packages/simulator` (formerly the sibling repo `elex_sim`).
 
 Done since the July hand-off, in order:
 
@@ -21,7 +21,7 @@ Done since the July hand-off, in order:
 2. ~~Rule: votes up while pct_in down~~ — **dropped**: on statewide/high-profile races `% IN` is a share of estimated turnout and legitimately falls when the estimate is revised up mid-count. Only revisit gated on DDHQ `reporting_type` (precinct-based races).
 3. ~~Fixtures~~ — done 2026-09-26 (`*_general_example.json` in the repo root, see below).
 4. ~~Decide the crop-read model~~ — **switched 2026-09-26** to Gemini 3.8 Flash at low thinking, called **directly on Google** (`DEFAULT_RECALL_MODEL = 'gemini-3.8-flash'`, `GEMINI_API_KEY` in `.env`); 23 frame goldens re-captured; `live` refuses to start without the Anthropic and Gemini keys. OpenRouter stays wired for trials (`google/gemini-3.8-flash` is the same model through the router). Next: the rehearsal on the new default.
-5. **Deterministic Ross→DDHQ linking.** Every Nov 3 Chameleon contest carries `raceID` = the DDHQ `race_id`. Reading it in the adapter and letting the identity resolver alias on it would remove the Haiku proposal + human accept step for vendor races entirely (air races still need it). Small change; decide before the rehearsal.
+5. ~~Deterministic Ross→DDHQ linking~~ — **done 2026-09-28.** Both adapters put the DDHQ `race_id` on the observation as `providerRaceId` (Ross from Chameleon's `raceID`). A Ross race that carries one links to the DDHQ canonical with that ID and nothing else: no key match, no Haiku proposal; it stays provisional until that DDHQ race is polled. Contests without `raceID` (older playlists) link as before. Air races still go through the proposal step.
 6. **Web-view auth** (`WEB_TOKEN`) only if the view leaves localhost.
 7. Deferred, unchanged: magic wall (`provider_direct` path), `judge()`, Slack/paging sinks, EC votes, county-level.
 
@@ -65,7 +65,7 @@ Done 2026-09-26 while waiting on better frames: replay audit of the June recordi
 Run from `packages/checker` (`npm test` and `npx tsc --noEmit && npx eslint .` also work at the repo root, covering both packages).
 
 ```bash
-npm test                                              # 276 tests, hermetic (no API key)
+npm test                                              # 280 tests, hermetic (no API key)
 npx tsc --noEmit && npx eslint .
 npm run backend                                          # full live system + web view (needs .env + VPN)
 npm run chrome                                        # the DirecTV Chrome the air capturer attaches to (CDP :9222)

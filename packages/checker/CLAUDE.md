@@ -41,7 +41,7 @@ src/
     provider/       DDHQ schema + adapter + OAuth paginated poller (queryStore = runtime race list)
     vendor/         Chameleon schema + adapter + poller (VPN-only playlist URL)
     air/            browserCapturer (puppeteer-core over CDP :9222) + captureScheduler + matchStore
-  identity/         raceIdentity — cross-source race-linking (DDHQ canonical spine + provisional buckets + one-time Haiku proposal)
+  identity/         raceIdentity — cross-source race-linking (DDHQ canonical spine + provisional buckets + one-time Haiku proposal; Ross races carrying Chameleon `raceID` link by DDHQ `race_id` only)
   vision/           extractFrame (two-pass VLM: Haiku bulk + Gemini crop read), llmClient, anthropicClient, googleClient, openRouterClient, retryingFetch, liveLlmClient (routes by model ID), goldenClient, cropRegion, redact
   tools/            calibrate / probe / capture-golden / verify (also the model-comparison harness) / measure-call / freeze-session / air-probe / probe-identity; usageMeter totals per-model cost for verify + measure-call
   store/            In-memory ring buffer per source with onRecord hook for recorder
@@ -156,7 +156,6 @@ Known fields not yet modeled (zod default strips them — won't crash, but the a
 - DDHQ `counties[]` (per-county breakdowns — rich data, ignored today)
 - DDHQ `topline_results.voting_data` (absentee/election-day split)
 - DDHQ `expected_winners`, `marquee_race`, `test_data`
-- Chameleon `contest.raceID` — the DDHQ `race_id`, set on every Nov 3 contest. Would make Ross→DDHQ race linking deterministic (no Haiku proposal); not wired yet.
 
 ## Known gaps / deferred work
 
@@ -174,9 +173,9 @@ These are deliberate v1 cuts, written down so they're not forgotten:
 
 types → store → reconciler with unit tests → adapters → recorder → replay player with stub sources → template specs + calibrate → **two-pass `extractFrame` + first golden** → real pollers → air capturer → wire `liveMain` → web view.
 
-Currently done: **the entire build order above, plus the identity resolver, live pollers, the air capturer, `liveMain`, the Fastify + websocket web view, and session goldens.** Proven live against two June 2026 broadcast nights (TX runoffs with all three sources + a DDHQ/Ross primary night). **276 tests passing.**
+Currently done: **the entire build order above, plus the identity resolver, live pollers, the air capturer, `liveMain`, the Fastify + websocket web view, and session goldens.** Proven live against two June 2026 broadcast nights (TX runoffs with all three sources + a DDHQ/Ross primary night). **280 tests passing.**
 
-Next up — see [`NEXT_STEPS.md`](NEXT_STEPS.md) for the current list: the rehearsal with all three sources, deterministic Ross→DDHQ linking via Chameleon's `raceID`, then the still-deferred items below.
+Next up — see [`NEXT_STEPS.md`](NEXT_STEPS.md) for the current list: the rehearsal with all three sources, then the still-deferred items below.
 
 ## Don't (in addition to the root list)
 

@@ -58,6 +58,7 @@ const adaptRace = (race: DdhqRace, observedAt: number): RaceObservation => {
 		candidates,
 		observedAt,
 		pctIn: pctInFor(race),
+		providerRaceId: String(race.race_id),
 		raceKey,
 		reportedAt: Number.isNaN(reportedAt) ? null : reportedAt,
 		source: 'DDHQ',
