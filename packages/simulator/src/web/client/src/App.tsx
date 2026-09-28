@@ -8,6 +8,7 @@ import React from 'react';
 import type { Status } from './api.js';
 
 import { api } from './api.js';
+import AirPanel from './components/AirPanel.js';
 import RecordPanel from './components/RecordPanel.js';
 import SettingsEditor from './components/SettingsEditor.js';
 
@@ -60,6 +61,9 @@ const App: React.FC = () => {
 				</Toolbar>
 			</AppBar>
 			<Box sx={{ p: 2 }}>
+				<Section title="Simulated air">
+					<AirPanel onChange={reload} status={status} />
+				</Section>
 				<Section title="API recordings">
 					<RecordPanel onChange={reload} status={status} />
 				</Section>

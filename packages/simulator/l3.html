@@ -63,6 +63,10 @@
 
   .names { left: 192px; top: 0; width: 319px; height: 97px; color: var(--top); }
   .names > * { transform-origin: 0 50%; }
+  /* A called race: gold check left of the surname, which moves over for it (as on air). */
+  .check { display: none; left: 6.5px; top: 51px; width: 40px; height: 40px; }
+  .winner .check { display: block; }
+  .winner .last { left: 52.5px; }
   .first { left: 18px; top: 16.7px; font-weight: 600; font-size: 30px; }
   .last  { left: 6.5px; top: 40.1px; font-weight: 800; font-size: 48px; }
 
@@ -89,13 +93,13 @@
   <div class="cand c1" id="cand1">
     <div class="photo-area"><img alt=""></div>
     <div class="bracket"></div><div class="party"></div>
-    <div class="names"><div class="first"></div><div class="last"></div></div>
+    <div class="names"><div class="first"></div><div class="last"></div><svg class="check" viewBox="0 0 34 34" aria-label="Projected winner"><path d="M1.5 23 L11.5 31.5 L30.5 1.5" fill="none" stroke="#ecb81c" stroke-width="6" stroke-linejoin="miter"/></svg></div>
     <div class="box"><div class="pct"></div><div class="votes"></div></div>
   </div>
   <div class="cand c2" id="cand2">
     <div class="photo-area"><img alt=""></div>
     <div class="bracket"></div><div class="party"></div>
-    <div class="names"><div class="first"></div><div class="last"></div></div>
+    <div class="names"><div class="first"></div><div class="last"></div><svg class="check" viewBox="0 0 34 34" aria-label="Projected winner"><path d="M1.5 23 L11.5 31.5 L30.5 1.5" fill="none" stroke="#ecb81c" stroke-width="6" stroke-linejoin="miter"/></svg></div>
     <div class="box"><div class="pct"></div><div class="votes"></div></div>
   </div>
 </div>
@@ -109,6 +113,7 @@
 
   const PARTY_CLASS = { D: 'dem', R: 'rep' };
   const NAME_TRIGGER = 10;   // squeeze when a line comes within this many px of its limit
+  const CHECK_SHIFT = 46;    // how far a winner's surname moves right for the check (.winner .last)
 
   const $ = id => document.getElementById(id);
   const stage = $('stage');
@@ -165,7 +170,8 @@
     // Names and votes keep the same margin on the right as on the left of their area.
     const names = el.querySelector('.names');
     for (const line of [firstEl, lastEl]) {
-      fitBefore(line, rect(names).right, rect(line).left - rect(names).left);
+      const shift = line === lastEl && c.isWinner ? CHECK_SHIFT : 0;
+      fitBefore(line, rect(names).right, rect(line).left - rect(names).left - shift);
     }
     fitBefore(votes, rect(box).right, rect(votes).left - rect(box).left);
   }
@@ -199,15 +205,21 @@
   const photos = [data.cand1.photo, data.cand2.photo].filter(Boolean).map(src => new Promise(res => {
     const im = new Image(); im.onload = im.onerror = res; im.src = src;
   }));
-  Promise.all([
+  const ready = Promise.all([
     ...[600, 700, 800, 900].map(w => document.fonts.load(`${w} 40px "Proxima Nova"`)),
     document.fonts.load('600 40px "Proxima Nova Cond"'),
     ...photos,
-  ]).then(async () => {
+  ]);
+  const settle = () =>
+    Promise.all([...document.querySelectorAll('.photo-area img[src]')].map(im => im.decode().catch(() => {})));
+  ready.then(async () => {
     render(data);
-    await Promise.all([...document.querySelectorAll('.photo-area img[src]')].map(im => im.decode().catch(() => {})));
+    await settle();
     window.l3Ready = true;
   });
+
+  // The air feed (air.html) fills this graphic through here.
+  window.renderGraphic = d => ready.then(() => { render(d); return settle(); });
 </script>
 </body>
 </html>

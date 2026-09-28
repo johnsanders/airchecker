@@ -7,6 +7,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import type { AirFeed } from '../src/air/airFeed.js';
 
+import { makeAirShow } from '../src/air/airShow.js';
+import { loadRaces } from '../src/air/races.js';
 import { makeApiPlayback } from '../src/playback/apiPlayback.js';
 import { makeApiRecorder } from '../src/recording/apiRecorder.js';
 import { openApiRecordingWriter } from '../src/recording/apiRecording.js';
@@ -80,6 +82,7 @@ const setup = () => {
 	};
 	const recorder = makeApiRecorder({ baseDir, getQueries: () => [] });
 	const app = makeWebServer({
+		airShow: makeAirShow({ now: () => wall, races: loadRaces('races.json'), randomSeed: () => 1 }),
 		playback: makeApiPlayback({ airFeed, baseDir, now: () => wall }),
 		recorder,
 		recordErrors: () => [],
@@ -206,5 +209,58 @@ describe('control API', () => {
 			url: '/api/api-recordings/night/responses/2/body',
 		});
 		expect(body.body).toBe('{"contests":[1]}');
+	});
+});
+
+describe('air feed', () => {
+	it('is off until started, then airs the ticker and runs the night along the clock', async () => {
+		const { app, setWall } = setup();
+		expect((await app.inject({ method: 'GET', url: '/api/air/now' })).json()).toEqual({
+			onAir: null,
+		});
+		const started = await app.inject({
+			method: 'POST',
+			payload: { durationMinutes: 30 },
+			url: '/api/air/start',
+		});
+		expect(started.json()).toMatchObject({ air: { durationMs: 1_800_000, elapsedMs: 0, seed: 1 } });
+		setWall(60_000);
+		const now = (await app.inject({ method: 'GET', url: '/api/air/now' })).json<{
+			onAir: { ticker: { data: { state: string } } };
+		}>();
+		expect(now.onAir.ticker.data.state).toMatch(/^[A-Z]{2}(-\d+)?$/);
+		const status = (await app.inject({ method: 'GET', url: '/api/status' })).json();
+		expect(status).toMatchObject({ air: { elapsedMs: 60_000 } });
+		await app.inject({ method: 'POST', url: '/api/air/stop' });
+		expect((await app.inject({ method: 'GET', url: '/api/status' })).json()).toMatchObject({
+			air: null,
+		});
+	});
+
+	it('rejects a bad duration', async () => {
+		const { app } = setup();
+		const statuses = await Promise.all(
+			[{}, { durationMinutes: 0 }, { durationMinutes: 'ten' }, { durationMinutes: 601 }].map(
+				async (payload) =>
+					(await app.inject({ method: 'POST', payload, url: '/api/air/start' })).statusCode,
+			),
+		);
+		expect(statuses).toEqual([400, 400, 400, 400]);
+	});
+
+	it('serves the air page and its graphics, and nothing else from the package', async () => {
+		const { app } = setup();
+		const get = async (url: string) => {
+			const response = await app.inject({ method: 'GET', url });
+			return { body: response.body, statusCode: response.statusCode };
+		};
+		expect((await get('/air')).statusCode).toBe(302);
+		expect((await get('/air/')).body).toContain('Simulated air');
+		expect((await get('/air/ticker.html')).body).toContain('renderGraphic');
+		expect((await get('/air/fullscreen-assets/background.png')).statusCode).toBe(200);
+		// Anything else falls through to the SPA (when built) or a 404, never the file.
+		expect((await get('/air/races.json')).body).not.toContain('ddhqRaceId');
+		expect((await get('/air/package.json')).body).not.toContain('"simulator"');
+		expect((await get('/air/../package.json')).body).not.toContain('"simulator"');
 	});
 });

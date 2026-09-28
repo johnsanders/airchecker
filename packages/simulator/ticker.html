@@ -271,10 +271,14 @@
 
   // Measure only after every weight has loaded. document.fonts.ready alone isn't enough: a face
   // isn't requested until text uses it, and the text is still empty at that point.
-  Promise.all([600, 700, 800].map(w => document.fonts.load(`${w} 40px "Proxima Nova"`))).then(() => {
+  const ready = Promise.all([600, 700, 800].map(w => document.fonts.load(`${w} 40px "Proxima Nova"`)));
+  ready.then(() => {
     render(window.TICKER_DATA || EXAMPLE);
     window.tickerReady = true;
   });
+
+  // The air feed (air.html) fills this graphic through here.
+  window.renderGraphic = d => ready.then(() => render(d));
 </script>
 </body>
 </html>

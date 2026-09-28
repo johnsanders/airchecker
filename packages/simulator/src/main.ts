@@ -1,6 +1,8 @@
 import type { ApiResponseRow } from './recording/apiRecording.js';
 
 import { makeAirFeed } from './air/airFeed.js';
+import { makeAirShow } from './air/airShow.js';
+import { loadRaces } from './air/races.js';
 import { makeApiPlayback } from './playback/apiPlayback.js';
 import { makeApiRecorder } from './recording/apiRecorder.js';
 import { makeRecordingHttp } from './recording/recordingHttp.js';
@@ -50,6 +52,7 @@ const main = async (): Promise<void> => {
 	});
 	const playback = makeApiPlayback({ airFeed: makeAirFeed(), baseDir: RECORDINGS_DIR });
 	const web = makeWebServer({
+		airShow: makeAirShow({ races: loadRaces('races.json') }),
 		playback,
 		recorder,
 		recordErrors: recordLoop.errors,

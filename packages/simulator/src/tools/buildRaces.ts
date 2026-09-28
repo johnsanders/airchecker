@@ -1,6 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
 
+import type { Race, RaceCandidate } from '../air/races.js';
+
 import { ddhqBaseUrl } from '../settings.js';
 import { makeDdhqAuth } from '../sources/ddhqAuth.js';
 import { makeFetchHttp } from '../sources/http.js';
@@ -26,20 +28,7 @@ const PARTY_ABBREVIATIONS: Record<string, string> = {
 	Republican: 'R',
 };
 
-export type Race = {
-	candidates: RaceCandidate[];
-	ddhqRaceId: null | number;
-	district: string;
-	graphics: Graphic[];
-	key: string;
-	office: string;
-	state: string;
-	stateName: string;
-};
-
-export type RaceCandidate = { first: string; last: string; party: string };
-
-type Graphic = 'fs' | 'l3';
+type Graphic = Race['graphics'][number];
 
 type TakeItem = { district: string; graphic: Graphic; office: string; stateName: string };
 

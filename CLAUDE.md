@@ -3,7 +3,7 @@
 Election-night tooling, as an npm-workspaces monorepo. Greenfield TypeScript/Node.
 
 - **[`packages/checker`](packages/checker/CLAUDE.md)**: Eagle Eye, the observer. It reconciles the DDHQ results API, the Chameleon graphics DB, and the on-air picture captured from a DirecTV player, and flags inconsistencies for human review. This is the product.
-- **[`packages/simulator`](packages/simulator/CLAUDE.md)**: election night on demand. It records the DDHQ and Chameleon APIs and plays a recording back on mirror endpoints, which the checker's **Sim** environment polls. It also holds the hand-built on-air graphics for a future simulated air feed. Formerly the sibling repo `elex_sim`.
+- **[`packages/simulator`](packages/simulator/CLAUDE.md)**: election night on demand. It records the DDHQ and Chameleon APIs and plays a recording back on mirror endpoints, which the checker's **Sim** environment polls. It also serves a simulated air feed (`/air/`) built from hand-built copies of the on-air graphics. Formerly the sibling repo `elex_sim`.
 
 Each package's CLAUDE.md has its architecture, layout and commands. This file covers what the two share.
 

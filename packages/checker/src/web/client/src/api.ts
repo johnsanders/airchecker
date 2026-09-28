@@ -238,4 +238,5 @@ export const api = {
 // Preset tabs the capture button can target (label → URL substring).
 export const AIR_PRESETS: { label: string; match: string }[] = [
 	{ label: 'DirecTV', match: 'directv' },
+	{ label: 'Sim air', match: 'localhost:8788/air' },
 ];

@@ -1,6 +1,14 @@
 // Typed fetch wrappers + shared response shapes for the simulator's control API. These
 // mirror src/web/server.ts; kept narrow to what the UI renders.
 
+export interface AirStatus {
+	called: number;
+	durationMs: number;
+	elapsedMs: number;
+	races: number;
+	seed: number;
+}
+
 export interface ApiRecordingDetail {
 	ddhqQueries: string[];
 	name: string;
@@ -53,6 +61,7 @@ export interface Settings {
 }
 
 export interface Status {
+	air: AirStatus | null;
 	playback: null | PlaybackStatus;
 	recordErrors: string[]; // the record loop's last check, while recording
 	recording: { name: string; responseCount: number; startedAt: number } | null;
@@ -117,8 +126,10 @@ export const api = {
 	playbackAction: (action: 'pause' | 'restart' | 'resume' | 'stop') =>
 		postJson<Status>(`/api/api-playback/${action}`, {}),
 	setSettings: (settings: Settings) => postJson<Settings>('/api/settings', settings),
+	startAir: (durationMinutes: number) => postJson<Status>('/api/air/start', { durationMinutes }),
 	startApiPlayback: (name: string) => postJson<Status>('/api/api-playback/start', { name }),
 	startApiRecording: (name?: string) =>
 		postJson<Status>('/api/api-recording/start', name === undefined ? {} : { name }),
+	stopAir: () => postJson<Status>('/api/air/stop', {}),
 	stopApiRecording: () => postJson<Status>('/api/api-recording/stop', {}),
 };

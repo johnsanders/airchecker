@@ -6,6 +6,7 @@ import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import type { AirShow } from '../air/airShow.js';
 import type { ApiPlayback, MirrorAnswer } from '../playback/apiPlayback.js';
 import type { ApiRecorder } from '../recording/apiRecorder.js';
 import type { ApiResponseQuery, ApiSource } from '../recording/apiRecording.js';
@@ -17,8 +18,11 @@ import { MAX_INTERVAL_SECONDS, MIN_INTERVAL_SECONDS } from '../settings.js';
 // /api/api-recording*, /api/api-playback/*) drives the web view. The mirror
 // (/api/v4/*, /chameleon/*) answers the same paths as DDHQ and the Chameleon blade,
 // from the recording playing back, so airchecker's Sim environment only swaps hosts.
+// /air/ is the simulated air feed, the page the checker's capturer points at instead of
+// DirecTV; /api/air/* runs its night.
 
 export type WebServerConfig = {
+	airShow: AirShow;
 	playback: ApiPlayback;
 	recorder: ApiRecorder;
 	recordErrors: () => string[];
@@ -32,6 +36,15 @@ const RESPONSES_PAGE_MAX = 1000;
 const WHOLE_NUMBER = /^\d+$/;
 
 const clientDistDir = (): string => join(dirname(fileURLToPath(import.meta.url)), 'client', 'dist');
+
+const packageDir = (): string => join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+
+// The air page, its graphics and what they load. The rest of the package dir (settings,
+// recordings) stays off the web.
+const AIR_FILES = new Set(['/', '/air.html', '/fullscreen.html', '/l3.html', '/ticker.html']);
+const AIR_DIRS = ['/fonts/', '/fullscreen-assets/', '/l3-assets/'];
+
+const MAX_AIR_MINUTES = 600;
 
 const failure = (error: unknown): { error: string } => ({
 	error: error instanceof Error ? error.message : String(error),
@@ -94,6 +107,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	});
 
 	const status = () => ({
+		air: config.airShow.status(),
 		playback: config.playback.status() ?? null,
 		recordErrors: config.recorder.status().recording === null ? [] : config.recordErrors(),
 		recording: config.recorder.status().recording,
@@ -194,6 +208,45 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			return status();
 		}),
 	);
+
+	// --- Air feed -------------------------------------------------------------
+
+	app.get('/api/air/now', () => ({ onAir: config.airShow.onAir() }));
+
+	app.post<{ Body: { durationMinutes?: unknown } | null }>('/api/air/start', (req, reply) => {
+		const durationMinutes = req.body?.durationMinutes;
+		if (
+			typeof durationMinutes !== 'number' ||
+			!(durationMinutes > 0) ||
+			durationMinutes > MAX_AIR_MINUTES
+		)
+			return reply
+				.code(400)
+				.send({ error: `durationMinutes must be more than 0 and at most ${MAX_AIR_MINUTES}` });
+		config.airShow.start(durationMinutes * 60_000);
+		return status();
+	});
+
+	app.post('/api/air/stop', () => {
+		config.airShow.stop();
+		return status();
+	});
+
+	app.get('/air', (_req, reply) => reply.redirect('/air/'));
+	void app.register(fastifyStatic, {
+		allowedPath: (pathName) =>
+			AIR_FILES.has(pathName) || AIR_DIRS.some((dir) => pathName.startsWith(dir)),
+		decorateReply: false,
+		index: 'air.html',
+		prefix: '/air/',
+		root: packageDir(),
+	});
+	// The newscast under the graphics; gitignored, so each machine supplies its own.
+	void app.register(fastifyStatic, {
+		decorateReply: false,
+		prefix: '/air/video/',
+		root: join(packageDir(), 'recordings', 'air'),
+	});
 
 	// --- Static SPA -----------------------------------------------------------
 

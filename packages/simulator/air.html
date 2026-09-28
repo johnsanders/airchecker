@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Simulated air</title>
+<style>
+  /* The simulated air feed: a looping newscast with the three graphics keyed over it,
+     filled by the simulator's night (/api/air/now). The checker's capturer screenshots
+     this tab the way it screenshots DirecTV. */
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+
+  .stage {
+    position: absolute; left: 0; top: 0;
+    width: 1920px; height: 1080px;
+    transform-origin: 0 0;
+    overflow: hidden;
+  }
+
+  /* Everything under the ticker, kept together so it can be squeezed back later. */
+  #program { position: absolute; inset: 0; }
+
+  video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  iframe {
+    position: absolute; left: 0; top: 0;
+    width: 1920px; height: 1080px;
+    border: 0;
+    background: transparent;
+    visibility: hidden;
+  }
+
+  #idle {
+    position: absolute; left: 40px; top: 30px;
+    color: rgba(255, 255, 255, .6);
+    font: 600 28px -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div id="program">
+    <video src="video/background.mp4" autoplay muted loop playsinline></video>
+    <iframe id="l3" src="l3.html"></iframe>
+    <iframe id="fs" src="fullscreen.html"></iframe>
+  </div>
+  <iframe id="ticker" src="ticker.html"></iframe>
+  <div id="idle">No night running. Start one on the simulator's control page.</div>
+</div>
+<script>
+  const POLL_MS = 500;
+
+  const stage = document.getElementById('stage');
+  const fit = () => {
+    const scale = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `scale(${scale})`;
+    stage.style.left = `${(innerWidth - 1920 * scale) / 2}px`;
+    stage.style.top = `${(innerHeight - 1080 * scale) / 2}px`;
+  };
+  addEventListener('resize', fit);
+  fit();
+
+  const frames = ['ticker', 'l3', 'fs'].map(id => ({
+    element: document.getElementById(id),
+    shown: '', // the data last rendered, as JSON
+  }));
+  const frame = id => frames.find(f => f.element.id === id);
+
+  // Render first, then show, so a graphic never comes up with the previous race's data.
+  // A frame still loading has no renderGraphic yet and is skipped until the next poll.
+  const show = async (target, data) => {
+    const json = JSON.stringify(data);
+    if (json !== target.shown) {
+      const render = target.element.contentWindow?.renderGraphic;
+      if (render === undefined) return;
+      target.shown = json;
+      await render(data);
+    }
+    target.element.style.visibility = 'visible';
+  };
+  const hide = target => { target.element.style.visibility = 'hidden'; };
+
+  const apply = async onAir => {
+    document.getElementById('idle').style.display = onAir === null ? '' : 'none';
+    if (onAir === null) return frames.forEach(hide);
+    await show(frame('ticker'), onAir.ticker.data);
+    await Promise.all(['l3', 'fs'].map(kind =>
+      onAir.overlay?.kind === kind ? show(frame(kind), onAir.overlay.data) : hide(frame(kind))));
+  };
+
+  const poll = async () => {
+    try {
+      const response = await fetch('/api/air/now');
+      if (response.ok) await apply((await response.json()).onAir);
+    } catch {
+      // The simulator restarting; keep the last picture and try again.
+    }
+    setTimeout(poll, POLL_MS);
+  };
+  poll();
+</script>
+</body>
+</html>

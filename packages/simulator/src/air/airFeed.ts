@@ -1,12 +1,9 @@
 import type { PlaybackClock } from '../playback/playbackClock.js';
 import type { ApiRecording } from '../recording/apiRecording.js';
 
-// The simulated air feed: a 1920×1080 picture that plays in step with an API playback,
-// built from the three graphics in the repo root (ticker.html, l3.html,
-// fullscreen.html) filled from the recording's data at the clock's virtualNow().
-// airchecker captures it the way it captures DirecTV: its debug Chrome holds a tab on
-// the feed's URL, and the air source's URL match points at it. Not built yet; the
-// playback calls these hooks so the feed has one place to plug in.
+// Playback hooks for an air feed driven by the recording at the clock's virtualNow(),
+// called on every playback start/pause/resume/restart/stop. Nothing uses them yet: the
+// simulated air feed (airShow.ts, the /air/ page) runs its own invented night instead.
 
 export type AirFeed = {
 	pause: () => void;

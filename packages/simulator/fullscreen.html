@@ -98,6 +98,9 @@
 
   .names { left: 0; top: 446px; width: 618px; height: 106px; background: #fff; color: var(--ink); }
   .names > * { position: absolute; transform-origin: 0 50%; }
+  /* A called race: gold check just right of the surname (as on air). */
+  .check { display: none; top: 18px; width: 80px; height: 80px; }
+  .winner .check { display: block; }
   .first { left: 18.5px; top: 7.8px; font-weight: 500; font-size: 36px; letter-spacing: -0.25px; }
   .last  { left: 18px; top: 39.3px; font-weight: 900; font-size: 67.5px; }
 
@@ -126,13 +129,13 @@
     <div class="photo-area"><img alt=""></div>
     <div class="bracket"></div><div class="party"></div>
     <div class="box-shadow"></div>
-    <div class="names"><div class="first"></div><div class="last"></div></div>
+    <div class="names"><div class="first"></div><div class="last"></div><svg class="check" viewBox="0 0 34 34" aria-label="Projected winner"><path d="M1.5 23 L11.5 31.5 L30.5 1.5" fill="none" stroke="#ecb81c" stroke-width="6" stroke-linejoin="miter"/></svg></div>
   </div>
   <div class="cand c2" id="cand2">
     <div class="photo-area"><img alt=""></div>
     <div class="bracket"></div><div class="party"></div>
     <div class="box-shadow"></div>
-    <div class="names"><div class="first"></div><div class="last"></div></div>
+    <div class="names"><div class="first"></div><div class="last"></div><svg class="check" viewBox="0 0 34 34" aria-label="Projected winner"><path d="M1.5 23 L11.5 31.5 L30.5 1.5" fill="none" stroke="#ecb81c" stroke-width="6" stroke-linejoin="miter"/></svg></div>
   </div>
 
   <div class="box b1" id="box1"><div class="pct"></div><div class="votes"></div></div>
@@ -148,6 +151,8 @@
 
   const PARTY_CLASS = { D: 'dem', R: 'rep' };
   const NAME_TRIGGER = 10;   // squeeze when a line comes within this many px of its limit
+  const CHECK_GAP = 14;      // between a winner's surname and the check
+  const CHECK_SIZE = 80;     // .check width
   const HEADER_GAP = 30;     // min space between race name and the % IN box
   const PCTIN_PAD = 12;      // yellow box padding either side of "% IN"
 
@@ -209,8 +214,11 @@
     const names = el.querySelector('.names');
     for (const line of [firstEl, lastEl]) {
       const margin = rect(line).left - rect(names).left;
-      fitBefore(line, rect(names).right, margin);
+      const room = line === lastEl && c.isWinner ? CHECK_GAP + CHECK_SIZE : 0;
+      fitBefore(line, rect(names).right - room, margin);
     }
+    if (c.isWinner)
+      el.querySelector('.check').style.left = `${rect(lastEl).left - rect(names).left + inkWidth(lastEl) + CHECK_GAP}px`;
     // Votes: same rule inside the number box.
     fitBefore(votes, rect(box).right, rect(votes).left - rect(box).left);
   }
@@ -249,15 +257,21 @@
   const photos = [data.cand1.photo, data.cand2.photo].filter(Boolean).map(src => new Promise(res => {
     const im = new Image(); im.onload = im.onerror = res; im.src = src;
   }));
-  Promise.all([
+  const ready = Promise.all([
     ...[500, 700, 800, 900].map(w => document.fonts.load(`${w} 40px "Proxima Nova"`)),
     document.fonts.load('600 40px "Proxima Nova Cond"'),
     ...photos,
-  ]).then(async () => {
+  ]);
+  const settle = () =>
+    Promise.all([...document.querySelectorAll('.photo-area img[src]')].map(im => im.decode().catch(() => {})));
+  ready.then(async () => {
     render(data);
-    await Promise.all([...document.querySelectorAll('.photo-area img[src]')].map(im => im.decode().catch(() => {})));
+    await settle();
     window.fullscreenReady = true;
   });
+
+  // The air feed (air.html) fills this graphic through here.
+  window.renderGraphic = d => ready.then(() => { render(d); return settle(); });
 </script>
 </body>
 </html>
