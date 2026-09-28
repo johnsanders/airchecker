@@ -10,6 +10,7 @@ The simulator (formerly the sibling repo `elex_sim`) simulates election night fo
 npm test                 # this package only (npm test at the repo root runs both)
 npm run frontend:build   # once, and after client changes
 npm run server           # http://localhost:8788 (PORT to change)
+npm run frontend:dev     # hot-reload control page on :5174, proxied to :8788
 ```
 
 ## Layout

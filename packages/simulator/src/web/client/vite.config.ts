@@ -6,5 +6,5 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	build: { outDir: 'dist' },
 	plugins: [react()],
-	server: { proxy: { '/api': 'http://localhost:8788' } },
+	server: { port: 5174, proxy: { '/api': 'http://localhost:8788' }, strictPort: true },
 });

@@ -8,9 +8,11 @@ export default defineConfig({
 	build: { outDir: 'dist' },
 	plugins: [react()],
 	server: {
+		port: 5173,
 		proxy: {
 			'/api': 'http://localhost:8787',
 			'/ws': { target: 'ws://localhost:8787', ws: true },
 		},
+		strictPort: true,
 	},
 });
