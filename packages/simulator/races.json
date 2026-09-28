@@ -1,0 +1,3208 @@
+[
+	{
+		"candidates": [
+			{
+				"first": "Barry",
+				"last": "Moore",
+				"party": "R"
+			},
+			{
+				"first": "Everett",
+				"last": "Wess",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 294671,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Alabama/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "AL",
+		"stateName": "Alabama"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Daniel J.",
+				"last": "Sullivan Jr.",
+				"party": "R"
+			},
+			{
+				"first": "Mary",
+				"last": "Peltola",
+				"party": "D"
+			},
+			{
+				"first": "Dan",
+				"last": "Sullivan",
+				"party": "R"
+			},
+			{
+				"first": "Gerald",
+				"last": "Heikes",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294672,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Alaska/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "AK",
+		"stateName": "Alaska"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Tom",
+				"last": "Cotton",
+				"party": "R"
+			},
+			{
+				"first": "Hallie",
+				"last": "Shoffner",
+				"party": "D"
+			},
+			{
+				"first": "Jeff",
+				"last": "Wadlin",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294673,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Arkansas/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "AR",
+		"stateName": "Arkansas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Adam",
+				"last": "Withrow",
+				"party": "U"
+			},
+			{
+				"first": "Mark",
+				"last": "Baisley",
+				"party": "R"
+			},
+			{
+				"first": "Robert",
+				"last": "Chew",
+				"party": "C"
+			},
+			{
+				"first": "John",
+				"last": "Hickenlooper",
+				"party": "D"
+			},
+			{
+				"first": "Christopher",
+				"last": "Baum",
+				"party": "A"
+			},
+			{
+				"first": "Blake",
+				"last": "Huber",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294674,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Colorado/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "CO",
+		"stateName": "Colorado"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Chris",
+				"last": "Coons",
+				"party": "D"
+			},
+			{
+				"first": "Michael",
+				"last": "Katz",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294675,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Delaware/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "DE",
+		"stateName": "Delaware"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Angie",
+				"last": "Nixon",
+				"party": "D"
+			},
+			{
+				"first": "Ashley",
+				"last": "Moody",
+				"party": "R"
+			},
+			{
+				"first": "Neil",
+				"last": "Gillespie",
+				"party": "N"
+			}
+		],
+		"ddhqRaceId": 294676,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Florida/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "FL",
+		"stateName": "Florida"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Mike",
+				"last": "Collins",
+				"party": "R"
+			},
+			{
+				"first": "Jon",
+				"last": "Ossoff",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 294677,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Georgia/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "GA",
+		"stateName": "Georgia"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Todd",
+				"last": "Achilles",
+				"party": "I"
+			},
+			{
+				"first": "Matt",
+				"last": "Loesby",
+				"party": "L"
+			},
+			{
+				"first": "Natalie",
+				"last": "Fleming",
+				"party": "I"
+			},
+			{
+				"first": "Jim",
+				"last": "Risch",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294678,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Idaho/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "ID",
+		"stateName": "Idaho"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Don",
+				"last": "Tracy",
+				"party": "R"
+			},
+			{
+				"first": "Juliana",
+				"last": "Stratton",
+				"party": "D"
+			},
+			{
+				"first": "Whitfield",
+				"last": "Harrington",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 294679,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Illinois/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "IL",
+		"stateName": "Illinois"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Josh",
+				"last": "Turek",
+				"party": "D"
+			},
+			{
+				"first": "Ashley",
+				"last": "Hinson",
+				"party": "R"
+			},
+			{
+				"first": "Thomas",
+				"last": "Laehn",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294680,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Iowa/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "IA",
+		"stateName": "Iowa"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Roger",
+				"last": "Marshall",
+				"party": "R"
+			},
+			{
+				"first": "Adam",
+				"last": "Hamilton",
+				"party": "D"
+			},
+			{
+				"first": "David",
+				"last": "Graham",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294681,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Kansas/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "KS",
+		"stateName": "Kansas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Andy",
+				"last": "Barr",
+				"party": "R"
+			},
+			{
+				"first": "Charles",
+				"last": "Booker",
+				"party": "D"
+			},
+			{
+				"first": "Christopher",
+				"last": "Campbell",
+				"party": "K"
+			}
+		],
+		"ddhqRaceId": 294682,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Kentucky/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "KY",
+		"stateName": "Kentucky"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Jamie",
+				"last": "Davis",
+				"party": "D"
+			},
+			{
+				"first": "Julia",
+				"last": "Letlow",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294683,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Louisiana/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "LA",
+		"stateName": "Louisiana"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Troy",
+				"last": "Jackson",
+				"party": "D"
+			},
+			{
+				"first": "Susan",
+				"last": "Collins",
+				"party": "R"
+			},
+			{
+				"first": "Michael",
+				"last": "Turcotte",
+				"party": "W"
+			},
+			{
+				"first": "Brent",
+				"last": "Andrews",
+				"party": "W"
+			},
+			{
+				"first": "Sigrid",
+				"last": "Olson",
+				"party": "W"
+			},
+			{
+				"first": "Gina",
+				"last": "Oswald",
+				"party": "W"
+			},
+			{
+				"first": "Ashley",
+				"last": "Webb",
+				"party": "W"
+			},
+			{
+				"first": "",
+				"last": "Write-In",
+				"party": "W"
+			},
+			{
+				"first": "Joseph",
+				"last": "Steinberger",
+				"party": "W"
+			},
+			{
+				"first": "Blank",
+				"last": "Votes",
+				"party": "N"
+			}
+		],
+		"ddhqRaceId": 294684,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Maine/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "ME",
+		"stateName": "Maine"
+	},
+	{
+		"candidates": [
+			{
+				"first": "John",
+				"last": "Deaton",
+				"party": "R"
+			},
+			{
+				"first": "Edward",
+				"last": "Markey",
+				"party": "D"
+			},
+			{
+				"first": "Shiva",
+				"last": "Ayyadurai",
+				"party": "I"
+			},
+			{
+				"first": "Joe",
+				"last": "Tache",
+				"party": "S"
+			}
+		],
+		"ddhqRaceId": 294685,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Massachusetts/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "MA",
+		"stateName": "Massachusetts"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Mike",
+				"last": "Rogers",
+				"party": "R"
+			},
+			{
+				"first": "Abdul",
+				"last": "El-Sayed",
+				"party": "D"
+			},
+			{
+				"first": "Lydia",
+				"last": "Christensen",
+				"party": "L"
+			},
+			{
+				"first": "Douglas",
+				"last": "Marsh",
+				"party": "G"
+			},
+			{
+				"first": "Tim",
+				"last": "Long",
+				"party": "U"
+			},
+			{
+				"first": "Walter",
+				"last": "Kristy",
+				"party": "N"
+			}
+		],
+		"ddhqRaceId": 294686,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Michigan/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "MI",
+		"stateName": "Michigan"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Michele",
+				"last": "Tafoya",
+				"party": "R"
+			},
+			{
+				"first": "Peggy",
+				"last": "Flanagan",
+				"party": "D"
+			},
+			{
+				"first": "Marisa",
+				"last": "Simonetti",
+				"party": "I"
+			},
+			{
+				"first": "Rebecca",
+				"last": "Whiting",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294687,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Minnesota/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "MN",
+		"stateName": "Minnesota"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Scott",
+				"last": "Colom",
+				"party": "D"
+			},
+			{
+				"first": "Cindy",
+				"last": "Hyde-Smith",
+				"party": "R"
+			},
+			{
+				"first": "Ty",
+				"last": "Pinkins",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 294688,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Mississippi/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "MS",
+		"stateName": "Mississippi"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Kurt",
+				"last": "Alme",
+				"party": "R"
+			},
+			{
+				"first": "Alani",
+				"last": "Bankhead",
+				"party": "D"
+			},
+			{
+				"first": "Kyle",
+				"last": "Austin",
+				"party": "L"
+			},
+			{
+				"first": "Seth",
+				"last": "Bodnar",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 294689,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Montana/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "MT",
+		"stateName": "Montana"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Pete",
+				"last": "Ricketts",
+				"party": "R"
+			},
+			{
+				"first": "Mike",
+				"last": "Marvin",
+				"party": "L"
+			},
+			{
+				"first": "Dan",
+				"last": "Osborn",
+				"party": "I"
+			},
+			{
+				"first": "Robin",
+				"last": "Richards",
+				"party": "N"
+			},
+			{
+				"first": "Chuck",
+				"last": "Conboy",
+				"party": "A"
+			}
+		],
+		"ddhqRaceId": 294690,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Nebraska/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "NE",
+		"stateName": "Nebraska"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Chris",
+				"last": "Pappas",
+				"party": "D"
+			},
+			{
+				"first": "John",
+				"last": "Sununu",
+				"party": "R"
+			},
+			{
+				"first": "Edmond",
+				"last": "LaPlante",
+				"party": "C"
+			}
+		],
+		"ddhqRaceId": 294691,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "New Hampshire/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "NH",
+		"stateName": "New Hampshire"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Cory",
+				"last": "Booker",
+				"party": "D"
+			},
+			{
+				"first": "Justin",
+				"last": "Murphy",
+				"party": "R"
+			},
+			{
+				"first": "Veronica",
+				"last": "Fernandez",
+				"party": "E"
+			},
+			{
+				"first": "Joanne",
+				"last": "Kuniansky",
+				"party": "S"
+			}
+		],
+		"ddhqRaceId": 294692,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "New Jersey/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "NJ",
+		"stateName": "New Jersey"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Ben Ray",
+				"last": "Lujan",
+				"party": "D"
+			},
+			{
+				"first": "Larry",
+				"last": "Marker",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294693,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "New Mexico/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "NM",
+		"stateName": "New Mexico"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Roy",
+				"last": "Cooper",
+				"party": "D"
+			},
+			{
+				"first": "Michael",
+				"last": "Whatley",
+				"party": "R"
+			},
+			{
+				"first": "Michael",
+				"last": "Dublin",
+				"party": "G"
+			},
+			{
+				"first": "Shannon",
+				"last": "Bray",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294694,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "North Carolina/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "NC",
+		"stateName": "North Carolina"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Sherrod",
+				"last": "Brown",
+				"party": "D"
+			},
+			{
+				"first": "Jon",
+				"last": "Husted",
+				"party": "R"
+			},
+			{
+				"first": "Greg",
+				"last": "Levy",
+				"party": "O"
+			},
+			{
+				"first": "William",
+				"last": "Redpath",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294695,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Ohio/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "OH",
+		"stateName": "Ohio"
+	},
+	{
+		"candidates": [
+			{
+				"first": "N'Kiyla",
+				"last": "Thomas",
+				"party": "D"
+			},
+			{
+				"first": "Kevin",
+				"last": "Hern",
+				"party": "R"
+			},
+			{
+				"first": "Ron",
+				"last": "Meinhardt",
+				"party": "I"
+			},
+			{
+				"first": "Curtis",
+				"last": "Stinnett",
+				"party": "I"
+			},
+			{
+				"first": "Sevier",
+				"last": "White",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294696,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Oklahoma/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "OK",
+		"stateName": "Oklahoma"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Jeff",
+				"last": "Merkley",
+				"party": "D"
+			},
+			{
+				"first": "David",
+				"last": "Smith",
+				"party": "R"
+			},
+			{
+				"first": "Gary",
+				"last": "Dye",
+				"party": "L"
+			},
+			{
+				"first": "Chris",
+				"last": "Henry",
+				"party": "P"
+			}
+		],
+		"ddhqRaceId": 294697,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Oregon/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "OR",
+		"stateName": "Oregon"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Darline",
+				"last": "Graham",
+				"party": "R"
+			},
+			{
+				"first": "Annie",
+				"last": "Andrews",
+				"party": "D"
+			},
+			{
+				"first": "Mark",
+				"last": "Hackett",
+				"party": "C"
+			},
+			{
+				"first": "Kasie",
+				"last": "Whitener",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294699,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "South Carolina/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "SC",
+		"stateName": "South Carolina"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Brian",
+				"last": "Bengs",
+				"party": "I"
+			},
+			{
+				"first": "Mike",
+				"last": "Rounds",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294700,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "South Dakota/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "SD",
+		"stateName": "South Dakota"
+	},
+	{
+		"candidates": [
+			{
+				"first": "James",
+				"last": "Macon",
+				"party": "I"
+			},
+			{
+				"first": "David",
+				"last": "Sutman",
+				"party": "I"
+			},
+			{
+				"first": "Catherine",
+				"last": "Whitson",
+				"party": "I"
+			},
+			{
+				"first": "Yoshi",
+				"last": "Matthews",
+				"party": "I"
+			},
+			{
+				"first": "Tharon",
+				"last": "Chandler",
+				"party": "I"
+			},
+			{
+				"first": "Andrew",
+				"last": "Gerena",
+				"party": "I"
+			},
+			{
+				"first": "Jeremy",
+				"last": "Hearn",
+				"party": "I"
+			},
+			{
+				"first": "Robert",
+				"last": "Jones",
+				"party": "I"
+			},
+			{
+				"first": "Bill",
+				"last": "Hagerty",
+				"party": "R"
+			},
+			{
+				"first": "Marquita",
+				"last": "Bradshaw",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 294701,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Tennessee/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "TN",
+		"stateName": "Tennessee"
+	},
+	{
+		"candidates": [
+			{
+				"first": "James",
+				"last": "Talarico",
+				"party": "D"
+			},
+			{
+				"first": "Ted",
+				"last": "Brown",
+				"party": "L"
+			},
+			{
+				"first": "Ken",
+				"last": "Paxton",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294702,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Texas/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "TX",
+		"stateName": "Texas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Mark",
+				"last": "Warner",
+				"party": "D"
+			},
+			{
+				"first": "Bert",
+				"last": "Mizusawa",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294703,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Virginia/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "VA",
+		"stateName": "Virginia"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Rachel",
+				"last": "Anderson",
+				"party": "D"
+			},
+			{
+				"first": "Shelley",
+				"last": "Moore Capito",
+				"party": "R"
+			},
+			{
+				"first": "S. Marshall",
+				"last": "Wilson",
+				"party": "C"
+			}
+		],
+		"ddhqRaceId": 294704,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "West Virginia/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "WV",
+		"stateName": "West Virginia"
+	},
+	{
+		"candidates": [
+			{
+				"first": "James",
+				"last": "Byrd",
+				"party": "D"
+			},
+			{
+				"first": "Harriet",
+				"last": "Hageman",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294705,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Wyoming/U.S. Senate/",
+		"office": "U.S. Senate",
+		"state": "WY",
+		"stateName": "Wyoming"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Shomari",
+				"last": "Figures",
+				"party": "D"
+			},
+			{
+				"first": "Rhett",
+				"last": "Marques",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294711,
+		"district": "2",
+		"graphics": ["fs", "l3"],
+		"key": "Alabama/U.S. House/2",
+		"office": "U.S. House",
+		"state": "AL",
+		"stateName": "Alabama"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Amish",
+				"last": "Shah",
+				"party": "D"
+			},
+			{
+				"first": "Jay",
+				"last": "Feely",
+				"party": "R"
+			},
+			{
+				"first": "Monica",
+				"last": "Alponte",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294718,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "Arizona/U.S. House/1",
+		"office": "U.S. House",
+		"state": "AZ",
+		"stateName": "Arizona"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Juan",
+				"last": "Ciscomani",
+				"party": "R"
+			},
+			{
+				"first": "Joanna",
+				"last": "Mendoza",
+				"party": "D"
+			},
+			{
+				"first": "Jereme",
+				"last": "Peters",
+				"party": "L"
+			},
+			{
+				"first": "Gary",
+				"last": "Swing",
+				"party": "G"
+			}
+		],
+		"ddhqRaceId": 294723,
+		"district": "6",
+		"graphics": ["fs", "l3"],
+		"key": "Arizona/U.S. House/6",
+		"office": "U.S. House",
+		"state": "AZ",
+		"stateName": "Arizona"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Mike",
+				"last": "McGuire",
+				"party": "D"
+			},
+			{
+				"first": "James",
+				"last": "Gallagher",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294731,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "California/U.S. House/1",
+		"office": "U.S. House",
+		"state": "CA",
+		"stateName": "California"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Ami",
+				"last": "Bera",
+				"party": "D"
+			},
+			{
+				"first": "Robb",
+				"last": "Tucker",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294733,
+		"district": "3",
+		"graphics": ["fs", "l3"],
+		"key": "California/U.S. House/3",
+		"office": "U.S. House",
+		"state": "CA",
+		"stateName": "California"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Randy",
+				"last": "Villegas",
+				"party": "D"
+			},
+			{
+				"first": "David",
+				"last": "Valadao",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294752,
+		"district": "22",
+		"graphics": ["fs", "l3"],
+		"key": "California/U.S. House/22",
+		"office": "U.S. House",
+		"state": "CA",
+		"stateName": "California"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Marni",
+				"last": "Wilpert",
+				"party": "D"
+			},
+			{
+				"first": "Jim",
+				"last": "Desmond",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294778,
+		"district": "48",
+		"graphics": ["fs", "l3"],
+		"key": "California/U.S. House/48",
+		"office": "U.S. House",
+		"state": "CA",
+		"stateName": "California"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Clifton",
+				"last": "Brown",
+				"party": "U"
+			},
+			{
+				"first": "Jeff",
+				"last": "Hurd",
+				"party": "R"
+			},
+			{
+				"first": "Dwayne",
+				"last": "Romero",
+				"party": "D"
+			},
+			{
+				"first": "Cory",
+				"last": "Robertson",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294785,
+		"district": "3",
+		"graphics": ["fs", "l3"],
+		"key": "Colorado/U.S. House/3",
+		"office": "U.S. House",
+		"state": "CO",
+		"stateName": "Colorado"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Gabe",
+				"last": "Evans",
+				"party": "R"
+			},
+			{
+				"first": "Manny",
+				"last": "Rutinel",
+				"party": "D"
+			},
+			{
+				"first": "Dave",
+				"last": "Wood",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294790,
+		"district": "8",
+		"graphics": ["fs", "l3"],
+		"key": "Colorado/U.S. House/8",
+		"office": "U.S. House",
+		"state": "CO",
+		"stateName": "Colorado"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Bale",
+				"last": "Dalton",
+				"party": "D"
+			},
+			{
+				"first": "Ryan",
+				"last": "Elijah",
+				"party": "R"
+			},
+			{
+				"first": "Christopher",
+				"last": "Dennison",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294803,
+		"district": "7",
+		"graphics": ["fs", "l3"],
+		"key": "Florida/U.S. House/7",
+		"office": "U.S. House",
+		"state": "FL",
+		"stateName": "Florida"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Dan",
+				"last": "Green",
+				"party": "R"
+			},
+			{
+				"first": "Darren",
+				"last": "Soto",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 294805,
+		"district": "9",
+		"graphics": ["fs", "l3"],
+		"key": "Florida/U.S. House/9",
+		"office": "U.S. House",
+		"state": "FL",
+		"stateName": "Florida"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Kathy",
+				"last": "Castor",
+				"party": "D"
+			},
+			{
+				"first": "Mike",
+				"last": "Beltran",
+				"party": "R"
+			},
+			{
+				"first": "Brian",
+				"last": "Lampert",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294810,
+		"district": "14",
+		"graphics": ["fs", "l3"],
+		"key": "Florida/U.S. House/14",
+		"office": "U.S. House",
+		"state": "FL",
+		"stateName": "Florida"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Casey",
+				"last": "Askar",
+				"party": "R"
+			},
+			{
+				"first": "Pia",
+				"last": "Dandiya",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 294818,
+		"district": "22",
+		"graphics": ["fs", "l3"],
+		"key": "Florida/U.S. House/22",
+		"office": "U.S. House",
+		"state": "FL",
+		"stateName": "Florida"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Scott",
+				"last": "Singer",
+				"party": "R"
+			},
+			{
+				"first": "Jared",
+				"last": "Moskowitz",
+				"party": "D"
+			},
+			{
+				"first": "Peter",
+				"last": "Jassenoff",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294821,
+		"district": "25",
+		"graphics": ["fs", "l3"],
+		"key": "Florida/U.S. House/25",
+		"office": "U.S. House",
+		"state": "FL",
+		"stateName": "Florida"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Christina",
+				"last": "Bohannan",
+				"party": "D"
+			},
+			{
+				"first": "Mariannette",
+				"last": "Miller-Meeks",
+				"party": "R"
+			},
+			{
+				"first": "Michael",
+				"last": "Bridgford",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 294869,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "Iowa/U.S. House/1",
+		"office": "U.S. House",
+		"state": "IA",
+		"stateName": "Iowa"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Lindsay",
+				"last": "James",
+				"party": "D"
+			},
+			{
+				"first": "Joe",
+				"last": "Mitchell",
+				"party": "R"
+			},
+			{
+				"first": "Dave",
+				"last": "Bushaw",
+				"party": "I"
+			},
+			{
+				"first": "Rick",
+				"last": "Stewart",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294870,
+		"district": "2",
+		"graphics": ["fs", "l3"],
+		"key": "Iowa/U.S. House/2",
+		"office": "U.S. House",
+		"state": "IA",
+		"stateName": "Iowa"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Sarah",
+				"last": "Garriott",
+				"party": "D"
+			},
+			{
+				"first": "Zach",
+				"last": "Nunn",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294871,
+		"district": "3",
+		"graphics": ["fs", "l3"],
+		"key": "Iowa/U.S. House/3",
+		"office": "U.S. House",
+		"state": "IA",
+		"stateName": "Iowa"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Paul",
+				"last": "LePage",
+				"party": "R"
+			},
+			{
+				"first": "Matthew",
+				"last": "Dunlap",
+				"party": "D"
+			},
+			{
+				"first": "Gregory",
+				"last": "Ward",
+				"party": "W"
+			},
+			{
+				"first": "Blank",
+				"last": "Votes",
+				"party": "N"
+			}
+		],
+		"ddhqRaceId": 294890,
+		"district": "2",
+		"graphics": ["fs", "l3"],
+		"key": "Maine/U.S. House/2",
+		"office": "U.S. House",
+		"state": "ME",
+		"stateName": "Maine"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Sean",
+				"last": "McCann",
+				"party": "D"
+			},
+			{
+				"first": "Bill",
+				"last": "Huizenga",
+				"party": "R"
+			},
+			{
+				"first": "Shafina",
+				"last": "Barnett",
+				"party": "G"
+			}
+		],
+		"ddhqRaceId": 294911,
+		"district": "4",
+		"graphics": ["fs", "l3"],
+		"key": "Michigan/U.S. House/4",
+		"office": "U.S. House",
+		"state": "MI",
+		"stateName": "Michigan"
+	},
+	{
+		"candidates": [
+			{
+				"first": "William",
+				"last": "Lawrence",
+				"party": "D"
+			},
+			{
+				"first": "Tom",
+				"last": "Barrett",
+				"party": "R"
+			},
+			{
+				"first": "Shane",
+				"last": "Dedrick",
+				"party": "G"
+			}
+		],
+		"ddhqRaceId": 294914,
+		"district": "7",
+		"graphics": ["fs", "l3"],
+		"key": "Michigan/U.S. House/7",
+		"office": "U.S. House",
+		"state": "MI",
+		"stateName": "Michigan"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Michael",
+				"last": "Bouchard",
+				"party": "R"
+			},
+			{
+				"first": "Christina",
+				"last": "Hines",
+				"party": "D"
+			},
+			{
+				"first": "Mike",
+				"last": "Saliba",
+				"party": "L"
+			},
+			{
+				"first": "Kwabena",
+				"last": "Nkromo",
+				"party": "G"
+			},
+			{
+				"first": "Andrea",
+				"last": "Kirby",
+				"party": "W"
+			}
+		],
+		"ddhqRaceId": 294917,
+		"district": "10",
+		"graphics": ["fs", "l3"],
+		"key": "Michigan/U.S. House/10",
+		"office": "U.S. House",
+		"state": "MI",
+		"stateName": "Michigan"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Rick",
+				"last": "Brattin",
+				"party": "R"
+			},
+			{
+				"first": "Emanuel",
+				"last": "Cleaver",
+				"party": "D"
+			},
+			{
+				"first": "Randy",
+				"last": "Langkraehr",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294937,
+		"district": "5",
+		"graphics": ["fs", "l3"],
+		"key": "Missouri/U.S. House/5",
+		"office": "U.S. House",
+		"state": "MO",
+		"stateName": "Missouri"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Aaron",
+				"last": "Flint",
+				"party": "R"
+			},
+			{
+				"first": "Sam",
+				"last": "Forstag",
+				"party": "D"
+			},
+			{
+				"first": "Nick",
+				"last": "Sheedy",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294941,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "Montana/U.S. House/1",
+		"office": "U.S. House",
+		"state": "MT",
+		"stateName": "Montana"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Brinker",
+				"last": "Harding",
+				"party": "R"
+			},
+			{
+				"first": "Denise",
+				"last": "Powell",
+				"party": "D"
+			},
+			{
+				"first": "Eric",
+				"last": "Foreman",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294944,
+		"district": "2",
+		"graphics": ["fs", "l3"],
+		"key": "Nebraska/U.S. House/2",
+		"office": "U.S. House",
+		"state": "NE",
+		"stateName": "Nebraska"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Rebecca",
+				"last": "Bennett",
+				"party": "D"
+			},
+			{
+				"first": "Thomas",
+				"last": "Kean",
+				"party": "R"
+			},
+			{
+				"first": "Seamus",
+				"last": "O'Toole",
+				"party": "S"
+			}
+		],
+		"ddhqRaceId": 294958,
+		"district": "7",
+		"graphics": ["fs", "l3"],
+		"key": "New Jersey/U.S. House/7",
+		"office": "U.S. House",
+		"state": "NJ",
+		"stateName": "New Jersey"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Nicholas",
+				"last": "LaLota",
+				"party": "R"
+			},
+			{
+				"first": "Christopher",
+				"last": "Gallant",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 294967,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "New York/U.S. House/1",
+		"office": "U.S. House",
+		"state": "NY",
+		"stateName": "New York"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Cait",
+				"last": "Conley",
+				"party": "D"
+			},
+			{
+				"first": "Michael",
+				"last": "Lawler",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 294983,
+		"district": "17",
+		"graphics": ["fs", "l3"],
+		"key": "New York/U.S. House/17",
+		"office": "U.S. House",
+		"state": "NY",
+		"stateName": "New York"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Don",
+				"last": "Davis",
+				"party": "D"
+			},
+			{
+				"first": "Laurie",
+				"last": "Buckhout",
+				"party": "R"
+			},
+			{
+				"first": "Tom",
+				"last": "Bailey",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 294993,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "North Carolina/U.S. House/1",
+		"office": "U.S. House",
+		"state": "NC",
+		"stateName": "North Carolina"
+	},
+	{
+		"candidates": [
+			{
+				"first": "James",
+				"last": "Ager",
+				"party": "D"
+			},
+			{
+				"first": "Jennifer",
+				"last": "Balkcom",
+				"party": "R"
+			},
+			{
+				"first": "Travis",
+				"last": "Groo",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 295003,
+		"district": "11",
+		"graphics": ["fs", "l3"],
+		"key": "North Carolina/U.S. House/11",
+		"office": "U.S. House",
+		"state": "NC",
+		"stateName": "North Carolina"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Greg",
+				"last": "Landsman",
+				"party": "D"
+			},
+			{
+				"first": "Eric",
+				"last": "Conroy",
+				"party": "R"
+			},
+			{
+				"first": "Nathan",
+				"last": "Weise",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 295008,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "Ohio/U.S. House/1",
+		"office": "U.S. House",
+		"state": "OH",
+		"stateName": "Ohio"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Max",
+				"last": "Miller",
+				"party": "R"
+			},
+			{
+				"first": "Brian",
+				"last": "Poindexter",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 295014,
+		"district": "7",
+		"graphics": ["fs", "l3"],
+		"key": "Ohio/U.S. House/7",
+		"office": "U.S. House",
+		"state": "OH",
+		"stateName": "Ohio"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Derek",
+				"last": "Merrin",
+				"party": "R"
+			},
+			{
+				"first": "Marcy",
+				"last": "Kaptur",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 295016,
+		"district": "9",
+		"graphics": ["fs", "l3"],
+		"key": "Ohio/U.S. House/9",
+		"office": "U.S. House",
+		"state": "OH",
+		"stateName": "Ohio"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Bob",
+				"last": "Harvie",
+				"party": "D"
+			},
+			{
+				"first": "Brian",
+				"last": "Fitzpatrick",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 295034,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "Pennsylvania/U.S. House/1",
+		"office": "U.S. House",
+		"state": "PA",
+		"stateName": "Pennsylvania"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Robert",
+				"last": "Brooks",
+				"party": "D"
+			},
+			{
+				"first": "Ryan",
+				"last": "Mackenzie",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 295040,
+		"district": "7",
+		"graphics": ["fs", "l3"],
+		"key": "Pennsylvania/U.S. House/7",
+		"office": "U.S. House",
+		"state": "PA",
+		"stateName": "Pennsylvania"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Robert",
+				"last": "Bresnahan",
+				"party": "R"
+			},
+			{
+				"first": "Paige",
+				"last": "Cognetti",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 295041,
+		"district": "8",
+		"graphics": ["fs", "l3"],
+		"key": "Pennsylvania/U.S. House/8",
+		"office": "U.S. House",
+		"state": "PA",
+		"stateName": "Pennsylvania"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Scott",
+				"last": "Perry",
+				"party": "R"
+			},
+			{
+				"first": "Janelle",
+				"last": "Stelson",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 295043,
+		"district": "10",
+		"graphics": ["fs", "l3"],
+		"key": "Pennsylvania/U.S. House/10",
+		"office": "U.S. House",
+		"state": "PA",
+		"stateName": "Pennsylvania"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Brent",
+				"last": "Taylor",
+				"party": "R"
+			},
+			{
+				"first": "Justin",
+				"last": "Pearson",
+				"party": "D"
+			},
+			{
+				"first": "Dennis",
+				"last": "Clark",
+				"party": "I"
+			},
+			{
+				"first": "Michelle",
+				"last": "Head",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 295069,
+		"district": "9",
+		"graphics": ["fs", "l3"],
+		"key": "Tennessee/U.S. House/9",
+		"office": "U.S. House",
+		"state": "TN",
+		"stateName": "Tennessee"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Leticia",
+				"last": "Gutierrez",
+				"party": "D"
+			},
+			{
+				"first": "Alex",
+				"last": "Mealer",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 295078,
+		"district": "9",
+		"graphics": ["fs", "l3"],
+		"key": "Texas/U.S. House/9",
+		"office": "U.S. House",
+		"state": "TX",
+		"stateName": "Texas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Bobby",
+				"last": "Pulido",
+				"party": "D"
+			},
+			{
+				"first": "Monica",
+				"last": "De La Cruz",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 295084,
+		"district": "15",
+		"graphics": ["fs", "l3"],
+		"key": "Texas/U.S. House/15",
+		"office": "U.S. House",
+		"state": "TX",
+		"stateName": "Texas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Jace",
+				"last": "Yarbrough",
+				"party": "R"
+			},
+			{
+				"first": "Dan",
+				"last": "Barrios",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 295101,
+		"district": "32",
+		"graphics": ["fs", "l3"],
+		"key": "Texas/U.S. House/32",
+		"office": "U.S. House",
+		"state": "TX",
+		"stateName": "Texas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Vicente",
+				"last": "Gonzalez",
+				"party": "D"
+			},
+			{
+				"first": "Eric",
+				"last": "Flores",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 295103,
+		"district": "34",
+		"graphics": ["fs", "l3"],
+		"key": "Texas/U.S. House/34",
+		"office": "U.S. House",
+		"state": "TX",
+		"stateName": "Texas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Carlos",
+				"last": "De La Cruz",
+				"party": "R"
+			},
+			{
+				"first": "Johnny",
+				"last": "Garcia",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 295104,
+		"district": "35",
+		"graphics": ["fs", "l3"],
+		"key": "Texas/U.S. House/35",
+		"office": "U.S. House",
+		"state": "TX",
+		"stateName": "Texas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Ben",
+				"last": "McAdams",
+				"party": "D"
+			},
+			{
+				"first": "Riley",
+				"last": "Owen",
+				"party": "R"
+			},
+			{
+				"first": "Jesse",
+				"last": "West",
+				"party": "L"
+			},
+			{
+				"first": "Elias",
+				"last": "Montgomery",
+				"party": "U"
+			}
+		],
+		"ddhqRaceId": 295108,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "Utah/U.S. House/1",
+		"office": "U.S. House",
+		"state": "UT",
+		"stateName": "Utah"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Elaine",
+				"last": "Luria",
+				"party": "D"
+			},
+			{
+				"first": "Jennifer",
+				"last": "Kiggans",
+				"party": "R"
+			},
+			{
+				"first": "Geral",
+				"last": "Staten",
+				"party": "I"
+			},
+			{
+				"first": "J. Matt",
+				"last": "Baker",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 295114,
+		"district": "2",
+		"graphics": ["fs", "l3"],
+		"key": "Virginia/U.S. House/2",
+		"office": "U.S. House",
+		"state": "VA",
+		"stateName": "Virginia"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Mitchell",
+				"last": "Berman",
+				"party": "D"
+			},
+			{
+				"first": "Bryan",
+				"last": "Steil",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 295136,
+		"district": "1",
+		"graphics": ["fs", "l3"],
+		"key": "Wisconsin/U.S. House/1",
+		"office": "U.S. House",
+		"state": "WI",
+		"stateName": "Wisconsin"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Rebecca",
+				"last": "Cooke",
+				"party": "D"
+			},
+			{
+				"first": "Derrick",
+				"last": "Van Orden",
+				"party": "R"
+			},
+			{
+				"first": "Alexander",
+				"last": "Kent",
+				"party": "I"
+			},
+			{
+				"first": "Rustin",
+				"last": "Provance",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 295138,
+		"district": "3",
+		"graphics": ["fs", "l3"],
+		"key": "Wisconsin/U.S. House/3",
+		"office": "U.S. House",
+		"state": "WI",
+		"stateName": "Wisconsin"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Doug",
+				"last": "Jones",
+				"party": "D"
+			},
+			{
+				"first": "Tommy",
+				"last": "Tuberville",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 700160,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Alabama/Governor/",
+		"office": "Governor",
+		"state": "AL",
+		"stateName": "Alabama"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Katie",
+				"last": "Hobbs",
+				"party": "D"
+			},
+			{
+				"first": "Andy",
+				"last": "Biggs",
+				"party": "R"
+			},
+			{
+				"first": "Risa",
+				"last": "Lombardo",
+				"party": "G"
+			},
+			{
+				"first": "Teri",
+				"last": "Hourihan",
+				"party": "N"
+			}
+		],
+		"ddhqRaceId": 716860,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Arizona/Governor/",
+		"office": "Governor",
+		"state": "AZ",
+		"stateName": "Arizona"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Dave",
+				"last": "Bronson",
+				"party": "R"
+			},
+			{
+				"first": "Jonathan",
+				"last": "Kreiss-Tomkins",
+				"party": "D"
+			},
+			{
+				"first": "Bernadette",
+				"last": "Wilson",
+				"party": "R"
+			},
+			{
+				"first": "Treg",
+				"last": "Taylor",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 716858,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Alaska/Governor/",
+		"office": "Governor",
+		"state": "AK",
+		"stateName": "Alaska"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Michael",
+				"last": "Kalagia",
+				"party": "L"
+			},
+			{
+				"first": "Leslie",
+				"last": "Rutledge",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 784945,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Arkansas/Governor/",
+		"office": "Governor",
+		"state": "AR",
+		"stateName": "Arkansas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Steve",
+				"last": "Hilton",
+				"party": "R"
+			},
+			{
+				"first": "Xavier",
+				"last": "Becerra",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 702340,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "California/Governor/",
+		"office": "Governor",
+		"state": "CA",
+		"stateName": "California"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Victor",
+				"last": "Marx",
+				"party": "R"
+			},
+			{
+				"first": "Phil",
+				"last": "Weiser",
+				"party": "D"
+			},
+			{
+				"first": "Stephen",
+				"last": "Hamilton",
+				"party": "A"
+			},
+			{
+				"first": "Eric",
+				"last": "Mulder",
+				"party": "L"
+			},
+			{
+				"first": "Jeff",
+				"last": "Peckman",
+				"party": "U"
+			},
+			{
+				"first": "Erik",
+				"last": "Underwood",
+				"party": "A"
+			},
+			{
+				"first": "Greg",
+				"last": "Lopez",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 716861,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Colorado/Governor/",
+		"office": "Governor",
+		"state": "CO",
+		"stateName": "Colorado"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Ned",
+				"last": "Lamont",
+				"party": "D"
+			},
+			{
+				"first": "Ryan",
+				"last": "Fazio",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 716862,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Connecticut/Governor/",
+		"office": "Governor",
+		"state": "CT",
+		"stateName": "Connecticut"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Byron",
+				"last": "Donalds",
+				"party": "R"
+			},
+			{
+				"first": "David",
+				"last": "Jolly",
+				"party": "D"
+			},
+			{
+				"first": "Frank",
+				"last": "Russo",
+				"party": "I"
+			},
+			{
+				"first": "Dean",
+				"last": "Abrams",
+				"party": "I"
+			},
+			{
+				"first": "Charles",
+				"last": "Burkett",
+				"party": "I"
+			},
+			{
+				"first": "Jeffrey",
+				"last": "Datto",
+				"party": "I"
+			},
+			{
+				"first": "Moliere",
+				"last": "Dimanche",
+				"party": "I"
+			},
+			{
+				"first": "Scott",
+				"last": "Jewett",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 716891,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Florida/Governor/",
+		"office": "Governor",
+		"state": "FL",
+		"stateName": "Florida"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Keisha",
+				"last": "Lance Bottoms",
+				"party": "D"
+			},
+			{
+				"first": "Rick",
+				"last": "Jackson",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 697741,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Georgia/Governor/",
+		"office": "Governor",
+		"state": "GA",
+		"stateName": "Georgia"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Gary",
+				"last": "Cordery",
+				"party": "R"
+			},
+			{
+				"first": "Joshua",
+				"last": "Green",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 716892,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Hawaii/Governor/",
+		"office": "Governor",
+		"state": "HI",
+		"stateName": "Hawaii"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Terri",
+				"last": "Pickens",
+				"party": "D"
+			},
+			{
+				"first": "Brad",
+				"last": "Little",
+				"party": "R"
+			},
+			{
+				"first": "Pro",
+				"last": "Life",
+				"party": "C"
+			},
+			{
+				"first": "John",
+				"last": "Stegner",
+				"party": "I"
+			},
+			{
+				"first": "Paul",
+				"last": "Sand",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 698690,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Idaho/Governor/",
+		"office": "Governor",
+		"state": "ID",
+		"stateName": "Idaho"
+	},
+	{
+		"candidates": [
+			{
+				"first": "JB",
+				"last": "Pritzker",
+				"party": "D"
+			},
+			{
+				"first": "Darren",
+				"last": "Bailey",
+				"party": "R"
+			},
+			{
+				"first": "Collin",
+				"last": "Corbett",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 608024,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Illinois/Governor/",
+		"office": "Governor",
+		"state": "IL",
+		"stateName": "Illinois"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Rob",
+				"last": "Sand",
+				"party": "D"
+			},
+			{
+				"first": "Zach",
+				"last": "Lahn",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 701582,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Iowa/Governor/",
+		"office": "Governor",
+		"state": "IA",
+		"stateName": "Iowa"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Cindy",
+				"last": "Holscher",
+				"party": "D"
+			},
+			{
+				"first": "Ty",
+				"last": "Masterson",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 716893,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Kansas/Governor/",
+		"office": "Governor",
+		"state": "KS",
+		"stateName": "Kansas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Hannah",
+				"last": "Pingree",
+				"party": "D"
+			},
+			{
+				"first": "Bobby",
+				"last": "Charles",
+				"party": "R"
+			},
+			{
+				"first": "Rick",
+				"last": "Bennett",
+				"party": "I"
+			},
+			{
+				"first": "John",
+				"last": "Glowa",
+				"party": "W"
+			},
+			{
+				"first": "Randy",
+				"last": "Wilcox",
+				"party": "W"
+			},
+			{
+				"first": "Blank",
+				"last": "Votes",
+				"party": "N"
+			},
+			{
+				"first": "",
+				"last": "Write-In",
+				"party": "W"
+			}
+		],
+		"ddhqRaceId": 704318,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Maine/Governor/",
+		"office": "Governor",
+		"state": "ME",
+		"stateName": "Maine"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Dan",
+				"last": "Cox",
+				"party": "R"
+			},
+			{
+				"first": "Wes",
+				"last": "Moore",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 716925,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Maryland/Governor/",
+		"office": "Governor",
+		"state": "MD",
+		"stateName": "Maryland"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Michael",
+				"last": "Minogue",
+				"party": "R"
+			},
+			{
+				"first": "Maura",
+				"last": "Healey",
+				"party": "D"
+			},
+			{
+				"first": "Andrea",
+				"last": "James",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 716924,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Massachusetts/Governor/",
+		"office": "Governor",
+		"state": "MA",
+		"stateName": "Massachusetts"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Jocelyn",
+				"last": "Benson",
+				"party": "D"
+			},
+			{
+				"first": "John",
+				"last": "James",
+				"party": "R"
+			},
+			{
+				"first": "Anthony",
+				"last": "Hudson",
+				"party": "L"
+			},
+			{
+				"first": "Donna",
+				"last": "Brandenburg",
+				"party": "U"
+			},
+			{
+				"first": "Douglas",
+				"last": "Campbell",
+				"party": "G"
+			}
+		],
+		"ddhqRaceId": 716926,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Michigan/Governor/",
+		"office": "Governor",
+		"state": "MI",
+		"stateName": "Michigan"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Lisa",
+				"last": "Demuth",
+				"party": "R"
+			},
+			{
+				"first": "Amy",
+				"last": "Klobuchar",
+				"party": "D"
+			},
+			{
+				"first": "Steven",
+				"last": "Young",
+				"party": "G"
+			}
+		],
+		"ddhqRaceId": 716957,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Minnesota/Governor/",
+		"office": "Governor",
+		"state": "MN",
+		"stateName": "Minnesota"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Lynne",
+				"last": "Walz",
+				"party": "D"
+			},
+			{
+				"first": "Jim",
+				"last": "Pillen",
+				"party": "R"
+			},
+			{
+				"first": "Rick",
+				"last": "Beard",
+				"party": "L"
+			},
+			{
+				"first": "Brett",
+				"last": "Lindstrom",
+				"party": "A"
+			}
+		],
+		"ddhqRaceId": 694979,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Nebraska/Governor/",
+		"office": "Governor",
+		"state": "NE",
+		"stateName": "Nebraska"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Aaron",
+				"last": "Ford",
+				"party": "D"
+			},
+			{
+				"first": "Joe",
+				"last": "Lombardo",
+				"party": "R"
+			},
+			{
+				"first": "Danielle",
+				"last": "Ford",
+				"party": "I"
+			},
+			{
+				"first": "None Of",
+				"last": "These Candidates",
+				"party": "U"
+			}
+		],
+		"ddhqRaceId": 702307,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Nevada/Governor/",
+		"office": "Governor",
+		"state": "NV",
+		"stateName": "Nevada"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Cinde",
+				"last": "Warmington",
+				"party": "D"
+			},
+			{
+				"first": "Kelly",
+				"last": "Ayotte",
+				"party": "R"
+			},
+			{
+				"first": "Stephen",
+				"last": "Villee",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 716990,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "New Hampshire/Governor/",
+		"office": "Governor",
+		"state": "NH",
+		"stateName": "New Hampshire"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Greggory",
+				"last": "Hull",
+				"party": "R"
+			},
+			{
+				"first": "Deb",
+				"last": "Haaland",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 701680,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "New Mexico/Governor/",
+		"office": "Governor",
+		"state": "NM",
+		"stateName": "New Mexico"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Kathy",
+				"last": "Hochul",
+				"party": "D"
+			},
+			{
+				"first": "Bruce",
+				"last": "Blakeman",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 716991,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "New York/Governor/",
+		"office": "Governor",
+		"state": "NY",
+		"stateName": "New York"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Amy",
+				"last": "Acton",
+				"party": "D"
+			},
+			{
+				"first": "Vivek",
+				"last": "Ramaswamy",
+				"party": "R"
+			},
+			{
+				"first": "Don",
+				"last": "Kissick",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 681152,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Ohio/Governor/",
+		"office": "Governor",
+		"state": "OH",
+		"stateName": "Ohio"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Robert",
+				"last": "Brooks",
+				"party": "I"
+			},
+			{
+				"first": "Orlando",
+				"last": "Bush",
+				"party": "I"
+			},
+			{
+				"first": "Jerry",
+				"last": "Griffin",
+				"party": "I"
+			},
+			{
+				"first": "Cyndi",
+				"last": "Munson",
+				"party": "D"
+			},
+			{
+				"first": "Mike",
+				"last": "Mazzei",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 704021,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Oklahoma/Governor/",
+		"office": "Governor",
+		"state": "OK",
+		"stateName": "Oklahoma"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Tina",
+				"last": "Kotek",
+				"party": "D"
+			},
+			{
+				"first": "Christine",
+				"last": "Drazan",
+				"party": "R"
+			},
+			{
+				"first": "Brett",
+				"last": "Smith",
+				"party": "P"
+			}
+		],
+		"ddhqRaceId": 700028,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Oregon/Governor/",
+		"office": "Governor",
+		"state": "OR",
+		"stateName": "Oregon"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Josh",
+				"last": "Shapiro",
+				"party": "D"
+			},
+			{
+				"first": "Stacy",
+				"last": "Garrity",
+				"party": "R"
+			},
+			{
+				"first": "Kenneth",
+				"last": "Krawchuk",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 700061,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Pennsylvania/Governor/",
+		"office": "Governor",
+		"state": "PA",
+		"stateName": "Pennsylvania"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Helena",
+				"last": "Foulkes",
+				"party": "D"
+			},
+			{
+				"first": "Aaron",
+				"last": "Guckian",
+				"party": "R"
+			},
+			{
+				"first": "Kenneth",
+				"last": "Block",
+				"party": "I"
+			},
+			{
+				"first": "Jasjit",
+				"last": "Gotra",
+				"party": "I"
+			},
+			{
+				"first": "C",
+				"last": "Reynolds",
+				"party": "I"
+			}
+		],
+		"ddhqRaceId": 716992,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Rhode Island/Governor/",
+		"office": "Governor",
+		"state": "RI",
+		"stateName": "Rhode Island"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Jermaine",
+				"last": "Johnson",
+				"party": "D"
+			},
+			{
+				"first": "Alan",
+				"last": "Wilson",
+				"party": "R"
+			},
+			{
+				"first": "Michael",
+				"last": "Addison",
+				"party": "U"
+			},
+			{
+				"first": "Walid",
+				"last": "Hakim",
+				"party": "G"
+			}
+		],
+		"ddhqRaceId": 702284,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "South Carolina/Governor/",
+		"office": "Governor",
+		"state": "SC",
+		"stateName": "South Carolina"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Larry",
+				"last": "Rhoden",
+				"party": "R"
+			},
+			{
+				"first": "Dan",
+				"last": "Ahlers",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 701777,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "South Dakota/Governor/",
+		"office": "Governor",
+		"state": "SD",
+		"stateName": "South Dakota"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Misam",
+				"last": "Abidi",
+				"party": "I"
+			},
+			{
+				"first": "Dean",
+				"last": "Brewer",
+				"party": "I"
+			},
+			{
+				"first": "Ray",
+				"last": "Brown",
+				"party": "I"
+			},
+			{
+				"first": "David",
+				"last": "Hatley",
+				"party": "I"
+			},
+			{
+				"first": "Wendell",
+				"last": "Jackson",
+				"party": "I"
+			},
+			{
+				"first": "Charles",
+				"last": "Van Morgan",
+				"party": "I"
+			},
+			{
+				"first": "Eddie",
+				"last": "Murphy",
+				"party": "I"
+			},
+			{
+				"first": "Lauren",
+				"last": "Pinkston",
+				"party": "I"
+			},
+			{
+				"first": "Victor",
+				"last": "Scoggin",
+				"party": "I"
+			},
+			{
+				"first": "Dave",
+				"last": "Seeman",
+				"party": "I"
+			},
+			{
+				"first": "Karl",
+				"last": "Smithson",
+				"party": "I"
+			},
+			{
+				"first": "L.",
+				"last": "Taylor",
+				"party": "I"
+			},
+			{
+				"first": "Robert",
+				"last": "Vick",
+				"party": "I"
+			},
+			{
+				"first": "Marsha",
+				"last": "Blackburn",
+				"party": "R"
+			},
+			{
+				"first": "Jerri",
+				"last": "Green",
+				"party": "D"
+			}
+		],
+		"ddhqRaceId": 716993,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Tennessee/Governor/",
+		"office": "Governor",
+		"state": "TN",
+		"stateName": "Tennessee"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Gina",
+				"last": "Hinojosa",
+				"party": "D"
+			},
+			{
+				"first": "Greg",
+				"last": "Abbott",
+				"party": "R"
+			},
+			{
+				"first": "Pat",
+				"last": "Dixon",
+				"party": "L"
+			}
+		],
+		"ddhqRaceId": 701534,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Texas/Governor/",
+		"office": "Governor",
+		"state": "TX",
+		"stateName": "Texas"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Molly",
+				"last": "Gray",
+				"party": "D"
+			},
+			{
+				"first": "John",
+				"last": "Rodgers",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 784990,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Vermont/Governor/",
+		"office": "Governor",
+		"state": "VT",
+		"stateName": "Vermont"
+	},
+	{
+		"candidates": [
+			{
+				"first": "David",
+				"last": "Crowley",
+				"party": "D"
+			},
+			{
+				"first": "Tom",
+				"last": "Tiffany",
+				"party": "R"
+			}
+		],
+		"ddhqRaceId": 770252,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Wisconsin/Governor/",
+		"office": "Governor",
+		"state": "WI",
+		"stateName": "Wisconsin"
+	},
+	{
+		"candidates": [
+			{
+				"first": "Eric",
+				"last": "Barlow",
+				"party": "R"
+			},
+			{
+				"first": "Kenneth",
+				"last": "Casner",
+				"party": "D"
+			},
+			{
+				"first": "Rebecca",
+				"last": "Bextel",
+				"party": "C"
+			}
+		],
+		"ddhqRaceId": 716996,
+		"district": "",
+		"graphics": ["fs", "l3"],
+		"key": "Wyoming/Governor/",
+		"office": "Governor",
+		"state": "WY",
+		"stateName": "Wyoming"
+	}
+]

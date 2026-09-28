@@ -24,8 +24,11 @@ src/
   playback/         playback clock (1× only) + the mirror's answers
   air/airFeed.ts    STUB: the simulated 1920×1080 air feed, called on every playback start/pause/resume/restart/stop
   web/              Fastify control API + mirror (server.ts), Vite/React/MUI SPA (client/)
+  tools/buildRaces.ts   takeitems.xml + one DDHQ lookup → races.json (run once; see the file header)
 tests/              vitest
 ticker.html, l3.html, fullscreen.html   the three on-air graphics (1920×1080 HTML/CSS from the PSDs)
+takeitems.xml            the operator's Ross take list for the L3 and FS results graphics (races, no candidates)
+races.json               the simulated air feed's races: the take list's 116 races with DDHQ candidates and race_id
 render-*.mjs, compare.html               render a graphic to PNG; compare a build with its design (not linted)
 ```
 
