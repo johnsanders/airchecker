@@ -9,7 +9,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import type { ApiRecordingStatus, RaceSummary, StateResponse } from './api.js';
+import type { RaceSummary, StateResponse } from './api.js';
 
 import { api } from './api.js';
 import AlertHistory from './components/AlertHistory.js';
@@ -20,7 +20,6 @@ import QueryEditor from './components/QueryEditor.js';
 import RaceDetailDialog from './components/RaceDetailDialog.js';
 import RaceLinks from './components/RaceLinks.js';
 import RaceTable from './components/RaceTable.js';
-import RecordPanel from './components/RecordPanel.js';
 import SessionsPanel from './components/SessionsPanel.js';
 import SourceHealth from './components/SourceHealth.js';
 import { useLiveQuery } from './useLiveQuery.js';
@@ -38,7 +37,7 @@ const Section: React.FC<{ children: React.ReactNode; title: string }> = (props) 
 	</Paper>
 );
 
-const TABS = ['live', 'air', 'setup', 'sessions', 'api'] as const;
+const TABS = ['live', 'air', 'setup', 'sessions'] as const;
 type TabId = (typeof TABS)[number];
 
 const tabFromHash = (): TabId => TABS.find((tab) => `#${tab}` === window.location.hash) ?? 'live';
@@ -52,9 +51,6 @@ const TabLabel: React.FC<{ count: number; label: string }> = (props) => (
 const App: React.FC = () => {
 	const { data: state } = useLiveQuery<StateResponse>(() => api.getState());
 	const { data: racesData } = useLiveQuery<{ races: RaceSummary[] }>(() => api.getRaces());
-	const { data: apiRecording, reload: reloadApiRecording } = useLiveQuery<ApiRecordingStatus>(() =>
-		api.getApiRecording(),
-	);
 	const [selected, setSelected] = React.useState<string | undefined>(undefined);
 	const [tab, setTab] = React.useState<TabId>(tabFromHash);
 
@@ -78,13 +74,8 @@ const App: React.FC = () => {
 					<Typography sx={{ fontWeight: 700 }}>Eagle Eye</Typography>
 					<Typography color="text.secondary" sx={{ ml: 2 }} variant="caption">
 						election-graphics observer ·{' '}
-						{apiRecording?.mode === 'playback' ? `API playback: ${apiRecording.name}` : 'live'}
+						{state?.ddhqEnvironment === 'sim' ? 'sim (elex_sim)' : 'live'}
 					</Typography>
-					{apiRecording?.mode === 'live' && apiRecording.recording !== null && (
-						<Typography color="error" sx={{ fontWeight: 700, ml: 2 }} variant="caption">
-							● REC
-						</Typography>
-					)}
 					<MonitorControl status={state?.session ?? null} />
 				</Toolbar>
 			</AppBar>
@@ -106,7 +97,6 @@ const App: React.FC = () => {
 						value="setup"
 					/>
 					<Tab label="Session recordings" value="sessions" />
-					<Tab label="API recording" value="api" />
 				</Tabs>
 
 				<Box hidden={tab !== 'live'}>
@@ -145,10 +135,7 @@ const App: React.FC = () => {
 					<Grid container spacing={2}>
 						<Grid size={{ xs: 12 }}>
 							<Section title="DDHQ queries">
-								<QueryEditor
-									environment={state?.ddhqEnvironment ?? null}
-									readOnly={apiRecording?.mode === 'playback'}
-								/>
+								<QueryEditor environment={state?.ddhqEnvironment ?? null} />
 							</Section>
 						</Grid>
 
@@ -165,12 +152,6 @@ const App: React.FC = () => {
 				<Box hidden={tab !== 'sessions'}>
 					<Section title="Session recordings">
 						<SessionsPanel />
-					</Section>
-				</Box>
-
-				<Box hidden={tab !== 'api'}>
-					<Section title="API recording">
-						<RecordPanel onChange={reloadApiRecording} status={apiRecording} />
 					</Section>
 				</Box>
 			</Box>

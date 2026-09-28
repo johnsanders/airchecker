@@ -49,9 +49,6 @@ describe('store', () => {
 		store.record(observation('Ross', 1_001, 'RACE:A'));
 		store.record(observation('air', 1_002, 'RACE:B'));
 		expect(store.getRaceKeys().sort()).toEqual(['RACE:A', 'RACE:B']);
-		store.clear();
-		expect(store.getRaceKeys()).toEqual([]);
-		expect(store.getProviderHistory('RACE:A')).toEqual([]);
 	});
 
 	it('trims entries older than retentionMs', () => {

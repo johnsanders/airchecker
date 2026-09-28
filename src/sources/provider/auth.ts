@@ -20,7 +20,7 @@ export type DdhqAuth = {
 
 export type DdhqAuthConfig = {
 	getBaseUrl: () => string;
-	// Read at each token fetch: API playback answers with placeholders, live with process.env.
+	// Read at each token fetch: the Sim environment answers with placeholders, live with process.env.
 	getCredentials: () => DdhqCredentials;
 	http: HttpJson;
 	now?: () => number; // injectable clock for tests

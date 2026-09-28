@@ -14,43 +14,44 @@ import { makeQueryStore } from './queryStore.js';
 // web UI. The caller may inject a persistent queryStore (settings-backed) so edits
 // survive restarts; the default is in-memory and starts empty.
 //   DDHQ_BASE_URL      production host (default https://resultsapi.decisiondeskhq.com)
-//   DDHQ_CLIENT_ID / DDHQ_CLIENT_SECRET / DDHQ_GRANT_TYPE  (required)
+//   SIM_BASE_URL       elex_sim's mirror, for the Sim environment (default http://localhost:8788)
+//   DDHQ_CLIENT_ID / DDHQ_CLIENT_SECRET / DDHQ_GRANT_TYPE  (required, except in Sim)
 //   DDHQ_POLL_INTERVAL_MS  (default 60000 — once per minute)
 
 const DEFAULT_POLL_INTERVAL_MS = 60_000;
 
-// DDHQ's test environment serves the same paths from its own host. Which one is polled
-// is runtime state (switchable in the web view), read fresh each poll.
-export type DdhqEnvironment = 'integration' | 'production';
+// DDHQ's test environment serves the same paths from its own host, and elex_sim serves
+// them (and Chameleon's) from a recorded night. Which one is polled is runtime state
+// (switchable in the web view), read fresh each poll.
+export type DdhqEnvironment = 'integration' | 'production' | 'sim';
 
-export const ddhqBaseUrl = (environment: DdhqEnvironment): string =>
-	environment === 'integration'
-		? 'https://resultsapi-integration.decisiondeskhq.com'
-		: (process.env.DDHQ_BASE_URL ?? 'https://resultsapi.decisiondeskhq.com');
+export const simBaseUrl = (): string => process.env.SIM_BASE_URL ?? 'http://localhost:8788';
+
+export const ddhqBaseUrl = (environment: DdhqEnvironment): string => {
+	if (environment === 'integration') return 'https://resultsapi-integration.decisiondeskhq.com';
+	if (environment === 'sim') return simBaseUrl();
+	return process.env.DDHQ_BASE_URL ?? 'https://resultsapi.decisiondeskhq.com';
+};
 
 export type ProviderSource = {
 	intervalMs: number;
-	// Drop the cached bearer token, so switching between API playback and live never
-	// sends one side's token to the other.
-	invalidateToken: () => void;
 	poller: ProviderPoller;
 	queryStore: QueryStore; // exposed so the web server can get/set the query list
 };
 
 export type ProviderSourceOptions = {
-	fixedIntervalMs?: number; // overrides DDHQ_POLL_INTERVAL_MS (API recording pins 60 s)
 	getEnvironment?: () => DdhqEnvironment; // default production
 	http?: HttpJson;
-	isPlayback?: () => boolean; // answers come from an API recording: no credentials needed
 	// One query failing doesn't fail the poll (the others still run), so it's reported
 	// here rather than thrown.
 	onQueryError?: (query: string, error: unknown) => void;
 };
 
-const PLAYBACK_CREDENTIALS = {
-	clientId: 'api-playback',
-	clientSecret: 'api-playback',
-	grantType: 'api-playback',
+// elex_sim issues a token to anyone; real credentials never go to it.
+const SIM_CREDENTIALS = {
+	clientId: 'elex-sim',
+	clientSecret: 'elex-sim',
+	grantType: 'elex-sim',
 };
 
 const readCredentials = () => {
@@ -67,16 +68,14 @@ export const makeProviderSource = (
 	queryStore: QueryStore = makeQueryStore(),
 	options: ProviderSourceOptions = {},
 ): ProviderSource => {
-	const getCredentials = () =>
-		options.isPlayback?.() === true ? PLAYBACK_CREDENTIALS : readCredentials();
 	const getEnvironment = options.getEnvironment ?? (() => 'production');
+	const getCredentials = () => (getEnvironment() === 'sim' ? SIM_CREDENTIALS : readCredentials());
 	const getBaseUrl = (): string => ddhqBaseUrl(getEnvironment());
 	const http = options.http ?? makeFetchHttp();
 	const auth = makeDdhqAuth({ getBaseUrl, getCredentials, http });
 	const intervalRaw = Number(process.env.DDHQ_POLL_INTERVAL_MS);
 	const intervalMs =
-		options.fixedIntervalMs ??
-		(Number.isFinite(intervalRaw) && intervalRaw > 0 ? intervalRaw : DEFAULT_POLL_INTERVAL_MS);
+		Number.isFinite(intervalRaw) && intervalRaw > 0 ? intervalRaw : DEFAULT_POLL_INTERVAL_MS;
 
 	const poller = makeProviderPoller({
 		auth,
@@ -87,5 +86,5 @@ export const makeProviderSource = (
 		onObservations,
 	});
 
-	return { intervalMs, invalidateToken: auth.invalidate, poller, queryStore };
+	return { intervalMs, poller, queryStore };
 };

@@ -4,7 +4,7 @@ A pick-up sheet for the next session. Full context: [`CLAUDE.md`](CLAUDE.md), th
 
 ## Where we left off (2026-09-25)
 
-The system is retargeted to the **September 2026 graphics package** and proven against it offline. **256 tests, typecheck and lint clean.** Working directory is `~/Developer/airchecker` (`.env`, `recordings/settings.sqlite`, and the June session recordings live here; `~/Developer/nn-airchecker-old` holds only leftovers and can be deleted).
+The system is retargeted to the **September 2026 graphics package** and proven against it offline. **276 tests, typecheck and lint clean.** Working directory is `~/Developer/airchecker` (`.env`, `recordings/settings.sqlite`, and the June session recordings live here; `~/Developer/nn-airchecker-old` holds only leftovers and can be deleted).
 
 Done since the July hand-off, in order:
 
@@ -63,10 +63,10 @@ Done 2026-09-26 while waiting on better frames: replay audit of the June recordi
 ## Useful commands
 
 ```bash
-npm test                                              # 256 tests, hermetic (no API key)
+npm test                                              # 276 tests, hermetic (no API key)
 npx tsc --noEmit && npx eslint .
 npm run backend                                          # full live system + web view (needs .env + VPN)
-npm run chrome:debug                                  # the DirecTV Chrome the air capturer attaches to (CDP :9222)
+npm run chrome                                        # the DirecTV Chrome the air capturer attaches to (CDP :9222)
 npm run frontend:build                                     # build the React SPA
 node --import tsx src/runtime/replayMain.ts <sessionId> [--serve] [--speed=N]    # replay a session; --serve plays it behind the web view
 node --env-file-if-exists=.env --import tsx src/tools/verifyExtraction.ts all 2 --recall-model <id>            # model comparison: exact rate per golden + measured $/hour; slash IDs go to OpenRouter

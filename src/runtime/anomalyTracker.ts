@@ -12,7 +12,6 @@ import defaultThresholds from '../reconcile/thresholds.js';
 export type AnomalyDiff = { cleared: Anomaly[]; raised: Anomaly[] };
 
 export type AnomalyTracker = {
-	clear: () => void;
 	list: () => Anomaly[];
 	update: (raceKey: string, anomalies: Anomaly[]) => AnomalyDiff;
 };
@@ -51,7 +50,6 @@ export const makeAnomalyTracker = (thresholds: Thresholds = defaultThresholds): 
 	};
 
 	return {
-		clear: () => byRace.clear(),
 		// Oldest first, so the web layer's slice(-100).reverse() keeps newest-first.
 		list: () =>
 			Array.from(byRace.values())

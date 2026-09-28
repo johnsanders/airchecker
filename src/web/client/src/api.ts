@@ -27,53 +27,6 @@ export interface Anomaly {
 	type: string;
 }
 
-export interface ApiRecordingDetail {
-	ddhqQueries: string[];
-	name: string;
-	sources: { errors: number; responses: number; source: ApiSource }[];
-	startedAt: number;
-	stoppedAt: null | number;
-}
-
-// Raw DDHQ + Chameleon response recording (Record button) / playback (Play button).
-export type ApiRecordingStatus =
-	| {
-			durationMs: number;
-			elapsedMs: number;
-			ended: boolean;
-			mode: 'playback';
-			name: string;
-			paused: boolean;
-			speed: number;
-	  }
-	| { mode: 'live'; recording: { name: string; responseCount: number; startedAt: number } | null };
-
-export interface ApiRecordingSummary {
-	file: string;
-	name: string;
-	responseCount: number;
-	startedAt: number;
-	stoppedAt: null | number;
-}
-
-export interface ApiResponseQuery {
-	before?: number;
-	errorsOnly?: boolean;
-	limit?: number;
-	source?: ApiSource;
-}
-
-export interface ApiResponseSummary {
-	bytes: number; // stored JSON size; 0 when the call failed
-	error: null | string;
-	path: string;
-	seq: number;
-	source: ApiSource;
-	ts: number;
-}
-
-export type ApiSource = 'DDHQ' | 'Ross';
-
 export interface Cadence {
 	intervalMs: number;
 	mode: 'interval' | 'manual';
@@ -93,7 +46,7 @@ export interface CanonicalRace {
 	provisional: boolean;
 }
 
-export type DdhqEnvironment = 'integration' | 'production';
+export type DdhqEnvironment = 'integration' | 'production' | 'sim';
 
 export interface DiskUsage {
 	freeBytes: number;
@@ -215,18 +168,12 @@ export interface StateResponse {
 	airMatch: null | string;
 	alerts: Anomaly[];
 	cadence: Cadence | null;
-	ddhqEnvironment: DdhqEnvironment | null; // null: DDHQ not configured, or API playback
+	ddhqEnvironment: DdhqEnvironment | null; // null: DDHQ not configured
 	lastFrame: { observations: Observation[]; ts: number } | null;
 	pendingLinkCount: number;
 	session: null | SessionStatus;
 	sources: SourceStat[];
 }
-
-const apiRecordingUrl = (name: string): string => `/api/api-recordings/${encodeURIComponent(name)}`;
-
-// A plain URL, so the raw stored JSON also opens in a new tab.
-export const apiResponseBodyUrl = (name: string, seq: number): string =>
-	`${apiRecordingUrl(name)}/responses/${seq}/body`;
 
 const getJson = async <T>(url: string): Promise<T> => {
 	const res = await fetch(url);
@@ -255,12 +202,6 @@ export const api = {
 		const res = await fetch('/api/capture', { method: 'POST' });
 		return res.json() as Promise<{ error?: string; ran: boolean; status: string }>;
 	},
-	deleteApiRecording: async (name: string): Promise<{ freedBytes: number }> => {
-		const url = apiRecordingUrl(name);
-		const res = await fetch(url, { method: 'DELETE' });
-		if (!res.ok) throw new Error(`${res.status} ${url}`);
-		return res.json() as Promise<{ freedBytes: number }>;
-	},
 	deleteSession: async (id: string): Promise<{ freedBytes: number }> => {
 		const url = `/api/sessions/${encodeURIComponent(id)}`;
 		const res = await fetch(url, { method: 'DELETE' });
@@ -269,14 +210,6 @@ export const api = {
 	},
 	getAlertHistory: (limit = 100) =>
 		getJson<{ events: AlertEvent[] }>(`/api/alert-history?limit=${limit}`),
-	getApiRecording: () => getJson<ApiRecordingStatus>('/api/api-recording'),
-	getApiRecordingMeta: (name: string) => getJson<ApiRecordingDetail>(apiRecordingUrl(name)),
-	getApiResponseBody: async (name: string, seq: number): Promise<string> => {
-		const url = apiResponseBodyUrl(name, seq);
-		const res = await fetch(url);
-		if (!res.ok) throw new Error(`${res.status} ${url}`);
-		return res.text();
-	},
 	getQueries: () => getJson<{ queries: string[] }>('/api/queries'),
 	getRace: (raceKey: string) =>
 		getJson<RaceDetailResponse>(`/api/race/${encodeURIComponent(raceKey)}`),
@@ -284,33 +217,6 @@ export const api = {
 	getRaces: () => getJson<{ races: RaceSummary[] }>('/api/races'),
 	getSessions: () => getJson<{ disk: DiskUsage; sessions: SessionSummary[] }>('/api/sessions'),
 	getState: () => getJson<StateResponse>('/api/state'),
-	getTestVideos: () => getJson<{ files: string[] }>('/api/test-videos'),
-	listApiRecordings: () => getJson<{ recordings: ApiRecordingSummary[] }>('/api/api-recordings'),
-	listApiResponses: (name: string, query: ApiResponseQuery) => {
-		const params = new URLSearchParams();
-		if (query.before !== undefined) params.set('before', String(query.before));
-		if (query.errorsOnly === true) params.set('errors', '1');
-		if (query.limit !== undefined) params.set('limit', String(query.limit));
-		if (query.source !== undefined) params.set('source', query.source);
-		return getJson<{ responses: ApiResponseSummary[] }>(
-			`${apiRecordingUrl(name)}/responses?${params.toString()}`,
-		);
-	},
-	openTestVideo: async (file: string): Promise<void> => {
-		const res = await fetch('/api/test-video', {
-			body: JSON.stringify({ file }),
-			headers: { 'content-type': 'application/json' },
-			method: 'POST',
-		});
-		if (!res.ok) {
-			const body = (await res.json().catch(() => ({}))) as { error?: string };
-			throw new Error(body.error ?? `${res.status} /api/test-video`);
-		}
-	},
-	// Surfaces the server's message: the usual failure is the debug Chrome not running.
-	// pause | resume | restart | stop; stop goes back to the live APIs.
-	playbackAction: (action: 'pause' | 'restart' | 'resume' | 'stop') =>
-		postJson<ApiRecordingStatus>(`/api/api-playback/${action}`, {}),
 	pruneSessionFrames: (id: string) =>
 		postJson<{ freedBytes: number }>(`/api/sessions/${encodeURIComponent(id)}/prune-frames`, {}),
 	rejectRaceProposal: (id: string) =>
@@ -325,20 +231,11 @@ export const api = {
 	setQueries: (queries: string[]) => postJson<{ queries: string[] }>('/api/queries', { queries }),
 	setRaceAlias: (body: { canonicalRaceKey: string; source: SourceName; sourceRaceKey: string }) =>
 		postJson<{ raceLinks: RaceLinksResponse }>('/api/race-links/aliases', body),
-	startApiPlayback: (name: string, speed: number) =>
-		postJson<ApiRecordingStatus>('/api/api-playback/start', { name, speed }),
-	startApiRecording: (name?: string) =>
-		postJson<ApiRecordingStatus>('/api/api-recording/start', name === undefined ? {} : { name }),
 	startSession: () => postJson<SessionStatus>('/api/session/start', {}),
-	stopApiRecording: () => postJson<ApiRecordingStatus>('/api/api-recording/stop', {}),
 	stopSession: () => postJson<SessionStatus>('/api/session/stop', {}),
 };
 
 // Preset tabs the capture button can target (label → URL substring).
-// The TEST source's match is the player page's path (TEST_PLAYER_PATH on the server).
-export const TEST_AIR_MATCH = '/test-player/';
-
 export const AIR_PRESETS: { label: string; match: string }[] = [
 	{ label: 'DirecTV', match: 'directv' },
-	{ label: 'TEST', match: TEST_AIR_MATCH },
 ];

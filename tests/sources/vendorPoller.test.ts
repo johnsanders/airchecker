@@ -35,7 +35,11 @@ describe('makeVendorPoller', () => {
 	it('GETs the configured URL and adapts every contest to a vendor observation', async () => {
 		const { gets, http } = makeHttp(sample);
 		const observed: RaceObservation[] = [];
-		const poller = makeVendorPoller({ http, onObservations: (o) => observed.push(...o), url: URL });
+		const poller = makeVendorPoller({
+			getUrl: () => URL,
+			http,
+			onObservations: (o) => observed.push(...o),
+		});
 		await poller.pollOnce();
 		expect(gets).toEqual([URL]);
 		const contestCount = ((sample.ElectionPlaylist as Record<string, unknown>).contest as unknown[])
@@ -48,10 +52,10 @@ describe('makeVendorPoller', () => {
 		const { http } = makeHttp(sample);
 		const observed: RaceObservation[] = [];
 		const poller = makeVendorPoller({
+			getUrl: () => URL,
 			http,
 			now: () => 1_700_000_000_000,
 			onObservations: (o) => observed.push(...o),
-			url: URL,
 		});
 		await poller.pollOnce();
 		expect(observed[0]!.observedAt).toBe(1_700_000_000_000);
@@ -59,7 +63,7 @@ describe('makeVendorPoller', () => {
 
 	it('propagates a fetch error (so the scheduler can report it)', async () => {
 		const { http } = makeHttp(() => new Error('HTTP 503 vendor down'));
-		const poller = makeVendorPoller({ http, onObservations: () => {}, url: URL });
+		const poller = makeVendorPoller({ getUrl: () => URL, http, onObservations: () => {} });
 		await expect(poller.pollOnce()).rejects.toThrow(/503/);
 	});
 });

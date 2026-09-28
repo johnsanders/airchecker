@@ -43,24 +43,6 @@ describe('race identity resolver', () => {
 		expect(resolver.getAlias('DDHQ', '2026-TX-Senate-AL-R-General')?.method).toBe('provider');
 	});
 
-	it('reset drops what is in memory and reloads from settings', async () => {
-		let saved: unknown;
-		const resolver = makeRaceIdentityResolver({
-			settings: { getIdentityState: () => saved, setIdentityState: (state) => (saved = state) },
-		});
-		await resolver.resolveObservation(obs('DDHQ', 'KEPT'));
-		const kept = saved;
-		await resolver.resolveObservation(obs('DDHQ', 'DROPPED'));
-		saved = kept;
-		resolver.reset();
-		expect(resolver.getSnapshot().canonicalRaces.map((race) => race.canonicalRaceKey)).toEqual([
-			'KEPT',
-		]);
-		saved = undefined;
-		resolver.reset();
-		expect(resolver.getSnapshot().canonicalRaces).toEqual([]);
-	});
-
 	it('creates a provisional canonical race when air appears before DDHQ', async () => {
 		const resolver = makeRaceIdentityResolver();
 		const resolved = await resolver.resolveObservation(obs('air', 'TX U.S. SENATE (R)'));

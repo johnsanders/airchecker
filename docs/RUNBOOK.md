@@ -13,7 +13,7 @@ One page for the truck. Dev context lives in [`CLAUDE.md`](../CLAUDE.md); what w
 ## Launch order
 
 ```bash
-npm run chrome:debug      # a Chrome with CDP on :9222, opened on the stream player — log in, start playback
+npm run chrome            # a Chrome with CDP on :9222, opened on the stream player — log in, start playback
 npm run backend              # all three sources, recorder on, web view
 open http://localhost:8787
 ```
@@ -45,11 +45,9 @@ In the web view's "Air capture" panel pick the tab to grab (DirecTV is the only 
 
 Air alerts fire on the **first** bad graphic seen; they clear after three clean reconciles. Severity: high = act now, medium = look, low = note.
 
-## Recording the APIs for rehearsal
+## Rehearsing against a recorded night
 
-The **API recording** panel's red **Record** button saves every DDHQ and Chameleon response (once a minute) until **Stop**. It is separate from the always-on session recording and costs about 20 MB per hour. To rehearse later against that night's data, with no VPN and no DDHQ credentials, pick a speed (1×, 2×, 5×, 10×) and click **▶ Play** next to the recording in the same panel.
-
-Play clears the races and alerts on screen and starts a new session; polls speed up with the playback, so every recorded minute is visited. **Pause**, **Restart** (from the top, cleared again) and **Stop playback** (clears and goes back to the live APIs) sit in the banner. Air capture stays live throughout, so this pairs a recorded night of data with a live feed. The header shows `API playback: <name>`, the query list and DDHQ environment are locked, and race links made during playback are never saved.
+Recording the APIs and playing them back live in the sibling repo `elex_sim` (see its CLAUDE.md). While elex_sim plays a recording, pick **Sim (elex_sim)** as the environment on the Setup tab: DDHQ and Chameleon are both polled from elex_sim's mirror (`SIM_BASE_URL`, default `http://localhost:8788`), with no VPN and no DDHQ credentials. Paste the recording's DDHQ queries (shown in elex_sim's playback banner) into the query list. Playback runs at 1×; after restarting it in elex_sim, stop and start monitoring here. Race links made in Sim are saved like any others.
 
 ## When something looks wrong
 

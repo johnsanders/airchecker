@@ -4,22 +4,13 @@ import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
 import Fastify from 'fastify';
 import { existsSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { RaceAlias, RaceIdentityResolver } from '../identity/raceIdentity.js';
 import type { Anomaly, RaceObservation, SourceName } from '../reconcile/reconcile.js';
-import type {
-	ApiRecordingDetail,
-	ApiRecordingSummary,
-	ApiResponseQuery,
-	ApiResponseSummary,
-	ApiSource,
-} from '../replay/apiRecording.js';
 import type { SessionFiles } from '../replay/sessionFiles.js';
 import type { AlertEvent } from '../runtime/alertLog.js';
-import type { ApiPlayback } from '../runtime/apiPlayback.js';
-import type { ApiRecorderStatus } from '../runtime/apiRecorder.js';
 import type { SessionStatus } from '../runtime/liveSession.js';
 import type { SourceError } from '../runtime/sourceErrors.js';
 import type { CadenceConfig, CaptureResult } from '../sources/air/captureScheduler.js';
@@ -30,12 +21,6 @@ import type { Store } from '../store/store.js';
 import type { ChangeBus } from './changeBus.js';
 
 import { normalizeName } from '../reconcile/reconcile.js';
-import {
-	listTestVideos,
-	TEST_PLAYER_PATH,
-	TEST_VIDEO_PATH,
-	testPlayerHtml,
-} from '../sources/air/testPlayer.js';
 
 // The live web view at localhost:8787. The React SPA (src/web/client) is served as
 // static files; everything else is a JSON API over injected handles — no source
@@ -48,29 +33,12 @@ export type LastFrameView = {
 	ts: number;
 };
 
-// The Record button, and the status behind the playback banner. start is refused during
-// playback: recording a playback would just copy the recording. Browsing
-// (body/meta/responses) works in both; each returns undefined for an unknown name.
-export type WebApiRecording = {
-	body: (name: string, seq: number) => null | string | undefined;
-	list: () => ApiRecordingSummary[];
-	meta: (name: string) => ApiRecordingDetail | undefined;
-	remove?: (name: string) => number | undefined;
-	responses: (name: string, query: ApiResponseQuery) => ApiResponseSummary[] | undefined;
-	start?: (name?: string) => ApiRecorderStatus;
-	status: () => ApiRecorderStatus;
-	stop?: () => ApiRecorderStatus;
-};
-
 export type WebServerConfig = {
-	// Start/pause/resume/restart/stop API playback; its status is apiRecording.status().
-	apiPlayback?: Pick<ApiPlayback, 'pause' | 'restart' | 'resume' | 'start' | 'status' | 'stop'>;
-	apiRecording?: WebApiRecording;
 	// When present, the server opens a /ws endpoint and pushes a "changed" nudge over
 	// it on every state change, so the client refetches on demand instead of polling.
 	changeBus?: ChangeBus;
-	// Which DDHQ host is polled (production or integration), switchable live but not
-	// during API playback; omitted if DDHQ isn't wired.
+	// Which DDHQ host is polled (production, integration, or elex_sim's mirror, which
+	// Chameleon follows), switchable live; omitted if DDHQ isn't wired.
 	ddhqEnvironment?: { get: () => DdhqEnvironment; set: (next: DdhqEnvironment) => void };
 	// Newest-first raise/clear events; omitted if alert history isn't wired.
 	getAlertHistory?: (limit?: number) => AlertEvent[];
@@ -90,19 +58,11 @@ export type WebServerConfig = {
 	sessions?: SessionFiles;
 	setCadence?: (next: Partial<CadenceConfig>) => void;
 	store: Store;
-	// The TEST air source: recorded broadcasts in `dir`, opened in the debug Chrome by
-	// `open` (which gets the file name); omitted if air isn't wired.
-	testVideos?: { dir: string; open: (file: string) => Promise<void> };
 	// Manual capture trigger (air scheduler's triggerCapture); omitted if air isn't wired.
 	triggerCapture?: () => Promise<CaptureResult>;
 };
 
 const SOURCES: readonly SourceName[] = ['DDHQ', 'Ross', 'air'];
-const API_SOURCES: readonly ApiSource[] = ['DDHQ', 'Ross'];
-const RESPONSES_PAGE = 200;
-const RESPONSES_PAGE_MAX = 1000;
-const PLAYBACK_SPEED_MAX = 100;
-const WHOLE_NUMBER = /^\d+$/;
 
 const historyFor = (store: Store, source: SourceName, raceKey: string): RaceObservation[] => {
 	if (source === 'DDHQ') return store.getProviderHistory(raceKey);
@@ -164,7 +124,6 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	// guarantees the hook is installed before the route is added — the route then
 	// upgrades to a websocket. Each connection just relays bus "changed" nudges.
 	const changeBus = config.changeBus;
-	const playing = (): boolean => config.apiPlayback?.status() !== undefined;
 	if (changeBus !== undefined) {
 		void app.register(fastifyWebsocket);
 		void app.register(async (instance) => {
@@ -200,7 +159,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			airMatch: config.matchStore?.get() ?? null,
 			alerts: config.getRecentAlerts().slice(-100).reverse(),
 			cadence: config.getCadence?.() ?? null,
-			ddhqEnvironment: playing() ? null : (config.ddhqEnvironment?.get() ?? null),
+			ddhqEnvironment: config.ddhqEnvironment?.get() ?? null,
 			lastFrame:
 				lastFrame === undefined
 					? null
@@ -397,10 +356,6 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	app.post<{ Body: { queries?: unknown } }>('/api/queries', (req, reply) => {
 		if (config.queryStore === undefined)
 			return reply.code(503).send({ error: 'DDHQ not configured' });
-		if (playing())
-			return reply
-				.code(409)
-				.send({ error: 'queries are fixed by the API recording during playback' });
 		const raw = req.body.queries;
 		if (!Array.isArray(raw) || !raw.every((q) => typeof q === 'string'))
 			return reply.code(400).send({ error: 'queries must be an array of strings' });
@@ -409,144 +364,12 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		return { queries: config.queryStore.get() };
 	});
 
-	// Raw DDHQ + Chameleon response recording (Record button) and playback status.
-	app.get('/api/api-recording', (_req, reply) => {
-		if (config.apiRecording === undefined)
-			return reply.code(503).send({ error: 'API recording not wired' });
-		return config.apiRecording.status();
-	});
-
-	app.get('/api/api-recordings', () => ({ recordings: config.apiRecording?.list() ?? [] }));
-
-	app.get<{ Params: { name: string } }>('/api/api-recordings/:name', (req, reply) => {
-		const meta = config.apiRecording?.meta(req.params.name);
-		if (meta === undefined) return reply.code(404).send({ error: 'no such API recording' });
-		return meta;
-	});
-
-	// Newest first, without bodies; page back with before=<last seq>.
-	app.get<{
-		Params: { name: string };
-		Querystring: { before?: string; errors?: string; limit?: string; source?: string };
-	}>('/api/api-recordings/:name/responses', (req, reply) => {
-		const source = req.query.source;
-		if (source !== undefined && !API_SOURCES.includes(source as ApiSource))
-			return reply.code(400).send({ error: 'source must be DDHQ or Ross' });
-		if (req.query.before !== undefined && !WHOLE_NUMBER.test(req.query.before))
-			return reply.code(400).send({ error: 'before must be a whole number' });
-		if (req.query.limit !== undefined && !WHOLE_NUMBER.test(req.query.limit))
-			return reply.code(400).send({ error: 'limit must be a whole number' });
-		const query: ApiResponseQuery = {
-			errorsOnly: req.query.errors === '1',
-			limit: Math.min(Number(req.query.limit ?? RESPONSES_PAGE), RESPONSES_PAGE_MAX),
-			...(req.query.before === undefined ? {} : { beforeSeq: Number(req.query.before) }),
-			...(source === undefined ? {} : { source: source as ApiSource }),
-		};
-		const responses = config.apiRecording?.responses(req.params.name, query);
-		if (responses === undefined) return reply.code(404).send({ error: 'no such API recording' });
-		return { responses };
-	});
-
-	// The stored JSON text, sent as is (a Chameleon body is ~350 KB; no re-serializing).
-	app.get<{ Params: { name: string; seq: string } }>(
-		'/api/api-recordings/:name/responses/:seq/body',
-		(req, reply) => {
-			if (!WHOLE_NUMBER.test(req.params.seq))
-				return reply.code(400).send({ error: 'seq must be a whole number' });
-			const body = config.apiRecording?.body(req.params.name, Number(req.params.seq));
-			if (body === undefined) return reply.code(404).send({ error: 'no such API recording' });
-			if (body === null) return reply.code(404).send({ error: 'no body for that response' });
-			return reply.type('application/json').send(body);
-		},
-	);
-
-	// A playing recording is refused too, though it's already in memory: deleting what's
-	// on air would leave the banner naming a file that's gone.
-	app.delete<{ Params: { name: string } }>('/api/api-recordings/:name', (req, reply) => {
-		if (config.apiRecording?.remove === undefined)
-			return reply.code(503).send({ error: 'API recording not wired' });
-		if (config.apiPlayback?.status()?.name === req.params.name)
-			return reply.code(409).send({ error: `${req.params.name} is playing back` });
-		try {
-			const freedBytes = config.apiRecording.remove(req.params.name);
-			if (freedBytes === undefined) return reply.code(404).send({ error: 'no such API recording' });
-			changeBus?.broadcast({ type: 'changed' });
-			return { freedBytes };
-		} catch (error) {
-			return reply
-				.code(409)
-				.send({ error: error instanceof Error ? error.message : String(error) });
-		}
-	});
-
-	app.post<{ Body: { name?: unknown } | null }>('/api/api-recording/start', (req, reply) => {
-		if (config.apiRecording?.start === undefined)
-			return reply.code(503).send({ error: 'API recording not wired' });
-		if (playing())
-			return reply.code(409).send({ error: 'recording is unavailable in API playback' });
-		const name = typeof req.body?.name === 'string' ? req.body.name : undefined;
-		try {
-			const status = config.apiRecording.start(name);
-			changeBus?.broadcast({ type: 'changed' });
-			return status;
-		} catch (error) {
-			return reply
-				.code(409)
-				.send({ error: error instanceof Error ? error.message : String(error) });
-		}
-	});
-
-	app.post('/api/api-recording/stop', (_req, reply) => {
-		if (config.apiRecording?.stop === undefined)
-			return reply.code(503).send({ error: 'API recording not wired' });
-		const status = config.apiRecording.stop();
-		changeBus?.broadcast({ type: 'changed' });
-		return status;
-	});
-
-	// Answer DDHQ + Chameleon from a recording instead of the live APIs. Each reply is the
-	// same status GET /api/api-recording returns.
-	app.post<{ Body: { name?: unknown; speed?: unknown } | null }>(
-		'/api/api-playback/start',
-		(req, reply) => {
-			if (config.apiPlayback === undefined || config.apiRecording === undefined)
-				return reply.code(503).send({ error: 'API playback not wired' });
-			const name = req.body?.name;
-			const speed = req.body?.speed ?? 1;
-			if (typeof name !== 'string') return reply.code(400).send({ error: 'name is required' });
-			if (typeof speed !== 'number' || !(speed > 0 && speed <= PLAYBACK_SPEED_MAX))
-				return reply
-					.code(400)
-					.send({ error: `speed must be a number above 0, at most ${PLAYBACK_SPEED_MAX}` });
-			try {
-				config.apiPlayback.start(name, speed);
-			} catch (error) {
-				return reply
-					.code(404)
-					.send({ error: error instanceof Error ? error.message : String(error) });
-			}
-			changeBus?.broadcast({ type: 'changed' });
-			return config.apiRecording.status();
-		},
-	);
-
-	(['pause', 'resume', 'restart', 'stop'] as const).forEach((action) =>
-		app.post(`/api/api-playback/${action}`, (_req, reply) => {
-			if (config.apiPlayback === undefined || config.apiRecording === undefined)
-				return reply.code(503).send({ error: 'API playback not wired' });
-			if (!playing()) return reply.code(409).send({ error: 'no API playback running' });
-			config.apiPlayback[action]();
-			changeBus?.broadcast({ type: 'changed' });
-			return config.apiRecording.status();
-		}),
-	);
-
 	app.post<{ Body: { environment?: unknown } }>('/api/ddhq-environment', (req, reply) => {
-		if (config.ddhqEnvironment === undefined || playing())
+		if (config.ddhqEnvironment === undefined)
 			return reply.code(409).send({ error: 'DDHQ environment is not switchable here' });
 		const environment = req.body.environment;
-		if (environment !== 'production' && environment !== 'integration')
-			return reply.code(400).send({ error: 'environment must be production or integration' });
+		if (environment !== 'production' && environment !== 'integration' && environment !== 'sim')
+			return reply.code(400).send({ error: 'environment must be production, integration or sim' });
 		config.ddhqEnvironment.set(environment);
 		changeBus?.broadcast({ type: 'changed' });
 		return { environment: config.ddhqEnvironment.get() };
@@ -564,40 +387,6 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		changeBus?.broadcast({ type: 'changed' });
 		return { match: config.matchStore.get() };
 	});
-
-	// TEST source: pick a recording from recordings/video; it opens paused in the debug
-	// Chrome and the capturer targets it. The page and file are served from here.
-	const testVideos = config.testVideos;
-	if (testVideos !== undefined) {
-		void app.register(fastifyStatic, {
-			decorateReply: false,
-			prefix: TEST_VIDEO_PATH,
-			root: resolve(testVideos.dir),
-		});
-		app.get('/api/test-videos', () => ({ files: listTestVideos(testVideos.dir) }));
-		app.get<{ Params: { file: string } }>(`${TEST_PLAYER_PATH}:file`, (req, reply) => {
-			if (!listTestVideos(testVideos.dir).includes(req.params.file))
-				return reply.code(404).send({ error: 'no such test video' });
-			return reply.type('text/html').send(testPlayerHtml(req.params.file));
-		});
-		app.post<{ Body: { file?: unknown } }>('/api/test-video', async (req, reply) => {
-			if (config.matchStore === undefined)
-				return reply.code(503).send({ error: 'air capture not wired' });
-			const file = req.body.file;
-			if (typeof file !== 'string' || !listTestVideos(testVideos.dir).includes(file))
-				return reply.code(400).send({ error: 'file must be one of /api/test-videos' });
-			try {
-				await testVideos.open(file);
-			} catch (error) {
-				return reply
-					.code(502)
-					.send({ error: error instanceof Error ? error.message : String(error) });
-			}
-			config.matchStore.set(TEST_PLAYER_PATH);
-			changeBus?.broadcast({ type: 'changed' });
-			return { match: config.matchStore.get() };
-		});
-	}
 
 	app.post('/api/session/start', (_req, reply) => {
 		if (config.session === undefined) return reply.code(503).send({ error: 'sessions not wired' });

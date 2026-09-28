@@ -9,9 +9,8 @@ import React from 'react';
 
 import type { Cadence, Observation } from '../api.js';
 
-import { AIR_PRESETS, api, TEST_AIR_MATCH } from '../api.js';
+import { AIR_PRESETS, api } from '../api.js';
 import { ago, pct } from '../format.js';
-import TestVideoDialog from './TestVideoDialog.js';
 
 interface Props {
 	airMatch: null | string; // which tab the capturer targets (URL substring), as the server has it
@@ -28,12 +27,9 @@ const CapturePanel: React.FC<Props> = (props) => {
 	const [seconds, setSeconds] = React.useState(
 		props.cadence ? Math.round(props.cadence.intervalMs / 1000) : 5,
 	);
-	const [pickingTestVideo, setPickingTestVideo] = React.useState(false);
 	// No local copy of the selection: the server's value arrives with every state push,
-	// so the toggle can't drift from what the capturer actually targets. TEST goes
-	// through the picker, which sets the match once the video is open.
+	// so the toggle can't drift from what the capturer actually targets.
 	const pickPreset = (match: string): void => {
-		if (match === TEST_AIR_MATCH) return setPickingTestVideo(true);
 		api
 			.setAirMatch(match)
 			.catch((e: unknown) =>
@@ -116,12 +112,6 @@ const CapturePanel: React.FC<Props> = (props) => {
 						</ToggleButton>
 					))}
 				</ToggleButtonGroup>
-				<TestVideoDialog
-					onClose={() => setPickingTestVideo(false)}
-					onError={(message) => setMsg(`test video failed: ${message}`)}
-					onOpened={(file) => setMsg(`${file} loaded — press play in the debug Chrome`)}
-					open={pickingTestVideo}
-				/>
 				{props.airMatch !== null && !AIR_PRESETS.some((p) => p.match === props.airMatch) && (
 					<Typography color="text.secondary" variant="caption">
 						({props.airMatch})

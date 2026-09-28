@@ -7,7 +7,7 @@ import { makeBrowserCapturer } from '../sources/air/browserCapturer.js';
 // pixels or a (DRM) black frame — the key unknown for browser capture of protected
 // video. Saves the PNG to /tmp/air_probe.png so it can be eyeballed too.
 //
-//   node --env-file-if-exists=.env --import tsx src/tools/airProbe.ts        (Chrome must be running via npm run chrome:debug)
+//   node --env-file-if-exists=.env --import tsx src/tools/airProbe.ts        (Chrome must be running via npm run chrome)
 
 const run = async (): Promise<void> => {
 	const capturer = makeBrowserCapturer();

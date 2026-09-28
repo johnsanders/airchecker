@@ -11,12 +11,12 @@ import type { DdhqEnvironment } from '../api.js';
 import { api } from '../api.js';
 
 interface Props {
-	environment: DdhqEnvironment | null; // null: not switchable (DDHQ off, or API playback)
-	readOnly: boolean; // API playback: the recording fixes the query list
+	environment: DdhqEnvironment | null; // null: not switchable (DDHQ off)
 }
 
 // Editable DDHQ query list — one /api/v4/races query string per line — and which DDHQ
-// host it runs against. Both are runtime state on the server; the poller picks up
+// host it runs against. Sim points DDHQ and Chameleon at elex_sim's mirror, which plays
+// a recorded night back; the queries must match the recording's. Both are runtime state on the server; the poller picks up
 // edits on its next tick. The environment isn't copied locally: the server's value
 // arrives with every state push, so the toggle can't drift from what's polled.
 const QueryEditor: React.FC<Props> = (props) => {
@@ -64,11 +64,13 @@ const QueryEditor: React.FC<Props> = (props) => {
 						<ToggleButton color="warning" value="integration">
 							Integration (test)
 						</ToggleButton>
+						<ToggleButton color="secondary" value="sim">
+							Sim (elex_sim)
+						</ToggleButton>
 					</ToggleButtonGroup>
 				</Box>
 			)}
 			<TextField
-				disabled={props.readOnly}
 				fullWidth
 				minRows={3}
 				multiline
@@ -78,12 +80,7 @@ const QueryEditor: React.FC<Props> = (props) => {
 				value={text}
 			/>
 			<Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mt: 1 }}>
-				<Button
-					disabled={props.readOnly}
-					onClick={() => void save()}
-					size="small"
-					variant="outlined"
-				>
+				<Button onClick={() => void save()} size="small" variant="outlined">
 					Save queries
 				</Button>
 				<Typography color="text.secondary" variant="caption">
