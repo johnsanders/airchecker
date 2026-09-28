@@ -50,7 +50,7 @@ Air alerts fire on the **first** bad graphic seen; they clear after three clean 
 The **Live / Sim** switch in the app bar picks what all three sources watch. It's locked while monitoring (stop first), and the whole bar turns amber in Sim.
 
 - **Live:** DDHQ on the host picked on the Setup tab (Production or Integration) with the saved query list; Chameleon's real blade (VPN); air from the tab picked on the Air capture tab (DirecTV).
-- **Sim:** all three come from the simulator, `packages/simulator` (`npm run server -w simulator`; see its CLAUDE.md), with no VPN and no DDHQ credentials. DDHQ and Chameleon are its mirror; the DDHQ races to poll come from the simulator each poll; air is its `/air/` page, which must be open in the debug Chrome. Live's query list, host and tab are left as they were.
+- **Sim:** all three come from the simulator, `packages/simulator` (`npm run server -w simulator`; see its CLAUDE.md), with no VPN and no DDHQ credentials. DDHQ and Chameleon are its mirror; the DDHQ races to poll come from the simulator each poll; air is its `/air/` page in the debug Chrome, opened there automatically if no tab has it (as is the DirecTV player in Live, for the DirecTV preset). Live's query list, host and tab are left as they were.
 
 What the simulator serves:
 

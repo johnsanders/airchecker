@@ -40,7 +40,7 @@ src/
     common.ts       Shared race-key composition + party-letter mapping (MUST be shared so keys align across sources)
     provider/       DDHQ schema + adapter + OAuth paginated poller (queryStore = runtime race list)
     vendor/         Chameleon schema + adapter + poller (VPN-only playlist URL)
-    air/            browserCapturer (puppeteer-core over CDP :9222; pins the tab's viewport to 1920×1080 at 1×, so every frame is a full 16:9 1920×1080) + captureScheduler + matchStore
+    air/            browserCapturer (puppeteer-core over CDP :9222; pins the tab's viewport to 1920×1080 at 1×, so every frame is a full 16:9 1920×1080; opens the tab when none matches: the simulator's /air/ in Sim, the DirecTV player for Live's DirecTV preset) + captureScheduler + matchStore
   identity/         raceIdentity — cross-source race-linking (DDHQ canonical spine + provisional buckets + one-time Haiku proposal; Ross races carrying Chameleon `raceID` link by DDHQ `race_id` only; air headings link by state/office/district/party when exactly one DDHQ race fits and its ballot has every surname shown, airHeading.ts); a race leaving its provisional bucket is moved in the store (onRelink)
   vision/           extractFrame (two-pass VLM: Haiku bulk + Gemini crop read), llmClient, anthropicClient, googleClient, openRouterClient, retryingFetch, liveLlmClient (routes by model ID), goldenClient, cropRegion, redact
   tools/            calibrate / probe / capture-golden / verify (also the model-comparison harness) / measure-call / freeze-session / air-probe / probe-identity; usageMeter totals per-model cost for verify + measure-call

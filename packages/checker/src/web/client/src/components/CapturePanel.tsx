@@ -100,7 +100,8 @@ const CapturePanel: React.FC<Props> = (props) => {
 
 			{props.mode === 'sim' ? (
 				<Typography color="warning.main" sx={{ display: 'block', mb: 1.5 }} variant="body2">
-					Sim mode: capturing the simulator's /air/ page. Keep it open in the debug Chrome.
+					Sim mode: capturing the simulator's /air/ page, opened in the debug Chrome if it isn't
+					already.
 				</Typography>
 			) : (
 				<Stack alignItems="center" direction="row" spacing={1} sx={{ mb: 1.5 }}>

@@ -8,6 +8,11 @@ import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
 import { makeSessionFiles } from '../replay/sessionFiles.js';
 import { makeSettingsStore } from '../settings/settingsStore.js';
 import { makeAirSource } from '../sources/air/airSource.js';
+import {
+	DEFAULT_URL_MATCH,
+	DIRECTV_PLAYER_URL,
+	makeBrowserCapturer,
+} from '../sources/air/browserCapturer.js';
 import { makeCaptureScheduler } from '../sources/air/captureScheduler.js';
 import { makeMatchStore } from '../sources/air/matchStore.js';
 import { errorMessage } from '../sources/http.js';
@@ -156,14 +161,20 @@ const liveMain = async (): Promise<void> => {
 			settings.setAirMatch(memoryMatch.get());
 		},
 	};
-	// In Sim the capturer grabs the simulator's /air/ page; the saved tab is Live's.
+	// In Sim the capturer grabs the simulator's /air/ page; the saved tab is Live's. With no
+	// such tab open, it opens one: /air/ in Sim, the DirecTV player for Live's DirecTV preset.
 	const simAirMatch = `${simBaseUrl().replace(/^https?:\/\//, '')}/air`;
+	const captureMatch = (): string => (mode === 'sim' ? simAirMatch : matchStore.get());
 	const airSource = makeAirSource({
+		capturer: makeBrowserCapturer({
+			openUrl: () => {
+				if (mode === 'sim') return `${simBaseUrl()}/air/`;
+				return matchStore.get() === DEFAULT_URL_MATCH ? DIRECTV_PLAYER_URL : undefined;
+			},
+			urlMatch: captureMatch,
+		}),
 		llmClient,
-		matchStore: {
-			get: () => (mode === 'sim' ? simAirMatch : matchStore.get()),
-			set: matchStore.set,
-		},
+		matchStore: { get: captureMatch, set: matchStore.set },
 		onObservations: ingest,
 		recorder,
 	});
