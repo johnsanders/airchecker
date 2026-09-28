@@ -1,11 +1,12 @@
 import type { GraphicData, Night, RacePlan } from './night.js';
 
-import { graphicData, raceAt } from './night.js';
+import { AIR_LAG_MS, graphicData, raceAt } from './night.js';
 import { between, makeRandom, pick, seedFrom, shuffle } from './random.js';
 
 // What's on air at a moment of the night. The ticker is always up and moves to the next
 // race every 8 s, through every race in a shuffled order that's reshuffled each pass.
 // Over it, an L3 or FS comes up after a 10–20 s gap, holds 10 s, and the cycle repeats.
+// The numbers in them trail the night by AIR_LAG_MS, as graphics trail DDHQ.
 
 export const TICKER_SLOT_MS = 8_000;
 export const OVERLAY_MS = 10_000;
@@ -59,10 +60,13 @@ export const onAirAt = (night: Night, elapsedMs: number): OnAir => {
 			overlay === undefined
 				? null
 				: {
-						data: graphicData(overlay.plan, raceAt(overlay.plan, elapsedMs)),
+						data: graphicData(overlay.plan, raceAt(overlay.plan, elapsedMs - AIR_LAG_MS)),
 						kind: overlay.kind,
 						raceKey: overlay.plan.race.key,
 					},
-		ticker: { data: graphicData(ticker, raceAt(ticker, elapsedMs)), raceKey: ticker.race.key },
+		ticker: {
+			data: graphicData(ticker, raceAt(ticker, elapsedMs - AIR_LAG_MS)),
+			raceKey: ticker.race.key,
+		},
 	};
 };

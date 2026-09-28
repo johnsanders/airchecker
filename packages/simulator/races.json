@@ -2,17 +2,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 9657,
 				"first": "Barry",
+				"incumbent": false,
 				"last": "Moore",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 839410,
 				"first": "Everett",
+				"incumbent": false,
 				"last": "Wess",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 294671,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294671,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Alabama/U.S. Senate/",
@@ -23,27 +35,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 1110412,
 				"first": "Daniel J.",
+				"incumbent": false,
 				"last": "Sullivan Jr.",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 23403,
 				"first": "Mary",
+				"incumbent": false,
 				"last": "Peltola",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 8293,
 				"first": "Dan",
+				"incumbent": true,
 				"last": "Sullivan",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 10558,
 				"first": "Gerald",
+				"incumbent": false,
 				"last": "Heikes",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294672,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294672,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Alaska/U.S. Senate/",
@@ -54,22 +84,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 807544,
 				"first": "Tom",
+				"incumbent": true,
 				"last": "Cotton",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 807545,
 				"first": "Hallie",
+				"incumbent": false,
 				"last": "Shoffner",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1130230,
 				"first": "Jeff",
+				"incumbent": false,
 				"last": "Wadlin",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294673,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294673,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Arkansas/U.S. Senate/",
@@ -80,37 +125,61 @@
 	{
 		"candidates": [
 			{
+				"candId": 1084106,
 				"first": "Adam",
+				"incumbent": false,
 				"last": "Withrow",
-				"party": "U"
+				"party": "U",
+				"partyName": "Unity"
 			},
 			{
+				"candId": 1049168,
 				"first": "Mark",
+				"incumbent": false,
 				"last": "Baisley",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1084108,
 				"first": "Robert",
+				"incumbent": false,
 				"last": "Chew",
-				"party": "C"
+				"party": "C",
+				"partyName": "Colorado Forward Party"
 			},
 			{
+				"candId": 13804,
 				"first": "John",
+				"incumbent": true,
 				"last": "Hickenlooper",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1150647,
 				"first": "Christopher",
+				"incumbent": false,
 				"last": "Baum",
-				"party": "A"
+				"party": "A",
+				"partyName": "Approval Voting Party"
 			},
 			{
+				"candId": 1150648,
 				"first": "Blake",
+				"incumbent": false,
 				"last": "Huber",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294674,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294674,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Colorado/U.S. Senate/",
@@ -121,17 +190,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 1128829,
 				"first": "Chris",
+				"incumbent": true,
 				"last": "Coons",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 84943,
 				"first": "Michael",
+				"incumbent": false,
 				"last": "Katz",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294675,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294675,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Delaware/U.S. Senate/",
@@ -142,22 +223,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 30375,
 				"first": "Angie",
+				"incumbent": false,
 				"last": "Nixon",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 44540,
 				"first": "Ashley",
+				"incumbent": true,
 				"last": "Moody",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1149981,
 				"first": "Neil",
+				"incumbent": false,
 				"last": "Gillespie",
-				"party": "N"
+				"party": "N",
+				"partyName": "No Party Affiliation"
 			}
 		],
-		"ddhqRaceId": 294676,
+		"ddhq": {
+			"level": "Federal",
+			"name": "Special Election General",
+			"office": "US Senate",
+			"raceId": 294676,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Florida/U.S. Senate/",
@@ -168,17 +264,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 21626,
 				"first": "Mike",
+				"incumbent": false,
 				"last": "Collins",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 2273,
 				"first": "Jon",
+				"incumbent": true,
 				"last": "Ossoff",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 294677,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294677,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Georgia/U.S. Senate/",
@@ -189,27 +297,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 67970,
 				"first": "Todd",
+				"incumbent": false,
 				"last": "Achilles",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 85004,
 				"first": "Matt",
+				"incumbent": false,
 				"last": "Loesby",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 11061,
 				"first": "Natalie",
+				"incumbent": false,
 				"last": "Fleming",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 843707,
 				"first": "Jim",
+				"incumbent": true,
 				"last": "Risch",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294678,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294678,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Idaho/U.S. Senate/",
@@ -220,22 +346,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 808135,
 				"first": "Don",
+				"incumbent": false,
 				"last": "Tracy",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 808142,
 				"first": "Juliana",
+				"incumbent": false,
 				"last": "Stratton",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1084525,
 				"first": "Whitfield",
+				"incumbent": false,
 				"last": "Harrington",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 294679,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294679,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Illinois/U.S. Senate/",
@@ -246,22 +387,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 862685,
 				"first": "Josh",
+				"incumbent": false,
 				"last": "Turek",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 12916,
 				"first": "Ashley",
+				"incumbent": false,
 				"last": "Hinson",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1130578,
 				"first": "Thomas",
+				"incumbent": false,
 				"last": "Laehn",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294680,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294680,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Iowa/U.S. Senate/",
@@ -272,22 +428,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 361,
 				"first": "Roger",
+				"incumbent": false,
 				"last": "Marshall",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1066261,
 				"first": "Adam",
+				"incumbent": false,
 				"last": "Hamilton",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 44240,
 				"first": "David",
+				"incumbent": false,
 				"last": "Graham",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294681,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294681,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Kansas/U.S. Senate/",
@@ -298,22 +469,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 808471,
 				"first": "Andy",
+				"incumbent": false,
 				"last": "Barr",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 808465,
 				"first": "Charles",
+				"incumbent": false,
 				"last": "Booker",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1150674,
 				"first": "Christopher",
+				"incumbent": false,
 				"last": "Campbell",
-				"party": "K"
+				"party": "K",
+				"partyName": "Kentucky Party"
 			}
 		],
-		"ddhqRaceId": 294682,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294682,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Kentucky/U.S. Senate/",
@@ -324,17 +510,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 838597,
 				"first": "Jamie",
+				"incumbent": false,
 				"last": "Davis",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 838598,
 				"first": "Julia",
+				"incumbent": false,
 				"last": "Letlow",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294683,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294683,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Louisiana/U.S. Senate/",
@@ -345,57 +543,93 @@
 	{
 		"candidates": [
 			{
+				"candId": 1322,
 				"first": "Troy",
+				"incumbent": false,
 				"last": "Jackson",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 8245,
 				"first": "Susan",
+				"incumbent": true,
 				"last": "Collins",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1147379,
 				"first": "Michael",
+				"incumbent": false,
 				"last": "Turcotte",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 1150641,
 				"first": "Brent",
+				"incumbent": false,
 				"last": "Andrews",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 1150642,
 				"first": "Sigrid",
+				"incumbent": false,
 				"last": "Olson",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 1150643,
 				"first": "Gina",
+				"incumbent": false,
 				"last": "Oswald",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 1150646,
 				"first": "Ashley",
+				"incumbent": false,
 				"last": "Webb",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 8324,
 				"first": "",
+				"incumbent": false,
 				"last": "Write-In",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 1150644,
 				"first": "Joseph",
+				"incumbent": false,
 				"last": "Steinberger",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 141812,
 				"first": "Blank",
+				"incumbent": false,
 				"last": "Votes",
-				"party": "N"
+				"party": "N",
+				"partyName": "No Party Affiliation"
 			}
 		],
-		"ddhqRaceId": 294684,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294684,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Maine/U.S. Senate/",
@@ -406,27 +640,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 84377,
 				"first": "John",
+				"incumbent": false,
 				"last": "Deaton",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 8273,
 				"first": "Edward",
+				"incumbent": true,
 				"last": "Markey",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1150707,
 				"first": "Shiva",
+				"incumbent": false,
 				"last": "Ayyadurai",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150708,
 				"first": "Joe",
+				"incumbent": false,
 				"last": "Tache",
-				"party": "S"
+				"party": "S",
+				"partyName": "Socialism and Liberation"
 			}
 		],
-		"ddhqRaceId": 294685,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294685,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Massachusetts/U.S. Senate/",
@@ -437,37 +689,61 @@
 	{
 		"candidates": [
 			{
+				"candId": 8219,
 				"first": "Mike",
+				"incumbent": false,
 				"last": "Rogers",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 10307,
 				"first": "Abdul",
+				"incumbent": false,
 				"last": "El-Sayed",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1144041,
 				"first": "Lydia",
+				"incumbent": false,
 				"last": "Christensen",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 102159,
 				"first": "Douglas",
+				"incumbent": false,
 				"last": "Marsh",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			},
 			{
+				"candId": 1144965,
 				"first": "Tim",
+				"incumbent": false,
 				"last": "Long",
-				"party": "U"
+				"party": "U",
+				"partyName": "US Taxpayers"
 			},
 			{
+				"candId": 1144043,
 				"first": "Walter",
+				"incumbent": false,
 				"last": "Kristy",
-				"party": "N"
+				"party": "N",
+				"partyName": "Natural Law"
 			}
 		],
-		"ddhqRaceId": 294686,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294686,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Michigan/U.S. Senate/",
@@ -478,27 +754,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 751496,
 				"first": "Michele",
+				"incumbent": false,
 				"last": "Tafoya",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 319444,
 				"first": "Peggy",
+				"incumbent": false,
 				"last": "Flanagan",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 67479,
 				"first": "Marisa",
+				"incumbent": false,
 				"last": "Simonetti",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 102178,
 				"first": "Rebecca",
+				"incumbent": false,
 				"last": "Whiting",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294687,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294687,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Minnesota/U.S. Senate/",
@@ -509,22 +803,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 808400,
 				"first": "Scott",
+				"incumbent": false,
 				"last": "Colom",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 808399,
 				"first": "Cindy",
+				"incumbent": true,
 				"last": "Hyde-Smith",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 997950,
 				"first": "Ty",
+				"incumbent": false,
 				"last": "Pinkins",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 294688,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294688,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Mississippi/U.S. Senate/",
@@ -535,27 +844,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 862657,
 				"first": "Kurt",
+				"incumbent": false,
 				"last": "Alme",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 862651,
 				"first": "Alani",
+				"incumbent": false,
 				"last": "Bankhead",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1065898,
 				"first": "Kyle",
+				"incumbent": false,
 				"last": "Austin",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 838634,
 				"first": "Seth",
+				"incumbent": false,
 				"last": "Bodnar",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 294689,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294689,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Montana/U.S. Senate/",
@@ -566,32 +893,53 @@
 	{
 		"candidates": [
 			{
+				"candId": 838935,
 				"first": "Pete",
+				"incumbent": true,
 				"last": "Ricketts",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1030423,
 				"first": "Mike",
+				"incumbent": false,
 				"last": "Marvin",
-				"party": "L"
+				"party": "L",
+				"partyName": "Legal Marijuana Now"
 			},
 			{
+				"candId": 101441,
 				"first": "Dan",
+				"incumbent": false,
 				"last": "Osborn",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1144998,
 				"first": "Robin",
+				"incumbent": false,
 				"last": "Richards",
-				"party": "N"
+				"party": "N",
+				"partyName": "Nebraska Working People"
 			},
 			{
+				"candId": 1144999,
 				"first": "Chuck",
+				"incumbent": false,
 				"last": "Conboy",
-				"party": "A"
+				"party": "A",
+				"partyName": "America First"
 			}
 		],
-		"ddhqRaceId": 294690,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294690,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Nebraska/U.S. Senate/",
@@ -602,22 +950,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 10573,
 				"first": "Chris",
+				"incumbent": false,
 				"last": "Pappas",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 376262,
 				"first": "John",
+				"incumbent": false,
 				"last": "Sununu",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1143957,
 				"first": "Edmond",
+				"incumbent": false,
 				"last": "LaPlante",
-				"party": "C"
+				"party": "C",
+				"partyName": "Constitution"
 			}
 		],
-		"ddhqRaceId": 294691,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294691,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "New Hampshire/U.S. Senate/",
@@ -628,27 +991,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 8290,
 				"first": "Cory",
+				"incumbent": true,
 				"last": "Booker",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 950670,
 				"first": "Justin",
+				"incumbent": false,
 				"last": "Murphy",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1150047,
 				"first": "Veronica",
+				"incumbent": false,
 				"last": "Fernandez",
-				"party": "E"
+				"party": "E",
+				"partyName": "End The Corruption!"
 			},
 			{
+				"candId": 44376,
 				"first": "Joanne",
+				"incumbent": false,
 				"last": "Kuniansky",
-				"party": "S"
+				"party": "S",
+				"partyName": "Socialist Workers"
 			}
 		],
-		"ddhqRaceId": 294692,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294692,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "New Jersey/U.S. Senate/",
@@ -659,17 +1040,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 859944,
 				"first": "Ben Ray",
+				"incumbent": true,
 				"last": "Lujan",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 71624,
 				"first": "Larry",
+				"incumbent": false,
 				"last": "Marker",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294693,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294693,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "New Mexico/U.S. Senate/",
@@ -680,27 +1073,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 807678,
 				"first": "Roy",
+				"incumbent": false,
 				"last": "Cooper",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 807672,
 				"first": "Michael",
+				"incumbent": false,
 				"last": "Whatley",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1150080,
 				"first": "Michael",
+				"incumbent": false,
 				"last": "Dublin",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			},
 			{
+				"candId": 14715,
 				"first": "Shannon",
+				"incumbent": false,
 				"last": "Bray",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294694,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294694,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "North Carolina/U.S. Senate/",
@@ -711,27 +1122,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 837070,
 				"first": "Sherrod",
+				"incumbent": false,
 				"last": "Brown",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 837072,
 				"first": "Jon",
+				"incumbent": true,
 				"last": "Husted",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1150081,
 				"first": "Greg",
+				"incumbent": false,
 				"last": "Levy",
-				"party": "O"
+				"party": "O",
+				"partyName": "Other"
 			},
 			{
+				"candId": 1150082,
 				"first": "William",
+				"incumbent": false,
 				"last": "Redpath",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294695,
+		"ddhq": {
+			"level": "Federal",
+			"name": "Special Election General",
+			"office": "US Senate",
+			"raceId": 294695,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Ohio/U.S. Senate/",
@@ -742,32 +1171,53 @@
 	{
 		"candidates": [
 			{
+				"candId": 986017,
 				"first": "N'Kiyla",
+				"incumbent": false,
 				"last": "Thomas",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 9929,
 				"first": "Kevin",
+				"incumbent": false,
 				"last": "Hern",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1130246,
 				"first": "Ron",
+				"incumbent": false,
 				"last": "Meinhardt",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1130245,
 				"first": "Curtis",
+				"incumbent": false,
 				"last": "Stinnett",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1121813,
 				"first": "Sevier",
+				"incumbent": false,
 				"last": "White",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294696,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294696,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Oklahoma/U.S. Senate/",
@@ -778,27 +1228,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 843744,
 				"first": "Jeff",
+				"incumbent": true,
 				"last": "Merkley",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 843752,
 				"first": "David",
+				"incumbent": false,
 				"last": "Smith",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1144249,
 				"first": "Gary",
+				"incumbent": false,
 				"last": "Dye",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 1150113,
 				"first": "Chris",
+				"incumbent": false,
 				"last": "Henry",
-				"party": "P"
+				"party": "P",
+				"partyName": "Progressive/Green"
 			}
 		],
-		"ddhqRaceId": 294697,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294697,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Oregon/U.S. Senate/",
@@ -809,27 +1277,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 1126122,
 				"first": "Darline",
+				"incumbent": true,
 				"last": "Graham",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 44405,
 				"first": "Annie",
+				"incumbent": false,
 				"last": "Andrews",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1150114,
 				"first": "Mark",
+				"incumbent": false,
 				"last": "Hackett",
-				"party": "C"
+				"party": "C",
+				"partyName": "Constitution"
 			},
 			{
+				"candId": 1130612,
 				"first": "Kasie",
+				"incumbent": false,
 				"last": "Whitener",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294699,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294699,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "South Carolina/U.S. Senate/",
@@ -840,17 +1326,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 680919,
 				"first": "Brian",
+				"incumbent": false,
 				"last": "Bengs",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 8297,
 				"first": "Mike",
+				"incumbent": true,
 				"last": "Rounds",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294700,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294700,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "South Dakota/U.S. Senate/",
@@ -861,57 +1359,93 @@
 	{
 		"candidates": [
 			{
+				"candId": 1150149,
 				"first": "James",
+				"incumbent": false,
 				"last": "Macon",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150151,
 				"first": "David",
+				"incumbent": false,
 				"last": "Sutman",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150152,
 				"first": "Catherine",
+				"incumbent": false,
 				"last": "Whitson",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150150,
 				"first": "Yoshi",
+				"incumbent": false,
 				"last": "Matthews",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 44417,
 				"first": "Tharon",
+				"incumbent": false,
 				"last": "Chandler",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150146,
 				"first": "Andrew",
+				"incumbent": false,
 				"last": "Gerena",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150147,
 				"first": "Jeremy",
+				"incumbent": false,
 				"last": "Hearn",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150148,
 				"first": "Robert",
+				"incumbent": false,
 				"last": "Jones",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 14150,
 				"first": "Bill",
+				"incumbent": true,
 				"last": "Hagerty",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 14138,
 				"first": "Marquita",
+				"incumbent": false,
 				"last": "Bradshaw",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 294701,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294701,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Tennessee/U.S. Senate/",
@@ -922,22 +1456,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 807934,
 				"first": "James",
+				"incumbent": false,
 				"last": "Talarico",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 14930,
 				"first": "Ted",
+				"incumbent": false,
 				"last": "Brown",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 807771,
 				"first": "Ken",
+				"incumbent": false,
 				"last": "Paxton",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294702,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294702,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Texas/U.S. Senate/",
@@ -948,17 +1497,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 8258,
 				"first": "Mark",
+				"incumbent": true,
 				"last": "Warner",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 232931,
 				"first": "Bert",
+				"incumbent": false,
 				"last": "Mizusawa",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294703,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294703,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Virginia/U.S. Senate/",
@@ -969,22 +1530,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 837082,
 				"first": "Rachel",
+				"incumbent": false,
 				"last": "Anderson",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 837086,
 				"first": "Shelley",
+				"incumbent": true,
 				"last": "Moore Capito",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 108217,
 				"first": "S. Marshall",
+				"incumbent": false,
 				"last": "Wilson",
-				"party": "C"
+				"party": "C",
+				"partyName": "Constitution"
 			}
 		],
-		"ddhqRaceId": 294704,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294704,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "West Virginia/U.S. Senate/",
@@ -995,17 +1571,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 29909,
 				"first": "James",
+				"incumbent": false,
 				"last": "Byrd",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 10529,
 				"first": "Harriet",
+				"incumbent": false,
 				"last": "Hageman",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294705,
+		"ddhq": {
+			"level": "Federal",
+			"name": "General Election",
+			"office": "US Senate",
+			"raceId": 294705,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Wyoming/U.S. Senate/",
@@ -1016,17 +1604,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 839413,
 				"first": "Shomari",
+				"incumbent": true,
 				"last": "Figures",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 839369,
 				"first": "Rhett",
+				"incumbent": false,
 				"last": "Marques",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294711,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294711,
+			"year": 2026
+		},
 		"district": "2",
 		"graphics": ["fs", "l3"],
 		"key": "Alabama/U.S. House/2",
@@ -1037,22 +1637,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 26436,
 				"first": "Amish",
+				"incumbent": false,
 				"last": "Shah",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1073228,
 				"first": "Jay",
+				"incumbent": false,
 				"last": "Feely",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1150153,
 				"first": "Monica",
+				"incumbent": false,
 				"last": "Alponte",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294718,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294718,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "Arizona/U.S. House/1",
@@ -1063,27 +1678,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 26331,
 				"first": "Juan",
+				"incumbent": true,
 				"last": "Ciscomani",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1073194,
 				"first": "Joanna",
+				"incumbent": false,
 				"last": "Mendoza",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1150245,
 				"first": "Jereme",
+				"incumbent": false,
 				"last": "Peters",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 1150246,
 				"first": "Gary",
+				"incumbent": false,
 				"last": "Swing",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			}
 		],
-		"ddhqRaceId": 294723,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294723,
+			"year": 2026
+		},
 		"district": "6",
 		"graphics": ["fs", "l3"],
 		"key": "Arizona/U.S. House/6",
@@ -1094,17 +1727,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 860496,
 				"first": "Mike",
+				"incumbent": false,
 				"last": "McGuire",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 860497,
 				"first": "James",
+				"incumbent": true,
 				"last": "Gallagher",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294731,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294731,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "California/U.S. House/1",
@@ -1115,17 +1760,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 860509,
 				"first": "Ami",
+				"incumbent": true,
 				"last": "Bera",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 860514,
 				"first": "Robb",
+				"incumbent": false,
 				"last": "Tucker",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294733,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294733,
+			"year": 2026
+		},
 		"district": "3",
 		"graphics": ["fs", "l3"],
 		"key": "California/U.S. House/3",
@@ -1136,17 +1793,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 860621,
 				"first": "Randy",
+				"incumbent": false,
 				"last": "Villegas",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 860622,
 				"first": "David",
+				"incumbent": true,
 				"last": "Valadao",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294752,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294752,
+			"year": 2026
+		},
 		"district": "22",
 		"graphics": ["fs", "l3"],
 		"key": "California/U.S. House/22",
@@ -1157,17 +1826,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 860763,
 				"first": "Marni",
+				"incumbent": false,
 				"last": "Wilpert",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 860764,
 				"first": "Jim",
+				"incumbent": false,
 				"last": "Desmond",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294778,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294778,
+			"year": 2026
+		},
 		"district": "48",
 		"graphics": ["fs", "l3"],
 		"key": "California/U.S. House/48",
@@ -1178,27 +1859,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 1127079,
 				"first": "Clifton",
+				"incumbent": false,
 				"last": "Brown",
-				"party": "U"
+				"party": "U",
+				"partyName": "Unaffiliated"
 			},
 			{
+				"candId": 76774,
 				"first": "Jeff",
+				"incumbent": true,
 				"last": "Hurd",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1049174,
 				"first": "Dwayne",
+				"incumbent": false,
 				"last": "Romero",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1150312,
 				"first": "Cory",
+				"incumbent": false,
 				"last": "Robertson",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294785,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294785,
+			"year": 2026
+		},
 		"district": "3",
 		"graphics": ["fs", "l3"],
 		"key": "Colorado/U.S. House/3",
@@ -1209,22 +1908,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 24852,
 				"first": "Gabe",
+				"incumbent": true,
 				"last": "Evans",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 76869,
 				"first": "Manny",
+				"incumbent": false,
 				"last": "Rutinel",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1149884,
 				"first": "Dave",
+				"incumbent": false,
 				"last": "Wood",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294790,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294790,
+			"year": 2026
+		},
 		"district": "8",
 		"graphics": ["fs", "l3"],
 		"key": "Colorado/U.S. House/8",
@@ -1235,22 +1949,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 1066211,
 				"first": "Bale",
+				"incumbent": false,
 				"last": "Dalton",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1110476,
 				"first": "Ryan",
+				"incumbent": false,
 				"last": "Elijah",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1150740,
 				"first": "Christopher",
+				"incumbent": false,
 				"last": "Dennison",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294803,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294803,
+			"year": 2026
+		},
 		"district": "7",
 		"graphics": ["fs", "l3"],
 		"key": "Florida/U.S. House/7",
@@ -1261,17 +1990,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 1110483,
 				"first": "Dan",
+				"incumbent": false,
 				"last": "Green",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 700,
 				"first": "Darren",
+				"incumbent": true,
 				"last": "Soto",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 294805,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294805,
+			"year": 2026
+		},
 		"district": "9",
 		"graphics": ["fs", "l3"],
 		"key": "Florida/U.S. House/9",
@@ -1282,22 +2023,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 1169,
 				"first": "Kathy",
+				"incumbent": true,
 				"last": "Castor",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 46947,
 				"first": "Mike",
+				"incumbent": false,
 				"last": "Beltran",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1150743,
 				"first": "Brian",
+				"incumbent": false,
 				"last": "Lampert",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294810,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294810,
+			"year": 2026
+		},
 		"district": "14",
 		"graphics": ["fs", "l3"],
 		"key": "Florida/U.S. House/14",
@@ -1308,17 +2064,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 1112490,
 				"first": "Casey",
+				"incumbent": false,
 				"last": "Askar",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1066223,
 				"first": "Pia",
+				"incumbent": false,
 				"last": "Dandiya",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 294818,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294818,
+			"year": 2026
+		},
 		"district": "22",
 		"graphics": ["fs", "l3"],
 		"key": "Florida/U.S. House/22",
@@ -1329,22 +2097,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 1049232,
 				"first": "Scott",
+				"incumbent": false,
 				"last": "Singer",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 30277,
 				"first": "Jared",
+				"incumbent": true,
 				"last": "Moskowitz",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1150750,
 				"first": "Peter",
+				"incumbent": false,
 				"last": "Jassenoff",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294821,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294821,
+			"year": 2026
+		},
 		"district": "25",
 		"graphics": ["fs", "l3"],
 		"key": "Florida/U.S. House/25",
@@ -1355,22 +2138,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 22709,
 				"first": "Christina",
+				"incumbent": false,
 				"last": "Bohannan",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 12881,
 				"first": "Mariannette",
+				"incumbent": true,
 				"last": "Miller-Meeks",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1125396,
 				"first": "Michael",
+				"incumbent": false,
 				"last": "Bridgford",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 294869,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294869,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "Iowa/U.S. House/1",
@@ -1381,27 +2179,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 862673,
 				"first": "Lindsay",
+				"incumbent": false,
 				"last": "James",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 862682,
 				"first": "Joe",
+				"incumbent": false,
 				"last": "Mitchell",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1151367,
 				"first": "Dave",
+				"incumbent": false,
 				"last": "Bushaw",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1041756,
 				"first": "Rick",
+				"incumbent": false,
 				"last": "Stewart",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294870,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294870,
+			"year": 2026
+		},
 		"district": "2",
 		"graphics": ["fs", "l3"],
 		"key": "Iowa/U.S. House/2",
@@ -1412,17 +2228,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 862675,
 				"first": "Sarah",
+				"incumbent": false,
 				"last": "Garriott",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 22715,
 				"first": "Zach",
+				"incumbent": true,
 				"last": "Nunn",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294871,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294871,
+			"year": 2026
+		},
 		"district": "3",
 		"graphics": ["fs", "l3"],
 		"key": "Iowa/U.S. House/3",
@@ -1433,27 +2261,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 23973,
 				"first": "Paul",
+				"incumbent": false,
 				"last": "LePage",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 432040,
 				"first": "Matthew",
+				"incumbent": false,
 				"last": "Dunlap",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1150872,
 				"first": "Gregory",
+				"incumbent": false,
 				"last": "Ward",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 141812,
 				"first": "Blank",
+				"incumbent": false,
 				"last": "Votes",
-				"party": "N"
+				"party": "N",
+				"partyName": "No Party Affiliation"
 			}
 		],
-		"ddhqRaceId": 294890,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294890,
+			"year": 2026
+		},
 		"district": "2",
 		"graphics": ["fs", "l3"],
 		"key": "Maine/U.S. House/2",
@@ -1464,22 +2310,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 26630,
 				"first": "Sean",
+				"incumbent": false,
 				"last": "McCann",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1330,
 				"first": "Bill",
+				"incumbent": true,
 				"last": "Huizenga",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1145130,
 				"first": "Shafina",
+				"incumbent": false,
 				"last": "Barnett",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			}
 		],
-		"ddhqRaceId": 294911,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294911,
+			"year": 2026
+		},
 		"district": "4",
 		"graphics": ["fs", "l3"],
 		"key": "Michigan/U.S. House/4",
@@ -1490,22 +2351,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 862782,
 				"first": "William",
+				"incumbent": false,
 				"last": "Lawrence",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 26581,
 				"first": "Tom",
+				"incumbent": true,
 				"last": "Barrett",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1145229,
 				"first": "Shane",
+				"incumbent": false,
 				"last": "Dedrick",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			}
 		],
-		"ddhqRaceId": 294914,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294914,
+			"year": 2026
+		},
 		"district": "7",
 		"graphics": ["fs", "l3"],
 		"key": "Michigan/U.S. House/7",
@@ -1516,32 +2392,53 @@
 	{
 		"candidates": [
 			{
+				"candId": 91911,
 				"first": "Michael",
+				"incumbent": false,
 				"last": "Bouchard",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1066362,
 				"first": "Christina",
+				"incumbent": false,
 				"last": "Hines",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 879596,
 				"first": "Mike",
+				"incumbent": false,
 				"last": "Saliba",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 1145427,
 				"first": "Kwabena",
+				"incumbent": false,
 				"last": "Nkromo",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			},
 			{
+				"candId": 883893,
 				"first": "Andrea",
+				"incumbent": false,
 				"last": "Kirby",
-				"party": "W"
+				"party": "W",
+				"partyName": "Working Class"
 			}
 		],
-		"ddhqRaceId": 294917,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294917,
+			"year": 2026
+		},
 		"district": "10",
 		"graphics": ["fs", "l3"],
 		"key": "Michigan/U.S. House/10",
@@ -1552,22 +2449,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 1066421,
 				"first": "Rick",
+				"incumbent": false,
 				"last": "Brattin",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1378,
 				"first": "Emanuel",
+				"incumbent": true,
 				"last": "Cleaver",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 44349,
 				"first": "Randy",
+				"incumbent": false,
 				"last": "Langkraehr",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294937,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294937,
+			"year": 2026
+		},
 		"district": "5",
 		"graphics": ["fs", "l3"],
 		"key": "Missouri/U.S. House/5",
@@ -1578,22 +2490,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 862666,
 				"first": "Aaron",
+				"incumbent": false,
 				"last": "Flint",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 862661,
 				"first": "Sam",
+				"incumbent": false,
 				"last": "Forstag",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1078035,
 				"first": "Nick",
+				"incumbent": false,
 				"last": "Sheedy",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294941,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294941,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "Montana/U.S. House/1",
@@ -1604,22 +2531,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 838932,
 				"first": "Brinker",
+				"incumbent": false,
 				"last": "Harding",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 838929,
 				"first": "Denise",
+				"incumbent": false,
 				"last": "Powell",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1151765,
 				"first": "Eric",
+				"incumbent": false,
 				"last": "Foreman",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294944,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294944,
+			"year": 2026
+		},
 		"district": "2",
 		"graphics": ["fs", "l3"],
 		"key": "Nebraska/U.S. House/2",
@@ -1630,22 +2572,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 138443,
 				"first": "Rebecca",
+				"incumbent": false,
 				"last": "Bennett",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 44373,
 				"first": "Thomas",
+				"incumbent": true,
 				"last": "Kean",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1145262,
 				"first": "Seamus",
+				"incumbent": false,
 				"last": "O'Toole",
-				"party": "S"
+				"party": "S",
+				"partyName": "Stop Israel's Genocide"
 			}
 		],
-		"ddhqRaceId": 294958,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294958,
+			"year": 2026
+		},
 		"district": "7",
 		"graphics": ["fs", "l3"],
 		"key": "New Jersey/U.S. House/7",
@@ -1656,17 +2613,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 30593,
 				"first": "Nicholas",
+				"incumbent": true,
 				"last": "LaLota",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1054216,
 				"first": "Christopher",
+				"incumbent": false,
 				"last": "Gallant",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 294967,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294967,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "New York/U.S. House/1",
@@ -1677,17 +2646,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 441868,
 				"first": "Cait",
+				"incumbent": false,
 				"last": "Conley",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 75277,
 				"first": "Michael",
+				"incumbent": true,
 				"last": "Lawler",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 294983,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294983,
+			"year": 2026
+		},
 		"district": "17",
 		"graphics": ["fs", "l3"],
 		"key": "New York/U.S. House/17",
@@ -1698,22 +2679,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 20218,
 				"first": "Don",
+				"incumbent": true,
 				"last": "Davis",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 807682,
 				"first": "Laurie",
+				"incumbent": false,
 				"last": "Buckhout",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 11316,
 				"first": "Tom",
+				"incumbent": false,
 				"last": "Bailey",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 294993,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 294993,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "North Carolina/U.S. House/1",
@@ -1724,22 +2720,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 807731,
 				"first": "James",
+				"incumbent": false,
 				"last": "Ager",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 810373,
 				"first": "Jennifer",
+				"incumbent": false,
 				"last": "Balkcom",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 45486,
 				"first": "Travis",
+				"incumbent": false,
 				"last": "Groo",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 295003,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295003,
+			"year": 2026
+		},
 		"district": "11",
 		"graphics": ["fs", "l3"],
 		"key": "North Carolina/U.S. House/11",
@@ -1750,22 +2761,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 836976,
 				"first": "Greg",
+				"incumbent": true,
 				"last": "Landsman",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 836979,
 				"first": "Eric",
+				"incumbent": false,
 				"last": "Conroy",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1152327,
 				"first": "Nathan",
+				"incumbent": false,
 				"last": "Weise",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 295008,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295008,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "Ohio/U.S. House/1",
@@ -1776,17 +2802,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 837034,
 				"first": "Max",
+				"incumbent": true,
 				"last": "Miller",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 837005,
 				"first": "Brian",
+				"incumbent": false,
 				"last": "Poindexter",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 295014,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295014,
+			"year": 2026
+		},
 		"district": "7",
 		"graphics": ["fs", "l3"],
 		"key": "Ohio/U.S. House/7",
@@ -1797,17 +2835,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 837036,
 				"first": "Derek",
+				"incumbent": false,
 				"last": "Merrin",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 837008,
 				"first": "Marcy",
+				"incumbent": true,
 				"last": "Kaptur",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 295016,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295016,
+			"year": 2026
+		},
 		"district": "9",
 		"graphics": ["fs", "l3"],
 		"key": "Ohio/U.S. House/9",
@@ -1818,17 +2868,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 422298,
 				"first": "Bob",
+				"incumbent": false,
 				"last": "Harvie",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 843904,
 				"first": "Brian",
+				"incumbent": true,
 				"last": "Fitzpatrick",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 295034,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295034,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "Pennsylvania/U.S. House/1",
@@ -1839,17 +2901,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 29370,
 				"first": "Robert",
+				"incumbent": false,
 				"last": "Brooks",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 843909,
 				"first": "Ryan",
+				"incumbent": true,
 				"last": "Mackenzie",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 295040,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295040,
+			"year": 2026
+		},
 		"district": "7",
 		"graphics": ["fs", "l3"],
 		"key": "Pennsylvania/U.S. House/7",
@@ -1860,17 +2934,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 843910,
 				"first": "Robert",
+				"incumbent": true,
 				"last": "Bresnahan",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 843892,
 				"first": "Paige",
+				"incumbent": false,
 				"last": "Cognetti",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 295041,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295041,
+			"year": 2026
+		},
 		"district": "8",
 		"graphics": ["fs", "l3"],
 		"key": "Pennsylvania/U.S. House/8",
@@ -1881,17 +2967,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 843912,
 				"first": "Scott",
+				"incumbent": true,
 				"last": "Perry",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 843895,
 				"first": "Janelle",
+				"incumbent": false,
 				"last": "Stelson",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 295043,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295043,
+			"year": 2026
+		},
 		"district": "10",
 		"graphics": ["fs", "l3"],
 		"key": "Pennsylvania/U.S. House/10",
@@ -1902,27 +3000,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 1080027,
 				"first": "Brent",
+				"incumbent": false,
 				"last": "Taylor",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 48423,
 				"first": "Justin",
+				"incumbent": false,
 				"last": "Pearson",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1150753,
 				"first": "Dennis",
+				"incumbent": false,
 				"last": "Clark",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150754,
 				"first": "Michelle",
+				"incumbent": false,
 				"last": "Head",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 295069,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295069,
+			"year": 2026
+		},
 		"district": "9",
 		"graphics": ["fs", "l3"],
 		"key": "Tennessee/U.S. House/9",
@@ -1933,17 +3049,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 807954,
 				"first": "Leticia",
+				"incumbent": false,
 				"last": "Gutierrez",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 807803,
 				"first": "Alex",
+				"incumbent": false,
 				"last": "Mealer",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 295078,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295078,
+			"year": 2026
+		},
 		"district": "9",
 		"graphics": ["fs", "l3"],
 		"key": "Texas/U.S. House/9",
@@ -1954,17 +3082,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 807970,
 				"first": "Bobby",
+				"incumbent": false,
 				"last": "Pulido",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 807827,
 				"first": "Monica",
+				"incumbent": true,
 				"last": "De La Cruz",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 295084,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295084,
+			"year": 2026
+		},
 		"district": "15",
 		"graphics": ["fs", "l3"],
 		"key": "Texas/U.S. House/15",
@@ -1975,17 +3115,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 807887,
 				"first": "Jace",
+				"incumbent": false,
 				"last": "Yarbrough",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 808016,
 				"first": "Dan",
+				"incumbent": false,
 				"last": "Barrios",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 295101,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295101,
+			"year": 2026
+		},
 		"district": "32",
 		"graphics": ["fs", "l3"],
 		"key": "Texas/U.S. House/32",
@@ -1996,17 +3148,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 1658,
 				"first": "Vicente",
+				"incumbent": true,
 				"last": "Gonzalez",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 807906,
 				"first": "Eric",
+				"incumbent": false,
 				"last": "Flores",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
+			},
+			{
+				"candId": 97076,
+				"first": "Eddie",
+				"incumbent": false,
+				"last": "Espinoza",
+				"party": "G",
+				"partyName": "Green"
+			},
+			{
+				"candId": 1152358,
+				"first": "Chris",
+				"incumbent": false,
+				"last": "Royal",
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 295103,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295103,
+			"year": 2026
+		},
 		"district": "34",
 		"graphics": ["fs", "l3"],
 		"key": "Texas/U.S. House/34",
@@ -2017,17 +3197,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 807917,
 				"first": "Carlos",
+				"incumbent": false,
 				"last": "De La Cruz",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 808024,
 				"first": "Johnny",
+				"incumbent": false,
 				"last": "Garcia",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 295104,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295104,
+			"year": 2026
+		},
 		"district": "35",
 		"graphics": ["fs", "l3"],
 		"key": "Texas/U.S. House/35",
@@ -2038,27 +3230,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 10874,
 				"first": "Ben",
+				"incumbent": false,
 				"last": "McAdams",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1028842,
 				"first": "Riley",
+				"incumbent": false,
 				"last": "Owen",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1084074,
 				"first": "Jesse",
+				"incumbent": false,
 				"last": "West",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 1084077,
 				"first": "Elias",
+				"incumbent": false,
 				"last": "Montgomery",
-				"party": "U"
+				"party": "U",
+				"partyName": "Unaffiliated"
 			}
 		],
-		"ddhqRaceId": 295108,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295108,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "Utah/U.S. House/1",
@@ -2069,27 +3279,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 9822,
 				"first": "Elaine",
+				"incumbent": false,
 				"last": "Luria",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 85154,
 				"first": "Jennifer",
+				"incumbent": true,
 				"last": "Kiggans",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1152027,
 				"first": "Geral",
+				"incumbent": false,
 				"last": "Staten",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1152028,
 				"first": "J. Matt",
+				"incumbent": false,
 				"last": "Baker",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 295114,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295114,
+			"year": 2026
+		},
 		"district": "2",
 		"graphics": ["fs", "l3"],
 		"key": "Virginia/U.S. House/2",
@@ -2100,17 +3328,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 1026829,
 				"first": "Mitchell",
+				"incumbent": false,
 				"last": "Berman",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 10405,
 				"first": "Bryan",
+				"incumbent": true,
 				"last": "Steil",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 295136,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295136,
+			"year": 2026
+		},
 		"district": "1",
 		"graphics": ["fs", "l3"],
 		"key": "Wisconsin/U.S. House/1",
@@ -2121,27 +3361,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 29133,
 				"first": "Rebecca",
+				"incumbent": false,
 				"last": "Cooke",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 14467,
 				"first": "Derrick",
+				"incumbent": true,
 				"last": "Van Orden",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1145559,
 				"first": "Alexander",
+				"incumbent": false,
 				"last": "Kent",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1145560,
 				"first": "Rustin",
+				"incumbent": false,
 				"last": "Provance",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 295138,
+		"ddhq": {
+			"level": "Federal/District",
+			"name": "General Election",
+			"office": "US House",
+			"raceId": 295138,
+			"year": 2026
+		},
 		"district": "3",
 		"graphics": ["fs", "l3"],
 		"key": "Wisconsin/U.S. House/3",
@@ -2152,17 +3410,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 839425,
 				"first": "Doug",
+				"incumbent": false,
 				"last": "Jones",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 12041,
 				"first": "Tommy",
+				"incumbent": false,
 				"last": "Tuberville",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 700160,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 700160,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Alabama/Governor/",
@@ -2173,27 +3443,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 26338,
 				"first": "Katie",
+				"incumbent": true,
 				"last": "Hobbs",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 745,
 				"first": "Andy",
+				"incumbent": false,
 				"last": "Biggs",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1130234,
 				"first": "Risa",
+				"incumbent": false,
 				"last": "Lombardo",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			},
 			{
+				"candId": 1149288,
 				"first": "Teri",
+				"incumbent": false,
 				"last": "Hourihan",
-				"party": "N"
+				"party": "N",
+				"partyName": "No Labels"
 			}
 		],
-		"ddhqRaceId": 716860,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716860,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Arizona/Governor/",
@@ -2204,27 +3492,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 440580,
 				"first": "Dave",
+				"incumbent": false,
 				"last": "Bronson",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1110351,
 				"first": "Jonathan",
+				"incumbent": false,
 				"last": "Kreiss-Tomkins",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 336781,
 				"first": "Bernadette",
+				"incumbent": false,
 				"last": "Wilson",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 336780,
 				"first": "Treg",
+				"incumbent": false,
 				"last": "Taylor",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 716858,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716858,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Alaska/Governor/",
@@ -2235,17 +3541,37 @@
 	{
 		"candidates": [
 			{
-				"first": "Michael",
-				"last": "Kalagia",
-				"party": "L"
+				"candId": 807558,
+				"first": "Fred",
+				"incumbent": false,
+				"last": "Love",
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
-				"first": "Leslie",
-				"last": "Rutledge",
-				"party": "R"
+				"candId": 807647,
+				"first": "Sarah",
+				"incumbent": true,
+				"last": "Huckabee Sanders",
+				"party": "R",
+				"partyName": "Republican"
+			},
+			{
+				"candId": 1130232,
+				"first": "Colt",
+				"incumbent": false,
+				"last": "Shelby",
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 784945,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716859,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Arkansas/Governor/",
@@ -2256,17 +3582,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 336718,
 				"first": "Steve",
+				"incumbent": false,
 				"last": "Hilton",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 239,
 				"first": "Xavier",
+				"incumbent": false,
 				"last": "Becerra",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 702340,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 702340,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "California/Governor/",
@@ -2277,42 +3615,69 @@
 	{
 		"candidates": [
 			{
+				"candId": 1049196,
 				"first": "Victor",
+				"incumbent": false,
 				"last": "Marx",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 24692,
 				"first": "Phil",
+				"incumbent": false,
 				"last": "Weiser",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1149354,
 				"first": "Stephen",
+				"incumbent": false,
 				"last": "Hamilton",
-				"party": "A"
+				"party": "A",
+				"partyName": "American Constitution Party"
 			},
 			{
+				"candId": 1149355,
 				"first": "Eric",
+				"incumbent": false,
 				"last": "Mulder",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 1149356,
 				"first": "Jeff",
+				"incumbent": false,
 				"last": "Peckman",
-				"party": "U"
+				"party": "U",
+				"partyName": "Unity Party of Colorado"
 			},
 			{
+				"candId": 1149357,
 				"first": "Erik",
+				"incumbent": false,
 				"last": "Underwood",
-				"party": "A"
+				"party": "A",
+				"partyName": "Approval Voting Party"
 			},
 			{
+				"candId": 1149358,
 				"first": "Greg",
+				"incumbent": false,
 				"last": "Lopez",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 716861,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716861,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Colorado/Governor/",
@@ -2323,17 +3688,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 10462,
 				"first": "Ned",
+				"incumbent": true,
 				"last": "Lamont",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 17082,
 				"first": "Ryan",
+				"incumbent": false,
 				"last": "Fazio",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 716862,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716862,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Connecticut/Governor/",
@@ -2344,47 +3721,77 @@
 	{
 		"candidates": [
 			{
+				"candId": 602,
 				"first": "Byron",
+				"incumbent": false,
 				"last": "Donalds",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 289142,
 				"first": "David",
+				"incumbent": false,
 				"last": "Jolly",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1065600,
 				"first": "Frank",
+				"incumbent": false,
 				"last": "Russo",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150806,
 				"first": "Dean",
+				"incumbent": false,
 				"last": "Abrams",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150807,
 				"first": "Charles",
+				"incumbent": false,
 				"last": "Burkett",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150808,
 				"first": "Jeffrey",
+				"incumbent": false,
 				"last": "Datto",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150839,
 				"first": "Moliere",
+				"incumbent": false,
 				"last": "Dimanche",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150840,
 				"first": "Scott",
+				"incumbent": false,
 				"last": "Jewett",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 716891,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716891,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Florida/Governor/",
@@ -2395,17 +3802,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 289407,
 				"first": "Keisha",
+				"incumbent": false,
 				"last": "Lance Bottoms",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 257486,
 				"first": "Rick",
+				"incumbent": false,
 				"last": "Jackson",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 697741,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 697741,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Georgia/Governor/",
@@ -2416,17 +3835,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 1080066,
 				"first": "Gary",
+				"incumbent": false,
 				"last": "Cordery",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 29442,
 				"first": "Joshua",
+				"incumbent": true,
 				"last": "Green",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 716892,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716892,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Hawaii/Governor/",
@@ -2437,32 +3868,53 @@
 	{
 		"candidates": [
 			{
+				"candId": 843723,
 				"first": "Terri",
+				"incumbent": false,
 				"last": "Pickens",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 843724,
 				"first": "Brad",
+				"incumbent": true,
 				"last": "Little",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1149156,
 				"first": "Pro",
+				"incumbent": false,
 				"last": "Life",
-				"party": "C"
+				"party": "C",
+				"partyName": "Constitution"
 			},
 			{
+				"candId": 1149157,
 				"first": "John",
+				"incumbent": false,
 				"last": "Stegner",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149158,
 				"first": "Paul",
+				"incumbent": false,
 				"last": "Sand",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 698690,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 698690,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Idaho/Governor/",
@@ -2473,22 +3925,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 808257,
 				"first": "JB",
+				"incumbent": true,
 				"last": "Pritzker",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 808260,
 				"first": "Darren",
+				"incumbent": false,
 				"last": "Bailey",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1149026,
 				"first": "Collin",
+				"incumbent": false,
 				"last": "Corbett",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 608024,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 608024,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Illinois/Governor/",
@@ -2499,17 +3966,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 862689,
 				"first": "Rob",
+				"incumbent": false,
 				"last": "Sand",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 862692,
 				"first": "Zach",
+				"incumbent": false,
 				"last": "Lahn",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 701582,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 701582,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Iowa/Governor/",
@@ -2520,17 +3999,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 1066281,
 				"first": "Cindy",
+				"incumbent": false,
 				"last": "Holscher",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1066283,
 				"first": "Ty",
+				"incumbent": false,
 				"last": "Masterson",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 716893,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716893,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Kansas/Governor/",
@@ -2541,42 +4032,69 @@
 	{
 		"candidates": [
 			{
+				"candId": 812260,
 				"first": "Hannah",
+				"incumbent": false,
 				"last": "Pingree",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 371380,
 				"first": "Bobby",
+				"incumbent": false,
 				"last": "Charles",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1078173,
 				"first": "Rick",
+				"incumbent": false,
 				"last": "Bennett",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1150905,
 				"first": "John",
+				"incumbent": false,
 				"last": "Glowa",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 1150906,
 				"first": "Randy",
+				"incumbent": false,
 				"last": "Wilcox",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			},
 			{
+				"candId": 141812,
 				"first": "Blank",
+				"incumbent": false,
 				"last": "Votes",
-				"party": "N"
+				"party": "N",
+				"partyName": "No Party Affiliation"
 			},
 			{
+				"candId": 8324,
 				"first": "",
+				"incumbent": false,
 				"last": "Write-In",
-				"party": "W"
+				"party": "W",
+				"partyName": "Write-in"
 			}
 		],
-		"ddhqRaceId": 704318,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 704318,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Maine/Governor/",
@@ -2587,17 +4105,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 25897,
 				"first": "Dan",
+				"incumbent": false,
 				"last": "Cox",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 25891,
 				"first": "Wes",
+				"incumbent": true,
 				"last": "Moore",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 716925,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716925,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Maryland/Governor/",
@@ -2608,22 +4138,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 839452,
 				"first": "Michael",
+				"incumbent": false,
 				"last": "Minogue",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 30698,
 				"first": "Maura",
+				"incumbent": true,
 				"last": "Healey",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1149420,
 				"first": "Andrea",
+				"incumbent": false,
 				"last": "James",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 716924,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716924,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Massachusetts/Governor/",
@@ -2634,32 +4179,53 @@
 	{
 		"candidates": [
 			{
+				"candId": 47695,
 				"first": "Jocelyn",
+				"incumbent": false,
 				"last": "Benson",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 10301,
 				"first": "John",
+				"incumbent": false,
 				"last": "James",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1149289,
 				"first": "Anthony",
+				"incumbent": false,
 				"last": "Hudson",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			},
 			{
+				"candId": 47435,
 				"first": "Donna",
+				"incumbent": false,
 				"last": "Brandenburg",
-				"party": "U"
+				"party": "U",
+				"partyName": "US Taxpayers"
 			},
 			{
+				"candId": 883854,
 				"first": "Douglas",
+				"incumbent": false,
 				"last": "Campbell",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			}
 		],
-		"ddhqRaceId": 716926,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716926,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Michigan/Governor/",
@@ -2670,22 +4236,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 46617,
 				"first": "Lisa",
+				"incumbent": false,
 				"last": "Demuth",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 8233,
 				"first": "Amy",
+				"incumbent": false,
 				"last": "Klobuchar",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1149453,
 				"first": "Steven",
+				"incumbent": false,
 				"last": "Young",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			}
 		],
-		"ddhqRaceId": 716957,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716957,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Minnesota/Governor/",
@@ -2696,27 +4277,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 838937,
 				"first": "Lynne",
+				"incumbent": false,
 				"last": "Walz",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 838941,
 				"first": "Jim",
+				"incumbent": true,
 				"last": "Pillen",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 950907,
 				"first": "Rick",
+				"incumbent": false,
 				"last": "Beard",
-				"party": "L"
+				"party": "L",
+				"partyName": "Legal Marijuana Now"
 			},
 			{
+				"candId": 1148148,
 				"first": "Brett",
+				"incumbent": false,
 				"last": "Lindstrom",
-				"party": "A"
+				"party": "A",
+				"partyName": "America First"
 			}
 		],
-		"ddhqRaceId": 694979,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 694979,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Nebraska/Governor/",
@@ -2727,27 +4326,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 23483,
 				"first": "Aaron",
+				"incumbent": false,
 				"last": "Ford",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 23491,
 				"first": "Joe",
+				"incumbent": true,
 				"last": "Lombardo",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1149255,
 				"first": "Danielle",
+				"incumbent": false,
 				"last": "Ford",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 15615,
 				"first": "None Of",
+				"incumbent": false,
 				"last": "These Candidates",
-				"party": "U"
+				"party": "U",
+				"partyName": "Unaffiliated"
 			}
 		],
-		"ddhqRaceId": 702307,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 702307,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Nevada/Governor/",
@@ -2758,22 +4375,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 84566,
 				"first": "Cinde",
+				"incumbent": false,
 				"last": "Warmington",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1128963,
 				"first": "Kelly",
+				"incumbent": true,
 				"last": "Ayotte",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 102100,
 				"first": "Stephen",
+				"incumbent": false,
 				"last": "Villee",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 716990,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716990,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "New Hampshire/Governor/",
@@ -2784,17 +4416,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 859955,
 				"first": "Greggory",
+				"incumbent": false,
 				"last": "Hull",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 859953,
 				"first": "Deb",
+				"incumbent": false,
 				"last": "Haaland",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 701680,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 701680,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "New Mexico/Governor/",
@@ -2805,17 +4449,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 25286,
 				"first": "Kathy",
+				"incumbent": true,
 				"last": "Hochul",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 182200,
 				"first": "Bruce",
+				"incumbent": false,
 				"last": "Blakeman",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 716991,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716991,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "New York/Governor/",
@@ -2826,22 +4482,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 837054,
 				"first": "Amy",
+				"incumbent": false,
 				"last": "Acton",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 837057,
 				"first": "Vivek",
+				"incumbent": false,
 				"last": "Ramaswamy",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 11348,
 				"first": "Don",
+				"incumbent": false,
 				"last": "Kissick",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 681152,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General",
+			"office": "Governor",
+			"raceId": 681152,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Ohio/Governor/",
@@ -2852,32 +4523,53 @@
 	{
 		"candidates": [
 			{
+				"candId": 1127120,
 				"first": "Robert",
+				"incumbent": false,
 				"last": "Brooks",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1127121,
 				"first": "Orlando",
+				"incumbent": false,
 				"last": "Bush",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1127122,
 				"first": "Jerry",
+				"incumbent": false,
 				"last": "Griffin",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 986051,
 				"first": "Cyndi",
+				"incumbent": false,
 				"last": "Munson",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 289281,
 				"first": "Mike",
+				"incumbent": false,
 				"last": "Mazzei",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 704021,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 704021,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Oklahoma/Governor/",
@@ -2888,22 +4580,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 843788,
 				"first": "Tina",
+				"incumbent": true,
 				"last": "Kotek",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 843795,
 				"first": "Christine",
+				"incumbent": false,
 				"last": "Drazan",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1148991,
 				"first": "Brett",
+				"incumbent": false,
 				"last": "Smith",
-				"party": "P"
+				"party": "P",
+				"partyName": "Pacific Green"
 			}
 		],
-		"ddhqRaceId": 700028,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 700028,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Oregon/Governor/",
@@ -2914,22 +4621,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 15792,
 				"first": "Josh",
+				"incumbent": true,
 				"last": "Shapiro",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 15801,
 				"first": "Stacy",
+				"incumbent": false,
 				"last": "Garrity",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1149189,
 				"first": "Kenneth",
+				"incumbent": false,
 				"last": "Krawchuk",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 700061,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 700061,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Pennsylvania/Governor/",
@@ -2940,32 +4662,53 @@
 	{
 		"candidates": [
 			{
+				"candId": 32152,
 				"first": "Helena",
+				"incumbent": false,
 				"last": "Foulkes",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 32161,
 				"first": "Aaron",
+				"incumbent": false,
 				"last": "Guckian",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1149486,
 				"first": "Kenneth",
+				"incumbent": false,
 				"last": "Block",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1130631,
 				"first": "Jasjit",
+				"incumbent": false,
 				"last": "Gotra",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149519,
 				"first": "C",
+				"incumbent": false,
 				"last": "Reynolds",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			}
 		],
-		"ddhqRaceId": 716992,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716992,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Rhode Island/Governor/",
@@ -2976,27 +4719,45 @@
 	{
 		"candidates": [
 			{
+				"candId": 23866,
 				"first": "Jermaine",
+				"incumbent": false,
 				"last": "Johnson",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 23844,
 				"first": "Alan",
+				"incumbent": false,
 				"last": "Wilson",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1149222,
 				"first": "Michael",
+				"incumbent": false,
 				"last": "Addison",
-				"party": "U"
+				"party": "U",
+				"partyName": "United Citizens"
 			},
 			{
+				"candId": 1149223,
 				"first": "Walid",
+				"incumbent": false,
 				"last": "Hakim",
-				"party": "G"
+				"party": "G",
+				"partyName": "Green"
 			}
 		],
-		"ddhqRaceId": 702284,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 702284,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "South Carolina/Governor/",
@@ -3007,17 +4768,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 291143,
 				"first": "Larry",
+				"incumbent": true,
 				"last": "Rhoden",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 950801,
 				"first": "Dan",
+				"incumbent": false,
 				"last": "Ahlers",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 701777,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 701777,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "South Dakota/Governor/",
@@ -3028,82 +4801,133 @@
 	{
 		"candidates": [
 			{
+				"candId": 1149552,
 				"first": "Misam",
+				"incumbent": false,
 				"last": "Abidi",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149553,
 				"first": "Dean",
+				"incumbent": false,
 				"last": "Brewer",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149554,
 				"first": "Ray",
+				"incumbent": false,
 				"last": "Brown",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149555,
 				"first": "David",
+				"incumbent": false,
 				"last": "Hatley",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149556,
 				"first": "Wendell",
+				"incumbent": false,
 				"last": "Jackson",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149557,
 				"first": "Charles",
+				"incumbent": false,
 				"last": "Van Morgan",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149558,
 				"first": "Eddie",
+				"incumbent": false,
 				"last": "Murphy",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149559,
 				"first": "Lauren",
+				"incumbent": false,
 				"last": "Pinkston",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149560,
 				"first": "Victor",
+				"incumbent": false,
 				"last": "Scoggin",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149561,
 				"first": "Dave",
+				"incumbent": false,
 				"last": "Seeman",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149562,
 				"first": "Karl",
+				"incumbent": false,
 				"last": "Smithson",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149563,
 				"first": "L.",
+				"incumbent": false,
 				"last": "Taylor",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1149564,
 				"first": "Robert",
+				"incumbent": false,
 				"last": "Vick",
-				"party": "I"
+				"party": "I",
+				"partyName": "Independent"
 			},
 			{
+				"candId": 1631,
 				"first": "Marsha",
+				"incumbent": false,
 				"last": "Blackburn",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 341356,
 				"first": "Jerri",
+				"incumbent": false,
 				"last": "Green",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			}
 		],
-		"ddhqRaceId": 716993,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716993,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Tennessee/Governor/",
@@ -3114,22 +4938,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 808035,
 				"first": "Gina",
+				"incumbent": false,
 				"last": "Hinojosa",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 808059,
 				"first": "Greg",
+				"incumbent": true,
 				"last": "Abbott",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 831696,
 				"first": "Pat",
+				"incumbent": false,
 				"last": "Dixon",
-				"party": "L"
+				"party": "L",
+				"partyName": "Libertarian"
 			}
 		],
-		"ddhqRaceId": 701534,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 701534,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Texas/Governor/",
@@ -3140,17 +4979,53 @@
 	{
 		"candidates": [
 			{
-				"first": "Molly",
-				"last": "Gray",
-				"party": "D"
+				"candId": 123349,
+				"first": "Amanda",
+				"incumbent": false,
+				"last": "Janoo",
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
-				"first": "John",
-				"last": "Rodgers",
-				"party": "R"
+				"candId": 393,
+				"first": "Phil",
+				"incumbent": true,
+				"last": "Scott",
+				"party": "R",
+				"partyName": "Republican"
+			},
+			{
+				"candId": 85172,
+				"first": "June",
+				"incumbent": false,
+				"last": "Goodband",
+				"party": "P",
+				"partyName": "Peace and Justice"
+			},
+			{
+				"candId": 1149585,
+				"first": "Brian",
+				"incumbent": false,
+				"last": "Judd",
+				"party": "I",
+				"partyName": "Independent"
+			},
+			{
+				"candId": 1149586,
+				"first": "Dean",
+				"incumbent": false,
+				"last": "Roy",
+				"party": "F",
+				"partyName": "Freedom and Unity"
 			}
 		],
-		"ddhqRaceId": 784990,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716994,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Vermont/Governor/",
@@ -3161,17 +5036,29 @@
 	{
 		"candidates": [
 			{
+				"candId": 394458,
 				"first": "David",
+				"incumbent": false,
 				"last": "Crowley",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 11960,
 				"first": "Tom",
+				"incumbent": false,
 				"last": "Tiffany",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			}
 		],
-		"ddhqRaceId": 770252,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 770252,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Wisconsin/Governor/",
@@ -3182,22 +5069,37 @@
 	{
 		"candidates": [
 			{
+				"candId": 29898,
 				"first": "Eric",
+				"incumbent": false,
 				"last": "Barlow",
-				"party": "R"
+				"party": "R",
+				"partyName": "Republican"
 			},
 			{
+				"candId": 1110688,
 				"first": "Kenneth",
+				"incumbent": false,
 				"last": "Casner",
-				"party": "D"
+				"party": "D",
+				"partyName": "Democratic"
 			},
 			{
+				"candId": 1149618,
 				"first": "Rebecca",
+				"incumbent": false,
 				"last": "Bextel",
-				"party": "C"
+				"party": "C",
+				"partyName": "Constitution"
 			}
 		],
-		"ddhqRaceId": 716996,
+		"ddhq": {
+			"level": "Statewide",
+			"name": "General Election",
+			"office": "Governor",
+			"raceId": 716996,
+			"year": 2026
+		},
 		"district": "",
 		"graphics": ["fs", "l3"],
 		"key": "Wyoming/Governor/",

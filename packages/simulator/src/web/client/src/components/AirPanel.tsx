@@ -73,12 +73,12 @@ const AirPanel: React.FC<Props> = (props) => {
 				</Typography>
 			</Stack>
 			<Typography color="text.secondary" sx={{ display: 'block' }} variant="caption">
-				Open the feed (
+				While a night runs, the DDHQ and Chameleon mirrors serve it too (starting one stops any
+				recording playback). Put the checker in Sim mode and open the feed (
 				<Link href="/air/" target="_blank">
 					/air/
 				</Link>
-				) in the checker's debug Chrome and pick its "Sim air" capture preset. The newscast under
-				the graphics is recordings/air/background.mp4.
+				) in its debug Chrome. The newscast under the graphics is recordings/air/background.mp4.
 			</Typography>
 		</Box>
 	);

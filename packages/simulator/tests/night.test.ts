@@ -8,11 +8,19 @@ import { loadRaces } from '../src/air/races.js';
 const DURATION_MS = 30 * 60_000;
 const races = loadRaces('races.json');
 const night = makeNight(races, 42, DURATION_MS);
+const candidate = (candId: number, first: string, last: string, partyName: string) => ({
+	candId,
+	first,
+	incumbent: false,
+	last,
+	party: partyName.slice(0, 1),
+	partyName,
+});
 const minutes = Array.from({ length: 41 }, (_, index) => index * 60_000);
 
 const race = (overrides: Partial<Race>): Race => ({
 	candidates: [],
-	ddhqRaceId: null,
+	ddhq: { level: 'Federal', name: 'General Election', office: 'US Senate', raceId: 1, year: 2026 },
 	district: '',
 	graphics: ['fs', 'l3'],
 	key: 'Test/U.S. Senate/',
@@ -39,9 +47,9 @@ describe('makeNight', () => {
 			[
 				race({
 					candidates: [
-						{ first: 'Pete', last: 'Ricketts', party: 'R' },
-						{ first: 'Jane', last: 'Marvin', party: 'L' },
-						{ first: 'Dan', last: 'Osborn', party: 'I' },
+						candidate(1, 'Pete', 'Ricketts', 'Republican'),
+						candidate(2, 'Jane', 'Marvin', 'Libertarian'),
+						candidate(3, 'Dan', 'Osborn', 'Independent'),
 					],
 				}),
 			],
@@ -76,18 +84,29 @@ describe('raceAt', () => {
 				const before = raceAt(plan, minutes[index] ?? 0);
 				const after = raceAt(plan, minute);
 				expect(after.pctIn).toBeGreaterThanOrEqual(before.pctIn);
-				expect(after.left.votes).toBeGreaterThanOrEqual(before.left.votes);
-				expect(after.right.votes).toBeGreaterThanOrEqual(before.right.votes);
+				after.candidates.forEach((result, candidateIndex) =>
+					expect(result.votes).toBeGreaterThanOrEqual(
+						before.candidates[candidateIndex]?.votes ?? 0,
+					),
+				);
 				if (before.left.isWinner) expect(after.left.isWinner).toBe(true);
 				if (before.right.isWinner) expect(after.right.isWinner).toBe(true);
 			}),
 		));
 
-	it('keeps the two shown shares within 100%', () =>
+	it('makes every percent from the same whole-vote totals', () =>
 		night.plans.forEach((plan) =>
 			minutes.forEach((minute) => {
 				const result = raceAt(plan, minute);
-				expect(result.left.votePercent + result.right.votePercent).toBeLessThanOrEqual(100.001);
+				expect(result.totalVotes).toBe(
+					result.candidates.reduce((sum, candidate) => sum + candidate.votes, 0),
+				);
+				expect(Number.isInteger(result.pctIn)).toBe(true);
+				result.candidates.forEach((candidate) =>
+					expect(candidate.votePercent).toBeCloseTo(
+						result.totalVotes === 0 ? 0 : (candidate.votes / result.totalVotes) * 100,
+					),
+				);
 			}),
 		));
 
@@ -120,8 +139,7 @@ describe('graphicData', () => {
 
 	it('prints % in the way air does', () => {
 		expect(formatPctIn(0)).toBe('0');
-		expect(formatPctIn(0.4)).toBe('<1');
-		expect(formatPctIn(42.6)).toBe('43');
-		expect(formatPctIn(97.2)).toBe('>95');
+		expect(formatPctIn(42)).toBe('42');
+		expect(formatPctIn(97)).toBe('>95');
 	});
 });

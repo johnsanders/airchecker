@@ -125,8 +125,8 @@ const RecordPanel: React.FC<Props> = (props) => {
 						</Typography>
 					</Stack>
 					<Typography color="text.secondary" sx={{ display: 'block' }} variant="caption">
-						The mirror answers from this recording. In airchecker, pick the Sim environment and use
-						these DDHQ queries:
+						The mirror answers from this recording (starting a simulated night stops it). The
+						checker's Sim mode polls these DDHQ queries:
 					</Typography>
 					<Box
 						component="pre"

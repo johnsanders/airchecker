@@ -9,7 +9,8 @@ import { makeFetchHttp } from '../sources/http.js';
 
 // Builds races.json, the simulated air feed's race list, from takeitems.xml (the operator's
 // Ross take list for the L3 and FS results graphics). The take list names each race but
-// carries no candidates, so each one is looked up once in DDHQ's Nov 3 general races.
+// carries no candidates, so each one is looked up once in DDHQ's Nov 3 general races. What
+// the simulator's DDHQ and Chameleon mirrors need to build their responses is kept too.
 // Run from packages/simulator: node --env-file-if-exists=../../.env --import tsx src/tools/buildRaces.ts
 
 const RACE_DATE = '2026-11-03';
@@ -17,14 +18,21 @@ const RACE_DATE = '2026-11-03';
 // Ross group ids in the take list; the ticker (1) is data-driven and names no races.
 const GRAPHIC_BY_GROUP: Record<string, Graphic> = { '2': 'l3', '3': 'fs' };
 
-// The take list's office names, and DDHQ's office_id for each.
-const OFFICE_IDS: Record<string, number> = { Governor: 2, 'U.S. House': 3, 'U.S. Senate': 4 };
+// The take list's office names, with DDHQ's office_id and office name for each. The name is
+// checked too: the Governor query also returns Lt Governor races.
+const OFFICES: Record<string, { id: number; name: string }> = {
+	Governor: { id: 2, name: 'Governor' },
+	'U.S. House': { id: 3, name: 'US House' },
+	'U.S. Senate': { id: 4, name: 'US Senate' },
+};
 
+// The checker's partyLetter mapping, so the letters agree with what it derives.
 const PARTY_ABBREVIATIONS: Record<string, string> = {
 	Democratic: 'D',
 	Green: 'G',
 	Independent: 'I',
 	Libertarian: 'L',
+	Nonpartisan: 'NP',
 	Republican: 'R',
 };
 
@@ -35,15 +43,21 @@ type TakeItem = { district: string; graphic: Graphic; office: string; stateName:
 const ddhqRaceSchema = z.object({
 	candidates: z.array(
 		z.object({
+			cand_id: z.number(),
 			first_name: z.string().nullable(),
+			incumbent: z.boolean(),
 			last_name: z.string(),
 			party_name: z.string(),
 		}),
 	),
 	district: z.string().nullable(),
+	level: z.string(),
+	name: z.string(),
+	office: z.string(),
 	race_id: z.number(),
 	state: z.string(),
 	state_name: z.string(),
+	year: z.number(),
 });
 
 const ddhqPageSchema = z.object({
@@ -94,11 +108,14 @@ const fetchOffice = async (
 };
 
 const toCandidate = (candidate: DdhqRace['candidates'][number]): RaceCandidate => ({
+	candId: candidate.cand_id,
 	// preferred_name is usually '' when unset, and sometimes a full legal name, so first_name it is.
-	first: candidate.first_name ?? '',
-	last: candidate.last_name,
+	first: (candidate.first_name ?? '').trim(),
+	incumbent: candidate.incumbent,
+	last: candidate.last_name.trim(),
 	party:
 		PARTY_ABBREVIATIONS[candidate.party_name] ?? candidate.party_name.slice(0, 1).toUpperCase(),
+	partyName: candidate.party_name,
 });
 
 const readCredentials = () => {
@@ -125,8 +142,10 @@ const main = async () => {
 	const ddhqByKey = new Map(
 		(
 			await Promise.all(
-				Object.entries(OFFICE_IDS).map(async ([office, officeId]) =>
-					(await fetchOffice(officeId, auth.getToken)).map((race) => ({ office, race })),
+				Object.entries(OFFICES).map(async ([office, ddhqOffice]) =>
+					(await fetchOffice(ddhqOffice.id, auth.getToken))
+						.filter((race) => race.office === ddhqOffice.name)
+						.map((race) => ({ office, race })),
 				),
 			)
 		)
@@ -141,27 +160,37 @@ const main = async () => {
 			]),
 	);
 
+	const unmatched = [...itemsByKey.keys()].filter((key) => !ddhqByKey.has(key));
+	if (unmatched.length > 0) {
+		console.error(`${unmatched.length} take-list races not found in DDHQ; races.json not written:`);
+		unmatched.forEach((key) => console.error(`  ${key}`));
+		process.exitCode = 1;
+		return;
+	}
+
 	const races: Race[] = [...itemsByKey.entries()].map(([key, group]) => {
 		const first = group[0] as TakeItem;
-		const ddhq = ddhqByKey.get(key);
+		const ddhq = ddhqByKey.get(key) as DdhqRace;
 		return {
-			candidates: ddhq?.candidates.map(toCandidate) ?? [],
-			ddhqRaceId: ddhq?.race_id ?? null,
+			candidates: ddhq.candidates.map(toCandidate),
+			ddhq: {
+				level: ddhq.level,
+				name: ddhq.name,
+				office: ddhq.office,
+				raceId: ddhq.race_id,
+				year: ddhq.year,
+			},
 			district: first.district,
 			graphics: [...new Set(group.map((item) => item.graphic))].sort(),
 			key,
 			office: first.office,
-			state: ddhq?.state ?? '',
+			state: ddhq.state,
 			stateName: first.stateName,
 		};
 	});
 
 	writeFileSync('races.json', `${JSON.stringify(races, null, '\t')}\n`);
-	const unmatched = races.filter((race) => race.ddhqRaceId === null);
-	console.log(
-		`${races.length} races from ${items.length} take items; ${unmatched.length} not found in DDHQ`,
-	);
-	unmatched.forEach((race) => console.log(`  ${race.key}`));
+	console.log(`${races.length} races from ${items.length} take items`);
 };
 
 void main();

@@ -7,7 +7,17 @@ import { between, makeRandom, pick, seedFrom } from './random.js';
 // up front; raceAt() reads where it stands at any moment. Votes and % in only rise, each
 // candidate's share leans one way early and settles on its final value, and a race is
 // called once enough is in for its margin, and stays called.
+//
+// The three sources the checker watches are delayed views of the one night, like the real
+// pipeline: DDHQ has a result first, Chameleon picks it up, and the graphics show
+// Chameleon's data a little later. The checker compares air against the Chameleon poll 3–35 s
+// before it (its vendorToAirLag window), so the graphics lag sits mid-window.
+export const DDHQ_LAG_MS = 0;
+export const CHAMELEON_LAG_MS = 30_000;
+export const AIR_LAG_MS = CHAMELEON_LAG_MS + 19_000;
 
+// Every candidate on the ballot, not just the two the graphics show: DDHQ and Chameleon
+// carry them all, and their votes make up each percent's total.
 export type CandidateResult = {
 	candidate: RaceCandidate;
 	isWinner: boolean;
@@ -37,6 +47,8 @@ export type RacePlan = {
 	finalPctIn: number;
 	left: RaceCandidate;
 	leftShare: number; // final share of all votes, 0–1
+	// The rest of the ballot, each with a fixed share of the vote.
+	others: { candidate: RaceCandidate; share: number }[];
 	race: Race;
 	reportingEndMs: number;
 	reportingStartMs: number; // poll close
@@ -44,7 +56,14 @@ export type RacePlan = {
 	rightShare: number;
 };
 
-export type RaceResult = { left: CandidateResult; pctIn: number; right: CandidateResult };
+export type RaceResult = {
+	called: boolean;
+	candidates: CandidateResult[]; // in ballot order
+	left: CandidateResult;
+	pctIn: number; // whole number, the same figure in every source
+	right: CandidateResult;
+	totalVotes: number;
+};
 
 type GraphicCandidate = {
 	isWinner: boolean;
@@ -85,7 +104,12 @@ const planRace = (race: Race, seed: number, durationMs: number): RacePlan => {
 	const sides = chooseSides(race, random);
 	// Summing three uniforms clusters the two-way split near 50/50, so plenty of races are close.
 	const leftTwoWay = 0.5 + (random() + random() + random() - 1.5) * 0.25;
-	const otherShare = race.candidates.length > 2 ? between(random, 0.01, 0.07) : 0;
+	const others = race.candidates.filter(
+		(candidate) => candidate !== sides.left && candidate !== sides.right,
+	);
+	const otherShare = others.length > 0 ? between(random, 0.01, 0.07) : 0;
+	const otherWeights = others.map(() => random());
+	const otherWeightTotal = otherWeights.reduce((sum, weight) => sum + weight, 0);
 	const leftShare = (1 - otherShare) * leftTwoWay;
 	const rightShare = (1 - otherShare) * (1 - leftTwoWay);
 	const margin = Math.abs(leftShare - rightShare);
@@ -95,7 +119,9 @@ const planRace = (race: Race, seed: number, durationMs: number): RacePlan => {
 		...sides,
 		bias: between(random, -1, 1) * Math.min(0.08, 0.8 * Math.min(leftShare, rightShare)),
 		callAt: margin < 0.01 ? null : Math.max(0, 0.95 - 3.5 * margin),
-		dropIntervalMs: between(random, 15_000, 45_000),
+		// Minutes apart, as real races update: the checker matches air to whichever Chameleon
+		// poll landed in its window, and a drop between the two reads as a mismatch.
+		dropIntervalMs: between(random, 60_000, 150_000),
 		expectedVotes: Math.round(
 			race.office === 'U.S. House'
 				? between(random, 150_000, 400_000)
@@ -103,6 +129,10 @@ const planRace = (race: Race, seed: number, durationMs: number): RacePlan => {
 		),
 		finalPctIn: between(random, 97, 100),
 		leftShare,
+		others: others.map((candidate, index) => ({
+			candidate,
+			share: (otherShare * (otherWeights[index] ?? 0)) / otherWeightTotal,
+		})),
 		race,
 		reportingEndMs:
 			reportingStartMs + between(random, 0.5, 0.95) * (lastReportMs - reportingStartMs),
@@ -130,33 +160,40 @@ const progressAt = (plan: RacePlan, elapsedMs: number): number => {
 export const raceAt = (plan: RacePlan, elapsedMs: number): RaceResult => {
 	const progress = progressAt(plan, elapsedMs);
 	// Unrounded, so each candidate's rounded votes rise with progress.
-	const totalVotes = plan.expectedVotes * (plan.finalPctIn / 100) * progress;
+	const expectedTotal = plan.expectedVotes * (plan.finalPctIn / 100) * progress;
 	const lean = plan.bias * (1 - progress);
 	const called =
 		elapsedMs >= plan.reportingStartMs && plan.callAt !== null && progress >= plan.callAt;
 	const leftWins = plan.leftShare > plan.rightShare;
-	const result = (candidate: RaceCandidate, share: number, wins: boolean): CandidateResult => {
-		return {
-			candidate,
-			isWinner: called && wins,
-			votePercent: totalVotes === 0 ? 0 : share * 100,
-			votes: Math.round(totalVotes * share),
-		};
-	};
+	const shares = new Map([
+		[plan.left, plan.leftShare + lean],
+		[plan.right, plan.rightShare - lean],
+		...plan.others.map((other): [RaceCandidate, number] => [other.candidate, other.share]),
+	]);
+	const votes = plan.race.candidates.map((candidate) =>
+		Math.round(expectedTotal * (shares.get(candidate) ?? 0)),
+	);
+	const totalVotes = votes.reduce((sum, count) => sum + count, 0);
+	const candidates = plan.race.candidates.map((candidate, index): CandidateResult => ({
+		candidate,
+		isWinner: called && (leftWins ? candidate === plan.left : candidate === plan.right),
+		votePercent: totalVotes === 0 ? 0 : ((votes[index] ?? 0) / totalVotes) * 100,
+		votes: votes[index] ?? 0,
+	}));
+	const resultFor = (candidate: RaceCandidate) =>
+		candidates.find((result) => result.candidate === candidate) as CandidateResult;
 	return {
-		left: result(plan.left, plan.leftShare + lean, leftWins),
-		pctIn: plan.finalPctIn * progress,
-		right: result(plan.right, plan.rightShare - lean, !leftWins),
+		called,
+		candidates,
+		left: resultFor(plan.left),
+		pctIn: Math.floor(plan.finalPctIn * progress),
+		right: resultFor(plan.right),
+		totalVotes,
 	};
 };
 
-// As the graphics print it: "<1" for a trickle, ">95" once nearly complete.
-export const formatPctIn = (pctIn: number): string => {
-	if (pctIn === 0) return '0';
-	if (pctIn < 1) return '<1';
-	if (pctIn > 95) return '>95';
-	return String(Math.round(pctIn));
-};
+// As the graphics print it: ">95" once nearly complete.
+export const formatPctIn = (pctIn: number): string => (pctIn > 95 ? '>95' : String(pctIn));
 
 // "|" splits first from last name in the graphics (multi-word surnames like "Van Orden").
 const graphicCandidate = (result: CandidateResult): GraphicCandidate => ({

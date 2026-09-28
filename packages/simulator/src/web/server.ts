@@ -71,10 +71,17 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		expires_in: 86_400,
 		token_type: 'Bearer',
 	}));
-	app.get('/api/v4/*', (req, reply) => sendAnswer(reply, config.playback.answer('DDHQ', req.url)));
-	app.get('/chameleon/*', (req, reply) =>
-		sendAnswer(reply, config.playback.answer('Ross', req.url)),
-	);
+	// A running simulated night serves the mirror; otherwise the recording playing back does.
+	const answer = (source: ApiSource, path: string): MirrorAnswer =>
+		config.airShow.mirror(source, path) ?? config.playback.answer(source, path);
+	app.get('/api/v4/*', (req, reply) => sendAnswer(reply, answer('DDHQ', req.url)));
+	app.get('/chameleon/*', (req, reply) => sendAnswer(reply, answer('Ross', req.url)));
+
+	// What the checker's Sim mode should poll DDHQ for: the night's races, or the queries
+	// the playing recording was made with.
+	app.get('/api/sim/queries', () => ({
+		queries: config.airShow.queries() ?? config.playback.status()?.ddhqQueries ?? [],
+	}));
 
 	// --- Control --------------------------------------------------------------
 
@@ -194,6 +201,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		if (typeof name !== 'string') return reply.code(400).send({ error: 'name is required' });
 		try {
 			config.playback.start(name);
+			config.airShow.stop();
 		} catch (error) {
 			return reply.code(404).send(failure(error));
 		}
@@ -231,6 +239,8 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			return reply
 				.code(400)
 				.send({ error: `durationMinutes must be more than 0 and at most ${MAX_AIR_MINUTES}` });
+		// One thing serves the mirror at a time.
+		if (config.playback.status() !== undefined) config.playback.stop();
 		config.airShow.start(durationMinutes * 60_000);
 		return status();
 	});

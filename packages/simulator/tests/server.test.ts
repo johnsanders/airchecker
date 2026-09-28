@@ -247,6 +247,37 @@ describe('air feed', () => {
 		);
 	});
 
+	it('serves the running night on the mirrors, taking over from playback and back', async () => {
+		const { app } = setup();
+		const get = (url: string) => app.inject({ method: 'GET', url });
+		await app.inject({
+			method: 'POST',
+			payload: { name: 'night' },
+			url: '/api/api-playback/start',
+		});
+		expect((await get('/api/sim/queries')).json()).toEqual({ queries: ['state=TX', 'state=GA'] });
+
+		await app.inject({ method: 'POST', payload: { durationMinutes: 30 }, url: '/api/air/start' });
+		expect((await get('/api/status')).json()).toMatchObject({ playback: null });
+		const queries = (await get('/api/sim/queries')).json<{ queries: string[] }>().queries;
+		expect(queries).toHaveLength(3);
+		const races = (await get(`/api/v4/races?${queries[0] ?? ''}`)).json<{ data: unknown[] }>();
+		expect(races.data).toHaveLength(50);
+		const playlist = (await get(CHAMELEON_PATH)).json<{
+			ElectionPlaylist: { contest: unknown[] };
+		}>();
+		expect(playlist.ElectionPlaylist.contest).toHaveLength(116);
+		expect((await get('/api/v4/elections')).statusCode).toBe(404);
+
+		await app.inject({
+			method: 'POST',
+			payload: { name: 'night' },
+			url: '/api/api-playback/start',
+		});
+		expect((await get('/api/status')).json()).toMatchObject({ air: null });
+		expect((await get(CHAMELEON_PATH)).json()).toEqual({ contests: [1] });
+	});
+
 	it('rejects a bad duration', async () => {
 		const { app } = setup();
 		const statuses = await Promise.all(
