@@ -14,6 +14,7 @@ import type { RaceSummary, StateResponse } from './api.js';
 import { api } from './api.js';
 import AlertHistory from './components/AlertHistory.js';
 import Alerts from './components/Alerts.js';
+import BackendBanner from './components/BackendBanner.js';
 import CapturePanel from './components/CapturePanel.js';
 import MonitorControl from './components/MonitorControl.js';
 import QueryEditor from './components/QueryEditor.js';
@@ -69,6 +70,7 @@ const App: React.FC = () => {
 
 	return (
 		<Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
+			<BackendBanner />
 			<AppBar color="default" elevation={0} position="static">
 				<Toolbar variant="dense">
 					<Typography sx={{ fontWeight: 700 }}>Eagle Eye</Typography>
