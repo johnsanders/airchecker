@@ -1,28 +1,27 @@
 import AppBar from '@mui/material/AppBar';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import Switch from '@mui/material/Switch';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import type { RaceSummary, StateResponse } from './api.js';
+import type { AirRead, StateResponse } from './api.js';
 
 import { api } from './api.js';
-import AirReads from './components/AirReads.js';
+import AirReadTable from './components/AirReadTable.js';
 import AlertHistory from './components/AlertHistory.js';
-import Alerts from './components/Alerts.js';
 import BackendBanner from './components/BackendBanner.js';
 import CapturePanel from './components/CapturePanel.js';
 import ModeSwitch from './components/ModeSwitch.js';
 import MonitorControl from './components/MonitorControl.js';
 import QueryEditor from './components/QueryEditor.js';
 import RaceDetailDialog from './components/RaceDetailDialog.js';
-import RaceLinks from './components/RaceLinks.js';
-import RaceTable from './components/RaceTable.js';
 import SessionsPanel from './components/SessionsPanel.js';
 import SourceHealth from './components/SourceHealth.js';
 import { useLiveQuery } from './useLiveQuery.js';
@@ -53,8 +52,9 @@ const TabLabel: React.FC<{ count: number; label: string }> = (props) => (
 
 const App: React.FC = () => {
 	const { data: state } = useLiveQuery<StateResponse>(() => api.getState());
-	const { data: racesData } = useLiveQuery<{ races: RaceSummary[] }>(() => api.getRaces());
+	const { data: racesData } = useLiveQuery<{ races: AirRead[] }>(() => api.getRaces());
 	const [selected, setSelected] = React.useState<string | undefined>(undefined);
+	const [alertsOnly, setAlertsOnly] = React.useState(false);
 	const [tab, setTab] = React.useState<TabId>(tabFromHash);
 
 	React.useEffect(() => {
@@ -69,6 +69,7 @@ const App: React.FC = () => {
 	};
 
 	const races = racesData?.races ?? [];
+	const withAlerts = races.filter((read) => read.anomalies.length > 0);
 	const simulating = state?.mode === 'sim';
 
 	return (
@@ -102,32 +103,34 @@ const App: React.FC = () => {
 					sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
 					value={tab}
 				>
-					<Tab label={<TabLabel count={state?.alerts.length ?? 0} label="Live" />} value="live" />
+					<Tab label={<TabLabel count={withAlerts.length} label="Live" />} value="live" />
 					<Tab label="Air capture" value="air" />
-					<Tab
-						label={<TabLabel count={state?.pendingLinkCount ?? 0} label="Setup" />}
-						value="setup"
-					/>
+					<Tab label="Setup" value="setup" />
 					<Tab label="Session recordings" value="sessions" />
 				</Tabs>
 
 				<Box hidden={tab !== 'live'}>
 					<Grid container spacing={2}>
-						<Grid size={{ md: 6, xs: 12 }}>
-							<Section title="Alerts">
-								<Alerts alerts={state?.alerts ?? []} onSelectRace={setSelected} />
-							</Section>
-						</Grid>
-
-						<Grid size={{ md: 6, xs: 12 }}>
-							<Section title="Recent alert events">
-								<AlertHistory onSelectRace={setSelected} />
+						<Grid size={{ xs: 12 }}>
+							<Section title="On air">
+								<FormControlLabel
+									control={
+										<Switch
+											checked={alertsOnly}
+											onChange={(_event, checked) => setAlertsOnly(checked)}
+											size="small"
+										/>
+									}
+									label={`Only the ${withAlerts.length} with alerts`}
+									sx={{ mb: 1 }}
+								/>
+								<AirReadTable onSelect={setSelected} reads={alertsOnly ? withAlerts : races} />
 							</Section>
 						</Grid>
 
 						<Grid size={{ xs: 12 }}>
-							<Section title="Races">
-								<RaceTable onSelect={setSelected} races={races} />
+							<Section title="Recent alert events">
+								<AlertHistory onSelectRace={setSelected} />
 							</Section>
 						</Grid>
 					</Grid>
@@ -142,32 +145,12 @@ const App: React.FC = () => {
 							mode={state?.mode ?? null}
 						/>
 					</Section>
-					<Box sx={{ mt: 2 }}>
-						<Section title="Air reads">
-							<AirReads onSelectRace={setSelected} />
-						</Section>
-					</Box>
 				</Box>
 
 				<Box hidden={tab !== 'setup'}>
-					<Grid container spacing={2}>
-						<Grid size={{ xs: 12 }}>
-							<Section title="DDHQ queries">
-								<QueryEditor ddhqHost={state?.ddhqHost ?? null} mode={state?.mode ?? null} />
-							</Section>
-						</Grid>
-
-						<Grid size={{ xs: 12 }}>
-							<Section
-								title={`Race links${state?.pendingLinkCount ? ` (${state.pendingLinkCount})` : ''}`}
-							>
-								<RaceLinks
-									monitoring={state?.session?.running ?? false}
-									onSelectRace={setSelected}
-								/>
-							</Section>
-						</Grid>
-					</Grid>
+					<Section title="DDHQ queries">
+						<QueryEditor ddhqHost={state?.ddhqHost ?? null} mode={state?.mode ?? null} />
+					</Section>
 				</Box>
 
 				<Box hidden={tab !== 'sessions'}>

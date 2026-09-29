@@ -3,7 +3,6 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import type { RaceIdentityEvent } from '../identity/raceIdentity.js';
 import type { RaceObservation } from '../reconcile/reconcile.js';
 import type { AlertEvent } from '../runtime/alertLog.js';
 
@@ -44,14 +43,6 @@ CREATE TABLE IF NOT EXISTS llm_calls (
   response TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS llm_calls_lookup ON llm_calls(frame_hash, prompt_hash);
-CREATE TABLE IF NOT EXISTS identity_events (
-  seq INTEGER PRIMARY KEY AUTOINCREMENT,
-  session_id TEXT NOT NULL,
-  ts INTEGER NOT NULL,
-  event_type TEXT NOT NULL,
-  payload TEXT NOT NULL
-);
-CREATE INDEX IF NOT EXISTS identity_events_session_seq ON identity_events(session_id, seq);
 CREATE TABLE IF NOT EXISTS alert_events (
   seq INTEGER PRIMARY KEY AUTOINCREMENT,
   session_id TEXT NOT NULL,
@@ -90,7 +81,6 @@ export type Recorder = {
 	lookupLlm: (frameHash: null | string, promptHash: string) => LlmLookupResult | undefined;
 	recordAlertEvent: (event: AlertEvent) => void;
 	recordFrame: (input: FrameRecordInput) => string;
-	recordIdentityEvent: (event: RaceIdentityEvent) => void;
 	recordLlmCall: (input: LlmCallInput) => void;
 	recordObservation: (observation: RaceObservation) => void;
 	sessionId: string;
@@ -127,9 +117,6 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 	);
 	const insertLlm = db.prepare(
 		'INSERT INTO llm_calls (session_id, ts, frame_hash, prompt_hash, model, request, response) VALUES (?, ?, ?, ?, ?, ?, ?)',
-	);
-	const insertIdentityEvent = db.prepare(
-		'INSERT INTO identity_events (session_id, ts, event_type, payload) VALUES (?, ?, ?, ?)',
 	);
 	const insertAlertEvent = db.prepare(
 		'INSERT INTO alert_events (session_id, ts, kind, race_key, type, payload) VALUES (?, ?, ?, ?, ?, ?)',
@@ -180,15 +167,6 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 		);
 	};
 
-	const recordIdentityEvent = (event: RaceIdentityEvent): void => {
-		insertIdentityEvent.run(
-			config.sessionId,
-			Date.now(),
-			event.type,
-			JSON.stringify(event.payload),
-		);
-	};
-
 	const recordAlertEvent = (event: AlertEvent): void => {
 		insertAlertEvent.run(
 			config.sessionId,
@@ -220,7 +198,6 @@ const makeRecorder = (config: RecorderConfig): Recorder => {
 		lookupLlm,
 		recordAlertEvent,
 		recordFrame,
-		recordIdentityEvent,
 		recordLlmCall,
 		recordObservation,
 		sessionId: config.sessionId,

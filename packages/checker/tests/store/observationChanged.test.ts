@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { CandidateState, RaceObservation } from '../../src/reconcile/reconcile.js';
 
-import { observationChanged } from '../../src/runtime/observationChanged.js';
+import { observationChanged } from '../../src/store/observationChanged.js';
 
 const cand = (key: string, name: string, votes: number, pct: number): CandidateState => ({
 	key,

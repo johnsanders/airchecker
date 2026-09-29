@@ -6,10 +6,9 @@ import type { SessionGoldenDoc } from '../replay/sessionGolden.js';
 import makePlayer from '../replay/player.js';
 import { replaySessionTimeline } from '../replay/sessionGolden.js';
 
-// Freezes a recorded session into a self-contained golden doc — observations +
-// identity events + the expectations replaySessionTimeline derives from them —
-// so the replay test can re-run the store/reconciler path with no sqlite and
-// no API key.
+// Freezes a recorded session into a self-contained golden doc — its observations and
+// the expectations replaySessionTimeline derives from them — so the replay test can
+// re-run the whole pipeline with no sqlite and no API key.
 //
 //   node --import tsx src/tools/freezeSessionGolden.ts <sessionId> <goldenName>
 //   node --import tsx src/tools/freezeSessionGolden.ts --refreeze <path-to-session.json>
@@ -29,10 +28,8 @@ const writeDoc = (outPath: string, doc: SessionGoldenDoc): void => {
 const freeze = (sessionId: string, goldenName: string): void => {
 	const player = makePlayer({ baseDir: 'recordings', sessionId });
 	const observations = player.readObservations();
-	const identityEvents = player.readIdentityEvents();
 	player.close();
 
-	const expected = replaySessionTimeline({ identityEvents, observations });
 	const span = observations.reduce(
 		(acc, observation) => ({
 			from: Math.min(acc.from, observation.observedAt),
@@ -43,24 +40,26 @@ const freeze = (sessionId: string, goldenName: string): void => {
 
 	const outDir = join('recordings', 'goldens', 'sessions');
 	mkdirSync(outDir, { recursive: true });
-	const doc: SessionGoldenDoc = {
-		expected,
-		identityEvents,
+	writeDoc(join(outDir, `${goldenName}.session.json`), {
+		expected: replaySessionTimeline(observations),
 		name: goldenName,
 		observations,
 		sessionId,
 		span,
-	};
-	writeDoc(join(outDir, `${goldenName}.session.json`), doc);
+	});
 };
 
+// Rebuilds the doc from its own fields, so what an older freeze carried besides them
+// (recorded identity events) is dropped.
 const refreeze = (docPath: string): void => {
 	const doc = JSON.parse(readFileSync(docPath, 'utf8')) as SessionGoldenDoc;
-	const expected = replaySessionTimeline({
-		identityEvents: doc.identityEvents,
+	writeDoc(docPath, {
+		expected: replaySessionTimeline(doc.observations),
+		name: doc.name,
 		observations: doc.observations,
+		sessionId: doc.sessionId,
+		span: doc.span,
 	});
-	writeDoc(docPath, { ...doc, expected });
 };
 
 const run = (): void => {

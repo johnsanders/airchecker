@@ -12,12 +12,10 @@ export type SettingsStore = {
 	close: () => void;
 	getAirMatch: () => string | undefined;
 	getDdhqHost: () => DdhqHost;
-	getIdentityState: () => undefined | unknown;
 	getMode: () => Mode;
 	getQueries: () => string[];
 	setAirMatch: (match: string) => void;
 	setDdhqHost: (host: DdhqHost) => void;
-	setIdentityState: (state: unknown) => void;
 	setMode: (mode: Mode) => void;
 	setQueries: (queries: string[]) => void;
 };
@@ -25,7 +23,6 @@ export type SettingsStore = {
 const AIR_MATCH_KEY = 'air_match';
 // Holds the DDHQ host. It once held 'sim' too, before Sim became a mode of its own.
 const DDHQ_ENVIRONMENT_KEY = 'ddhq_environment';
-const IDENTITY_KEY = 'race_identity_state_v1';
 const MODE_KEY = 'mode';
 const QUERIES_KEY = 'ddhq_queries';
 
@@ -70,21 +67,14 @@ export const makeSettingsStore = (path: string): SettingsStore => {
 		return mode === 'sim' ? 'sim' : 'live';
 	};
 
-	const getIdentityState = (): undefined | unknown => {
-		const row = selectValue.get(IDENTITY_KEY) as { value: string } | undefined;
-		return row === undefined ? undefined : (JSON.parse(row.value) as unknown);
-	};
-
 	return {
 		close: () => db.close(),
 		getAirMatch,
 		getDdhqHost,
-		getIdentityState,
 		getMode,
 		getQueries,
 		setAirMatch: (match) => upsertValue.run(AIR_MATCH_KEY, JSON.stringify(match)),
 		setDdhqHost: (host) => upsertValue.run(DDHQ_ENVIRONMENT_KEY, JSON.stringify(host)),
-		setIdentityState: (state) => upsertValue.run(IDENTITY_KEY, JSON.stringify(state)),
 		setMode: (mode) => upsertValue.run(MODE_KEY, JSON.stringify(mode)),
 		setQueries: (queries) => upsertValue.run(QUERIES_KEY, JSON.stringify(queries)),
 	};

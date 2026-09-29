@@ -1,7 +1,6 @@
 import Database from 'better-sqlite3';
 import { join } from 'node:path';
 
-import type { RaceIdentityEvent } from '../identity/raceIdentity.js';
 import type { RaceObservation } from '../reconcile/reconcile.js';
 import type { AlertEvent } from '../runtime/alertLog.js';
 import type { LlmLookupResult } from './recorder.js';
@@ -21,7 +20,6 @@ export type Player = {
 	lookupLlm: (frameHash: null | string, promptHash: string) => LlmLookupResult | undefined;
 	readAlertEvents: () => AlertEvent[];
 	readFrames: () => FrameRow[];
-	readIdentityEvents: () => { event: RaceIdentityEvent; ts: number }[];
 	readObservations: () => RaceObservation[];
 	sessionId: string;
 };
@@ -41,15 +39,6 @@ const makePlayer = (config: PlayerConfig): Player => {
 	const selectFrames = db.prepare(
 		'SELECT seq, ts, frame_hash AS frameHash, path, width, height FROM frames WHERE session_id = ? ORDER BY seq ASC',
 	);
-	const hasIdentityEvents = db
-		.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'identity_events'")
-		.get() as { name: string } | undefined;
-	const selectIdentityEvents =
-		hasIdentityEvents === undefined
-			? undefined
-			: db.prepare(
-					'SELECT event_type AS eventType, payload, ts FROM identity_events WHERE session_id = ? ORDER BY seq ASC',
-				);
 	// Sessions recorded before alert history have no table; report none.
 	const hasAlertEvents = db
 		.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'alert_events'")
@@ -71,23 +60,6 @@ const makePlayer = (config: PlayerConfig): Player => {
 		);
 
 	const readFrames = (): FrameRow[] => selectFrames.all(config.sessionId) as FrameRow[];
-
-	const readIdentityEvents = (): { event: RaceIdentityEvent; ts: number }[] =>
-		selectIdentityEvents === undefined
-			? []
-			: (
-					selectIdentityEvents.all(config.sessionId) as {
-						eventType: RaceIdentityEvent['type'];
-						payload: string;
-						ts: number;
-					}[]
-				).map((row) => ({
-					event: {
-						payload: JSON.parse(row.payload) as RaceIdentityEvent['payload'],
-						type: row.eventType,
-					} as RaceIdentityEvent,
-					ts: row.ts,
-				}));
 
 	const lookupLlm = (frameHash: null | string, promptHash: string): LlmLookupResult | undefined => {
 		const row =
@@ -119,7 +91,6 @@ const makePlayer = (config: PlayerConfig): Player => {
 		lookupLlm,
 		readAlertEvents,
 		readFrames,
-		readIdentityEvents,
 		readObservations,
 		sessionId: config.sessionId,
 	};

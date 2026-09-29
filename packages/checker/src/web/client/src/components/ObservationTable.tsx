@@ -9,21 +9,11 @@ import React from 'react';
 import type { Observation } from '../api.js';
 
 import { sourceLabel } from '../api.js';
-import { pct } from '../format.js';
+import { clockTime, graphicLabel, pct } from '../format.js';
 
 interface Props {
 	observations: Observation[];
-	onSelect?: (observation: Observation) => void;
-	show: 'race' | 'source'; // the column that tells rows apart: the race (air reads) or the source (one race)
 }
-
-const GRAPHIC_LABELS: Record<string, string> = {
-	fullscreen_results: 'FS',
-	lower_third: 'L3',
-	ticker_v1: 'Ticker',
-};
-
-const time = (ts: number): string => new Date(ts).toLocaleTimeString('en-US', { hour12: false });
 
 const pctIn = (observation: Observation): string =>
 	`${observation.pctInIsMinimum === true ? '>' : ''}${pct(observation.pctIn)}%`;
@@ -35,7 +25,7 @@ const ObservationTable: React.FC<Props> = (props) => (
 			<TableHead>
 				<TableRow>
 					<TableCell>Time</TableCell>
-					<TableCell>{props.show === 'race' ? 'Race' : 'Source'}</TableCell>
+					<TableCell>Source</TableCell>
 					<TableCell>Graphic</TableCell>
 					<TableCell align="right">% in</TableCell>
 					<TableCell>Candidates</TableCell>
@@ -44,23 +34,14 @@ const ObservationTable: React.FC<Props> = (props) => (
 			<TableBody>
 				{props.observations.map((observation) => (
 					<TableRow
-						hover={props.onSelect !== undefined}
 						key={`${observation.observedAt} ${observation.source} ${observation.templateId ?? ''} ${observation.raceKey}`}
-						onClick={() => props.onSelect?.(observation)}
-						sx={props.onSelect === undefined ? {} : { cursor: 'pointer' }}
 					>
 						<TableCell sx={{ fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
-							{time(observation.observedAt)}
+							{clockTime(observation.observedAt)}
 						</TableCell>
-						<TableCell sx={{ whiteSpace: 'nowrap' }}>
-							{props.show === 'race'
-								? (observation.sourceRaceKey ?? observation.raceKey)
-								: sourceLabel(observation.source)}
-						</TableCell>
+						<TableCell sx={{ whiteSpace: 'nowrap' }}>{sourceLabel(observation.source)}</TableCell>
 						<TableCell>
-							{observation.source === 'air'
-								? (GRAPHIC_LABELS[observation.templateId ?? ''] ?? observation.templateId ?? '—')
-								: ''}
+							{observation.source === 'air' ? graphicLabel(observation.templateId) : ''}
 						</TableCell>
 						<TableCell align="right">{pctIn(observation)}</TableCell>
 						<TableCell>

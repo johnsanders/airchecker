@@ -5,7 +5,7 @@ import { join } from 'node:path';
 // What recorded sessions hold and cost on disk, plus pruning a session's frame PNGs
 // or deleting a session outright.
 // Frames are the bulk (~1 GB per broadcast hour at the default cadence); the sqlite
-// keeps the observations, LLM calls, identity and alert events, so a pruned session
+// keeps the observations, LLM calls and alert events, so a pruned session
 // still replays and freezes — only capture-golden --from-session needs the PNGs.
 
 export type DiskUsage = { freeBytes: number; totalBytes: number };

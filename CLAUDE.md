@@ -20,7 +20,7 @@ The repo-wide files live only at the root: `tsconfig.json`, `eslint.config.js`, 
 
 **npm scripts are only for what a human types.** Run them from the package directory (`cd packages/checker && npm run backend`) or from the root with `-w` (`npm run backend -w checker`). Dev tools run directly from the package directory: `node --env-file-if-exists=../../.env --import tsx src/tools/<tool>.ts`. There are no lint or format scripts: `npx eslint --fix <changed files>`, hand-fix what's left, then `npx eslint .`. Don't add convenience scripts.
 
-**One `.env`, at the root** (gitignored). The checker needs `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `DDHQ_CLIENT_ID`, `DDHQ_CLIENT_SECRET` and `DDHQ_GRANT_TYPE`, plus `OPENROUTER_API_KEY` for model trials. The simulator needs the same three DDHQ vars. Each package's scripts load it with `--env-file-if-exists=../../.env`.
+**One `.env`, at the root** (gitignored). The checker needs `GEMINI_API_KEY`, `DDHQ_CLIENT_ID`, `DDHQ_CLIENT_SECRET` and `DDHQ_GRANT_TYPE`, plus `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` for trials of other models. The simulator needs the same three DDHQ vars. Each package's scripts load it with `--env-file-if-exists=../../.env`.
 
 **Runtime data stays inside its package**, resolved relative to the package directory: `packages/checker/recordings/` (sessions, `settings.sqlite`, and the committed goldens and reference frames) and `packages/simulator/recordings/` + `settings.json`. That's why tests and servers run with cwd = their package.
 

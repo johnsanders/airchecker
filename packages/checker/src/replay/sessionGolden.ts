@@ -1,6 +1,4 @@
-import type { RaceIdentityEvent } from '../identity/raceIdentity.js';
 import type {
-	Anomaly,
 	AnomalyType,
 	Owner,
 	RaceObservation,
@@ -8,14 +6,12 @@ import type {
 	SourceName,
 } from '../reconcile/reconcile.js';
 
-import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
-import { makeAlertLog } from '../runtime/alertLog.js';
-import { makeAnomalyTracker } from '../runtime/anomalyTracker.js';
 import makeComposition from '../runtime/composition.js';
 
-// A session golden freezes what the store + reconciler emit over a recorded
-// timeline. It deliberately drops Anomaly.involves — full observations there
-// would bloat the doc, and the frozen inputs already carry them.
+// A session golden freezes what the pipeline makes of a recorded timeline: the alert
+// events it raises, what stands at the end, how many air races it linked, and what the
+// store holds. It deliberately keeps no observations in its expectations: they would bloat
+// the doc, and the frozen inputs already carry them.
 export type FrozenAnomaly = {
 	detail: string;
 	observedAt: number;
@@ -29,14 +25,12 @@ export type ObservationBatch = { observations: RaceObservation[]; ts: number };
 
 export type SessionExpectations = {
 	alertEvents: { cleared: number; raised: number };
+	// Every distinct thing an alert was raised for, in the order first raised.
 	distinctAnomalies: FrozenAnomaly[];
+	// What the latest read of each aired race found.
 	finalAnomalies: FrozenAnomaly[];
-	identity: {
-		aliasesByMethod: Record<string, number>;
-		canonicalCount: number;
-		proposalsByStatus: Record<string, number>;
-		provisionalCount: number;
-	};
+	// Aired races by whether their latest read was linked to a race DDHQ or Ross reported.
+	links: { linked: number; unlinked: number };
 	store: {
 		raceCount: number;
 		retainedBySource: Record<string, number>;
@@ -45,54 +39,27 @@ export type SessionExpectations = {
 
 export type SessionGoldenDoc = {
 	expected: SessionExpectations;
-	identityEvents: TimedIdentityEvent[];
 	name: string;
 	observations: RaceObservation[];
 	sessionId: string;
 	span: { from: number; to: number };
 };
 
-export type SessionTimelineInputs = {
-	identityEvents: TimedIdentityEvent[];
-	observations: RaceObservation[];
-};
-
-export type TimedIdentityEvent = { event: RaceIdentityEvent; ts: number };
-
-export type TimelineItem =
-	| { batch: ObservationBatch; kind: 'batch'; ts: number }
-	| { event: TimedIdentityEvent; kind: 'event'; ts: number };
-
-const toFrozenAnomaly = (anomaly: Anomaly): FrozenAnomaly => ({
+const frozen = (anomaly: Omit<FrozenAnomaly, 'observedAt'>, observedAt: number): FrozenAnomaly => ({
 	detail: anomaly.detail,
-	observedAt: anomaly.observedAt,
+	observedAt,
 	owner: anomaly.owner,
 	raceKey: anomaly.raceKey,
 	severity: anomaly.severity,
 	type: anomaly.type,
 });
 
-const distinctKey = (anomaly: Anomaly): string =>
-	JSON.stringify({
-		detail: anomaly.detail,
-		owner: anomaly.owner,
-		raceKey: anomaly.raceKey,
-		severity: anomaly.severity,
-		type: anomaly.type,
-	});
+const distinctKey = (anomaly: FrozenAnomaly): string =>
+	JSON.stringify({ ...anomaly, observedAt: undefined });
 
-const countBy = <T>(items: T[], keyOf: (item: T) => string): Record<string, number> =>
-	Object.fromEntries(
-		Object.entries(
-			items.reduce<Record<string, number>>((counts, item) => {
-				counts[keyOf(item)] = (counts[keyOf(item)] ?? 0) + 1;
-				return counts;
-			}, {}),
-		).sort(([keyA], [keyB]) => (keyA < keyB ? -1 : 1)),
-	);
-
-// Sources stamp one observedAt per poll/capture, so grouping by identical
-// observedAt recovers the original ingest batches.
+// Sources stamp one observedAt per poll/capture, so grouping by identical observedAt
+// recovers the original ingest batches. In time order: an air read is stamped when the
+// frame was captured, seconds before it was read and recorded.
 export const batchByObservedAt = (observations: RaceObservation[]): ObservationBatch[] =>
 	Array.from(
 		observations
@@ -102,87 +69,39 @@ export const batchByObservedAt = (observations: RaceObservation[]): ObservationB
 				return batches.set(observation.observedAt, list);
 			}, new Map())
 			.entries(),
-	).map(([ts, batched]) => ({ observations: batched, ts }));
+	)
+		.map(([ts, batched]) => ({ observations: batched, ts }))
+		.sort((a, b) => a.ts - b.ts);
 
-// The session's observation batches and identity events in time order. Stable
-// merge; on a ts tie the observation batch is processed before events. Shared by
-// the golden freeze and the live replay so both batch a session identically.
-export const buildTimeline = (inputs: SessionTimelineInputs): TimelineItem[] =>
-	[
-		...batchByObservedAt(inputs.observations).map((batch): TimelineItem => ({
-			batch,
-			kind: 'batch',
-			ts: batch.ts,
-		})),
-		...inputs.identityEvents.map((timed): TimelineItem => ({
-			event: timed,
-			kind: 'event',
-			ts: timed.ts,
-		})),
-	].sort((a, b) => a.ts - b.ts || (a.kind === 'batch' ? 0 : 1) - (b.kind === 'batch' ? 0 : 1));
+export const replaySessionTimeline = (observations: RaceObservation[]): SessionExpectations => {
+	const composition = makeComposition({ alertCapacity: Number.MAX_SAFE_INTEGER });
+	batchByObservedAt(observations).forEach((batch) => composition.ingest(batch.observations));
 
-export const replaySessionTimeline = (inputs: SessionTimelineInputs): SessionExpectations => {
-	const composition = makeComposition();
-	const tracker = makeAnomalyTracker(composition.thresholds);
-	const alertLog = makeAlertLog({ capacity: Number.MAX_SAFE_INTEGER });
-	const resolver = makeRaceIdentityResolver();
-	const distinct = new Map<string, FrozenAnomaly>();
-
-	const reconcileKeys = (raceKeys: string[], now: number): void => {
-		Array.from(new Set(raceKeys)).forEach((raceKey) => {
-			// "Everything that would have alerted" = what the tracker emitted after
-			// hysteresis, not the raw rule output.
-			const diff = tracker.update(raceKey, composition.reconcileRace(raceKey, now));
-			alertLog.record(diff, now);
-			diff.raised.forEach((anomaly) => {
-				const key = distinctKey(anomaly);
-				if (!distinct.has(key)) distinct.set(key, toFrozenAnomaly(anomaly));
-			});
-		});
-	};
-
-	const applyBatch = (batch: ObservationBatch): void => {
-		batch.observations.forEach(composition.store.record);
-		reconcileKeys(
-			batch.observations.map((observation) => observation.raceKey),
-			batch.ts,
-		);
-	};
-
-	const applyIdentityEvent = (timed: TimedIdentityEvent): void => {
-		resolver.applyEvent(timed.event);
-		if (timed.event.type !== 'alias_upsert') return;
-		const result = composition.store.rekeySourceRace(
-			timed.event.payload.source,
-			timed.event.payload.sourceRaceKey,
-			timed.event.payload.canonicalRaceKey,
-		);
-		if (result.fromRaceKeys.length === 0) return; // nothing actually re-bucketed
-		reconcileKeys([...result.fromRaceKeys, result.toRaceKey], timed.ts);
-	};
-
-	buildTimeline(inputs).forEach((item) => {
-		if (item.kind === 'batch') applyBatch(item.batch);
-		else applyIdentityEvent(item.event);
-	});
-
-	const snapshot = resolver.getSnapshot();
+	const events = composition.alertLog.recent(Number.MAX_SAFE_INTEGER).reverse();
+	const latest = composition.latestReads();
 	const raceKeys = composition.store.getRaceKeys();
 	const sources: SourceName[] = ['air', 'DDHQ', 'Ross'];
 
-	const events = alertLog.recent(Number.MAX_SAFE_INTEGER);
 	return {
 		alertEvents: {
 			cleared: events.filter((event) => event.kind === 'cleared').length,
 			raised: events.filter((event) => event.kind === 'raised').length,
 		},
-		distinctAnomalies: Array.from(distinct.values()),
-		finalAnomalies: tracker.list().map(toFrozenAnomaly),
-		identity: {
-			aliasesByMethod: countBy(snapshot.aliases, (alias) => alias.method),
-			canonicalCount: snapshot.canonicalRaces.length,
-			proposalsByStatus: countBy(snapshot.proposals, (proposal) => proposal.status),
-			provisionalCount: snapshot.canonicalRaces.filter((race) => race.provisional).length,
+		distinctAnomalies: Array.from(
+			new Map(
+				events
+					.filter((event) => event.kind === 'raised')
+					.map((event) => frozen(event, event.ts))
+					.reverse()
+					.map((anomaly) => [distinctKey(anomaly), anomaly]),
+			).values(),
+		).reverse(),
+		finalAnomalies: latest.flatMap((checked) =>
+			checked.anomalies.map((anomaly) => frozen(anomaly, anomaly.observedAt)),
+		),
+		links: {
+			linked: latest.filter(({ read }) => read.raceKey !== read.sourceRaceKey).length,
+			unlinked: latest.filter(({ read }) => read.raceKey === read.sourceRaceKey).length,
 		},
 		store: {
 			raceCount: raceKeys.length,

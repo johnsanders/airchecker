@@ -5,6 +5,7 @@ import type { CandidateState, RaceObservation, SourceName } from '../src/reconci
 import reconcile, {
 	checkCrossSurface,
 	checkVoteDrop,
+	comparedVendorState,
 	normalizeName,
 } from '../src/reconcile/reconcile.js';
 import defaultThresholds from '../src/reconcile/thresholds.js';
@@ -121,43 +122,65 @@ describe('name mismatch', () => {
 });
 
 describe('vote total reconciliation', () => {
-	it('passes when air vote total matches some vendor snapshot inside lag window', () => {
-		const vendor1 = observation({
-			at: 990_000,
-			candidates: [{ key: 'A', name: 'Jane Smith', votes: 200 }],
+	const ross = (at: number, votes: number, pctIn = 50): RaceObservation =>
+		observation({
+			at,
+			candidates: [{ key: 'A', name: 'Jane Smith', votes }],
+			pctIn,
 			source: 'Ross',
 		});
-		const vendor2 = observation({
-			at: 999_000,
-			candidates: [{ key: 'A', name: 'Jane Smith', votes: 220 }],
-			source: 'Ross',
-		});
-		const air = observation({
+	const air = (votes: number, pctIn = 50): RaceObservation =>
+		observation({
 			at: 1_000_000,
-			candidates: [{ key: 'A', name: 'Jane Smith', votes: 200 }],
+			candidates: [{ key: 'A', name: 'Jane Smith', votes }],
+			pctIn,
 			source: 'air',
 			templateId: 'ticker_v1',
 		});
-		const result = reconcile(baseInput({ airHistory: [air], vendorHistory: [vendor1, vendor2] }));
-		expect(result.filter((a) => a.type === 'votes_mismatch')).toHaveLength(0);
+	const mismatches = (airObservation: RaceObservation, vendorHistory: RaceObservation[]) =>
+		reconcile(baseInput({ airHistory: [airObservation], vendorHistory })).filter(
+			(a) => a.type === 'votes_mismatch',
+		);
+
+	it('passes when the graphic matches a Ross state from the lag window, though Ross has moved on', () =>
+		expect(mismatches(air(200), [ross(990_000, 200), ross(999_000, 220)])).toHaveLength(0));
+
+	it('flags when the graphic matches no Ross state in the lag window', () => {
+		const found = mismatches(air(99_999), [ross(990_000, 200)]);
+		expect(found).toHaveLength(1);
+		expect(found[0]!.severity).toBe('high');
+		expect(found[0]!.detail).toBe('Air shows 99,999 for Jane Smith; Ross had 200');
 	});
 
-	it('flags when air vote total appears nowhere in the lag window', () => {
-		const vendor = observation({
-			at: 990_000,
-			candidates: [{ key: 'A', name: 'Jane Smith', votes: 200 }],
-			source: 'Ross',
-		});
-		const air = observation({
-			at: 1_000_000,
-			candidates: [{ key: 'A', name: 'Jane Smith', votes: 99_999 }],
-			source: 'air',
-			templateId: 'ticker_v1',
-		});
-		const result = reconcile(baseInput({ airHistory: [air], vendorHistory: [vendor] }));
-		const mismatches = result.filter((a) => a.type === 'votes_mismatch');
-		expect(mismatches).toHaveLength(1);
-		expect(mismatches[0]!.severity).toBe('high');
+	it('never skips the check: what Ross said long before the read still stands', () => {
+		// Ross said it 10 minutes before the read and nothing since, so that is its state.
+		expect(mismatches(air(200), [ross(400_000, 200)])).toHaveLength(0);
+		expect(mismatches(air(201), [ross(400_000, 200)])).toHaveLength(1);
+	});
+
+	it('flags a graphic still showing what Ross stopped saying before the lag window', () =>
+		// 200 was replaced a minute before the read; air had 35 s to catch up.
+		expect(mismatches(air(200), [ross(400_000, 200), ross(940_000, 220)])).toHaveLength(1));
+
+	it('ignores what Ross said after the read', () =>
+		expect(mismatches(air(220), [ross(990_000, 200), ross(1_000_001, 220)])).toHaveLength(1));
+
+	it('holds the graphic against one Ross state, not a figure from each', () => {
+		// The votes are the earlier state's and the % in the later one's: no state had both.
+		const found = reconcile(
+			baseInput({
+				airHistory: [air(200, 60)],
+				vendorHistory: [ross(990_000, 200, 50), ross(999_000, 220, 60)],
+			}),
+		).map((a) => a.type);
+		expect(found).toHaveLength(1);
+	});
+
+	it('compares against the state the graphic disagrees with least, the newest on a tie', () => {
+		const history = [ross(990_000, 200, 50), ross(995_000, 210, 50), ross(999_000, 220, 50)];
+		expect(comparedVendorState(air(210), history, defaultThresholds)?.observedAt).toBe(995_000);
+		expect(comparedVendorState(air(999), history, defaultThresholds)?.observedAt).toBe(999_000);
+		expect(comparedVendorState(air(210), [], defaultThresholds)).toBeUndefined();
 	});
 });
 
@@ -180,7 +203,7 @@ describe('pct_in reconciliation', () => {
 		expect(result.filter((a) => a.type === 'pct_in_mismatch')).toHaveLength(0);
 	});
 
-	it('flags when pct_in is far from any vendor snapshot in window', () => {
+	it('flags when pct_in is far from every vendor state in the window', () => {
 		const vendor = observation({
 			at: 995_000,
 			candidates: [{ key: 'A', name: 'Jane Smith', votes: 100 }],
@@ -215,6 +238,31 @@ describe('call consistency', () => {
 		});
 		const result = reconcile(baseInput({ airHistory: [air], providerHistory: [provider] }));
 		expect(result.find((a) => a.type === 'premature_call')).toBeDefined();
+	});
+
+	it('does not flag a call the graphic could have drawn from Ross, though DDHQ was not seen making it', () => {
+		const provider = observation({
+			at: 990_000,
+			candidates: [{ key: 'A', name: 'Jane Smith', votes: 100 }],
+			source: 'DDHQ',
+		});
+		const vendor = observation({
+			at: 995_000,
+			calledFor: 'c1',
+			candidates: [{ key: 'c1', name: 'Jane Smith', votes: 100 }],
+			source: 'Ross',
+		});
+		const air = observation({
+			at: 1_000_000,
+			calledFor: 'Jane Smith',
+			candidates: [{ key: 'Jane Smith', name: 'Jane Smith', votes: 100 }],
+			source: 'air',
+			templateId: 'ticker_v1',
+		});
+		const result = reconcile(
+			baseInput({ airHistory: [air], providerHistory: [provider], vendorHistory: [vendor] }),
+		);
+		expect(result).toHaveLength(0);
 	});
 
 	it('flags call_mismatch when air calls a different candidate than provider', () => {
@@ -472,30 +520,6 @@ describe('cross-surface consistency', () => {
 	});
 });
 
-describe('air ahead of upstream', () => {
-	it('flags when air vote totals exceed any provider snapshot at or near the same time', () => {
-		const provider = observation({
-			at: 1_000_001,
-			candidates: [{ key: 'A', name: 'Jane Smith', votes: 100 }],
-			source: 'DDHQ',
-		});
-		const air = observation({
-			at: 1_000_000,
-			candidates: [{ key: 'A', name: 'Jane Smith', votes: 500 }],
-			source: 'air',
-			templateId: 'ticker_v1',
-		});
-		const result = reconcile(
-			baseInput({
-				airHistory: [air],
-				now: 1_000_002,
-				providerHistory: [provider],
-			}),
-		);
-		expect(result.find((a) => a.type === 'air_ahead_of_upstream')).toBeDefined();
-	});
-});
-
 describe('pct_in floor (">95% IN")', () => {
 	const air = observation({
 		at: 1_000_000,
@@ -506,7 +530,7 @@ describe('pct_in floor (">95% IN")', () => {
 	});
 	const vendorAt = (pctIn: number): RaceObservation =>
 		observation({
-			at: 1_000_000 - defaultThresholds.vendorToAirLagMs,
+			at: 992_000,
 			candidates: [{ key: 'a', votes: 100 }],
 			pctIn,
 			source: 'Ross',
@@ -586,7 +610,7 @@ describe('required field missing on air', () => {
 		templateId: 'fullscreen_results',
 	});
 	const vendor = observation({
-		at: 1_000_000 - defaultThresholds.vendorToAirLagMs,
+		at: 992_000,
 		candidates: [{ key: 'a', votes: 100 }],
 		pctIn: 68,
 		source: 'Ross',

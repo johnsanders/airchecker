@@ -6,21 +6,16 @@ import React from 'react';
 import type { AlertEvent } from '../api.js';
 
 import { api } from '../api.js';
-import { ago } from '../format.js';
+import { ago, SEVERITY_COLOR } from '../format.js';
 import { useLiveQuery } from '../useLiveQuery.js';
 
 interface Props {
 	onSelectRace: (raceKey: string) => void;
 }
 
-const SEV_COLOR: Record<string, 'default' | 'error' | 'warning'> = {
-	high: 'error',
-	low: 'default',
-	medium: 'warning',
-};
-
-// The append-only feed of raise/clear transitions, newest first. Standing alerts
-// clear on the next clean poll, so this is where a one-poll event stays visible.
+// The append-only feed of what air reads found, newest first: a finding is raised when a
+// read has it and the previous read of that race on that graphic didn't, and cleared when
+// a later one no longer does. It outlasts the list, which holds 30 minutes.
 const AlertHistory: React.FC<Props> = (props) => {
 	const { data } = useLiveQuery<{ events: AlertEvent[] }>(() => api.getAlertHistory(100));
 	const events = data?.events ?? [];
@@ -54,7 +49,7 @@ const AlertHistory: React.FC<Props> = (props) => {
 						{ago(event.ts)}
 					</Typography>
 					<Chip
-						color={event.kind === 'raised' ? (SEV_COLOR[event.severity] ?? 'default') : 'default'}
+						color={event.kind === 'raised' ? SEVERITY_COLOR[event.severity] : 'default'}
 						label={event.kind}
 						size="small"
 						sx={{ fontSize: 10, height: 18, minWidth: 58 }}

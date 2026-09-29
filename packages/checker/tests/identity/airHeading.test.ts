@@ -17,6 +17,21 @@ describe('parseAirHeading', () => {
 		expect(parseAirHeading('NE GOVERNOR')).toMatchObject({ office: 'GOVERNOR', state: 'NE' });
 	});
 
+	it('reads the district from the second line the ticker prints', () => {
+		expect(parseAirHeading('WI U.S. HOUSE (D) DISTRICT 7')).toEqual({
+			district: '7',
+			office: 'USHOUSE',
+			party: 'D',
+			state: 'WI',
+		});
+		expect(parseAirHeading('MN U.S. HOUSE DISTRICT 2')).toEqual({
+			district: '2',
+			office: 'USHOUSE',
+			party: 'NP',
+			state: 'MN',
+		});
+	});
+
 	it('refuses a heading that does not start with a state', () =>
 		expect(parseAirHeading('BREAKING NEWS')).toBeUndefined());
 });
@@ -53,15 +68,16 @@ describe('airHeadingMatches', () => {
 			expect(airHeadingMatches(heading('TX-15 U.S. HOUSE'), NAMES, raceKey, NAMES)).toBe(false),
 		));
 
-	it('requires every surname on the graphic to be on the ballot', () => {
+	it('requires a surname on the graphic to be on the ballot', () => {
 		const raceKey = '2026-TX-US_House-15-NP-General_Election';
 		const ballot = ['Jane Q. Smith', 'John Doe Jr.'];
-		expect(
-			airHeadingMatches(heading('TX-15 U.S. HOUSE'), ['JANE SMITH', 'John Doe'], raceKey, ballot),
-		).toBe(true);
-		expect(
-			airHeadingMatches(heading('TX-15 U.S. HOUSE'), ['Jane Smith', 'Pat Other'], raceKey, ballot),
-		).toBe(false);
-		expect(airHeadingMatches(heading('TX-15 U.S. HOUSE'), [], raceKey, ballot)).toBe(false);
+		const matches = (names: string[]): boolean =>
+			airHeadingMatches(heading('TX-15 U.S. HOUSE'), names, raceKey, ballot);
+		expect(matches(['JANE SMITH', 'John Doe'])).toBe(true);
+		// One name misspelled on the graphic: still this race, where it will be flagged.
+		expect(matches(['Jane Smyth', 'John Doe'])).toBe(true);
+		// Another race's candidates under a misread district.
+		expect(matches(['Pat Other', 'Sam Else'])).toBe(false);
+		expect(matches([])).toBe(false);
 	});
 });

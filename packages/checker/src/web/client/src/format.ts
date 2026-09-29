@@ -11,3 +11,27 @@ export const ago = (ts: null | number | undefined): string => {
 // 63.814 → "63.81". null/undefined → "—". Callers append the literal "%".
 export const pct = (value: null | number | undefined): string =>
 	value === null || value === undefined ? '—' : `${Math.round(value * 100) / 100}`;
+
+const GRAPHIC_LABELS: Record<string, string> = {
+	fullscreen_results: 'FS',
+	lower_third: 'L3',
+	ticker_v1: 'Ticker',
+};
+
+// Short name for the on-air template a read came from.
+export const graphicLabel = (templateId: null | string | undefined): string =>
+	GRAPHIC_LABELS[templateId ?? ''] ?? templateId ?? '—';
+
+// 24-hour wall-clock time of an epoch-ms timestamp.
+export const clockTime = (ts: number): string =>
+	new Date(ts).toLocaleTimeString('en-US', { hour12: false });
+
+export type Severity = 'high' | 'low' | 'medium';
+
+export const SEVERITY_ORDER: Record<Severity, number> = { high: 0, low: 2, medium: 1 };
+
+export const SEVERITY_COLOR: Record<Severity, 'default' | 'error' | 'warning'> = {
+	high: 'error',
+	low: 'default',
+	medium: 'warning',
+};

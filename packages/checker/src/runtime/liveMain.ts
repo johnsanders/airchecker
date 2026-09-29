@@ -4,7 +4,6 @@ import type { MatchStore } from '../sources/air/matchStore.js';
 import type { DdhqHost, Mode } from '../sources/provider/providerSource.js';
 import type { QueryStore } from '../sources/provider/queryStore.js';
 
-import { makeRaceIdentityResolver } from '../identity/raceIdentity.js';
 import { makeSessionFiles } from '../replay/sessionFiles.js';
 import { makeSettingsStore } from '../settings/settingsStore.js';
 import { makeAirSource } from '../sources/air/airSource.js';
@@ -23,11 +22,8 @@ import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { makeRecordingLlmClient } from '../vision/llmClient.js';
 import { makeChangeBus } from '../web/changeBus.js';
 import { makeWebServer } from '../web/server.js';
-import { makeAlertLog } from './alertLog.js';
-import { makeAnomalyTracker } from './anomalyTracker.js';
 import makeComposition from './composition.js';
 import { makeLiveSession } from './liveSession.js';
-import { observationChanged } from './observationChanged.js';
 import { makeSourceErrors } from './sourceErrors.js';
 
 //   CAPTURE_MODE=interval|manual     air cadence (default interval)
@@ -43,9 +39,7 @@ const readIntervalMs = (): number => {
 const liveMain = async (): Promise<void> => {
 	const missingKeys = missingLiveKeys();
 	if (missingKeys.length > 0) {
-		console.error(
-			`${missingKeys.join(', ')} not set — live vision needs both (Haiku on Anthropic for pass 1, Gemini via OpenRouter for the crop read).`,
-		);
+		console.error(`${missingKeys.join(', ')} not set — air is read by Gemini, direct from Google.`);
 		process.exit(1);
 	}
 	// Pollers and the air scheduler are created further down; the session only needs
@@ -64,22 +58,25 @@ const liveMain = async (): Promise<void> => {
 	const session = makeLiveSession({
 		baseDir: 'recordings',
 		meta: () => ({ mode }),
-		onStart: () => monitored.forEach((scheduler) => scheduler.start()),
+		// Arrow bodies, not references: the composition and schedulers are made further down.
+		onStart: () => {
+			composition.reset();
+			monitored.forEach((scheduler) => scheduler.start());
+		},
 		onStop: () => monitored.forEach((scheduler) => scheduler.stop()),
 	});
 	const recorder = session.recorder;
-	const composition = makeComposition({ onRecord: recorder.recordObservation });
+	// Every alert event is appended to the session recording and printed as one JSON line
+	// (`[alert] {...}`), so `tail -f` of the process log works in the truck.
+	const composition = makeComposition({
+		onAlertEvent: (event) => {
+			recorder.recordAlertEvent(event);
+			console.log(`[alert] ${JSON.stringify(event)}`);
+		},
+		onRecord: recorder.recordObservation,
+	});
 
 	const llmClient = makeRecordingLlmClient(makeLiveLlmClient(), recorder);
-	const raceIdentity = makeRaceIdentityResolver({
-		llmClient,
-		onError: (error) => console.error('[identity] resolver error', error),
-		onEvent: recorder.recordIdentityEvent,
-		// Arrow, not a reference: applyRelink is defined below, once the store exists.
-		onRelink: (source, sourceRaceKey, canonicalRaceKey) =>
-			applyRelink(source, sourceRaceKey, canonicalRaceKey),
-		settings,
-	});
 
 	// Pushes a "changed" nudge to live web clients so they refetch on demand instead
 	// of polling on a timer. Broadcast wherever server state settles.
@@ -88,66 +85,20 @@ const liveMain = async (): Promise<void> => {
 		onChange: () => changeBus.broadcast({ type: 'changed' }),
 	});
 
-	// Current anomalies per race for the web view. Reconciliation re-runs on every
-	// batch over the races it touched; the tracker replaces a race's anomalies each
-	// time, so a standing anomaly shows once and a resolved one clears (rather than
-	// re-appending duplicates every poll).
-	const anomalies = makeAnomalyTracker(composition.thresholds);
-	// Every raise/clear is appended to the session recording and printed as one JSON
-	// line (`[alert] {...}`), so a transient alert survives an operator's blink and
-	// `tail -f` of the process log works in the truck.
-	const alertLog = makeAlertLog({
-		onEvent: (event) => {
-			recorder.recordAlertEvent(event);
-			console.log(`[alert] ${JSON.stringify(event)}`);
-		},
-	});
-	const reconcileKeys = (raceKeys: Iterable<string>): void => {
-		const now = Date.now();
-		const events = Array.from(new Set(raceKeys)).flatMap((raceKey) =>
-			alertLog.record(anomalies.update(raceKey, composition.reconcileRace(raceKey, now)), now),
+	// Clients are only nudged about races something new was recorded for: DDHQ and Ross
+	// repeat themselves every poll, and air emits an empty batch when no graphic is up.
+	// One nudge covers the air frame panel too: an air capture awaits this before setting
+	// its lastFrame, so /api/state is already current when the client reads.
+	const ingest = (observations: RaceObservation[]): RaceObservation[] => {
+		const ingested = composition.ingest(observations);
+		const raceKeys = Array.from(
+			new Set([
+				...ingested.recorded.map((observation) => observation.raceKey),
+				...ingested.events.map((event) => event.raceKey),
+			]),
 		);
-		if (events.length > 0)
-			changeBus.broadcast({ raceKeys: events.map((event) => event.raceKey), type: 'changed' });
-	};
-	const reconcileTouched = (observations: RaceObservation[]): void => {
-		reconcileKeys(observations.map((o) => o.raceKey));
-	};
-	const ingest = async (observations: RaceObservation[]): Promise<RaceObservation[]> => {
-		const resolved = await Promise.all(
-			observations.map((observation) => raceIdentity.resolveObservation(observation)),
-		);
-		// Only nudge clients about races whose rendered data actually moved — sources
-		// re-poll on a timer and append identical observations (and air emits an empty
-		// batch when no graphic is up), which must not read as a change. Computed before
-		// record() so we compare against the prior latest.
-		const changedKeys = Array.from(
-			new Set(
-				resolved
-					.filter((observation) => {
-						const history = composition.store.getHistory(observation.source, observation.raceKey);
-						return observationChanged(history[history.length - 1], observation);
-					})
-					.map((observation) => observation.raceKey),
-			),
-		);
-		resolved.forEach(composition.store.record);
-		reconcileTouched(resolved);
-		// One nudge covers every source and the air frame panel: an air capture awaits
-		// this ingest before setting its lastFrame (synchronously, before any client
-		// refetch could return), so /api/state is already current when the client reads.
-		if (changedKeys.length > 0) changeBus.broadcast({ raceKeys: changedKeys, type: 'changed' });
-		return resolved;
-	};
-	const applyRelink = (
-		source: RaceObservation['source'],
-		sourceRaceKey: string,
-		canonicalRaceKey: string,
-	): void => {
-		const result = composition.store.rekeySourceRace(source, sourceRaceKey, canonicalRaceKey);
-		if (result.fromRaceKeys.length === 0) return; // nothing actually re-bucketed
-		reconcileKeys([...result.fromRaceKeys, result.toRaceKey]);
-		changeBus.broadcast({ raceKeys: [...result.fromRaceKeys, result.toRaceKey], type: 'changed' });
+		if (raceKeys.length > 0) changeBus.broadcast({ raceKeys, type: 'changed' });
+		return ingested.observations;
 	};
 
 	// Air source: real browser capture → extractFrame → store. Driven by the cadence
@@ -246,7 +197,7 @@ const liveMain = async (): Promise<void> => {
 		`[provider] ${mode} mode, DDHQ ${ddhqBaseUrl(mode, ddhqHost)} polling every ${provider.intervalMs}ms.`,
 	);
 
-	// Chameleon vendor source — fixed playlist URL, always on, once per minute (VPN-only).
+	// Chameleon vendor source — fixed playlist URL (VPN-only).
 	const vendor = makeVendorSource(ingest, { getMode: () => mode });
 	const vendorScheduler = makeCaptureScheduler({
 		captureOnce: () => vendor.poller.pollOnce().then(() => sourceErrors.ok('Ross')),
@@ -259,27 +210,23 @@ const liveMain = async (): Promise<void> => {
 	monitored.push(vendorScheduler);
 	console.log(`[vendor] Chameleon polling every ${vendor.intervalMs}ms.`);
 
-	// Web view: state per source, recent alerts, last frame, manual capture button,
-	// editable DDHQ queries.
+	// Web view: the on-air list, state per source, alert events, last frame, manual capture
+	// button, editable DDHQ queries.
 	const webPort = Number(process.env.WEB_PORT) || 8787;
 	const web = makeWebServer({
 		changeBus,
+		composition,
 		ddhqHost: ddhqHostControl,
-		getAlertHistory: alertLog.recent,
 		getCadence: airScheduler.getConfig,
 		getLastFrame: airSource.getLastFrame,
-		getRecentAlerts: anomalies.list,
 		getSourceError: sourceErrors.get,
+		getSourceLastOk: sourceErrors.lastOk,
 		matchStore,
 		mode: modeControl,
-		onRaceRelink: applyRelink,
 		queryStore: provider.queryStore,
-		raceIdentity,
-		reconcileRace: composition.reconcileRace,
 		session,
 		sessions: makeSessionFiles('recordings', session.currentId),
 		setCadence: airScheduler.reconfigure,
-		store: composition.store,
 		triggerCapture: airScheduler.triggerCapture,
 	});
 

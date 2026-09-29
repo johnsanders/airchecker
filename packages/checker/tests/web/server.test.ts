@@ -2,13 +2,12 @@ import type { FastifyInstance } from 'fastify';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import type { Anomaly, RaceObservation } from '../../src/reconcile/reconcile.js';
+import type { RaceObservation } from '../../src/reconcile/reconcile.js';
 import type { DdhqHost, Mode } from '../../src/sources/provider/providerSource.js';
 
-import { makeRaceIdentityResolver } from '../../src/identity/raceIdentity.js';
+import makeComposition from '../../src/runtime/composition.js';
 import { makeMatchStore } from '../../src/sources/air/matchStore.js';
 import { makeQueryStore } from '../../src/sources/provider/queryStore.js';
-import makeStore from '../../src/store/store.js';
 import { makeWebServer } from '../../src/web/server.js';
 
 type CandIn = { key: string; name: string; pct?: number; votes?: number };
@@ -32,6 +31,28 @@ const obs = (
 	source,
 });
 
+const TX_SENATE = '2026-TX-US_Senate-AL-NP-General_Election';
+
+const ross = (observedAt: number, votes: number): RaceObservation => ({
+	...obs('Ross', TX_SENATE, {
+		calledFor: ['c1'],
+		candidates: [{ key: 'c1', name: 'Ken Paxton', pct: 60, votes }],
+		pctIn: 80,
+	}),
+	observedAt,
+	providerRaceId: '77',
+});
+
+const air = (observedAt: number, votes: number): RaceObservation => ({
+	...obs('air', 'TX U.S. SENATE', {
+		calledFor: ['KEN PAXTON'],
+		candidates: [{ key: 'KEN PAXTON', name: 'KEN PAXTON', pct: 60, votes }],
+		pctIn: 80,
+	}),
+	observedAt,
+	templateId: 'ticker_v1',
+});
+
 let app: FastifyInstance | undefined;
 afterEach(async () => {
 	await app?.close();
@@ -40,10 +61,9 @@ afterEach(async () => {
 
 describe('web server', () => {
 	it('reports per-source state', async () => {
-		const store = makeStore();
-		store.record(obs('DDHQ', 'R1'));
-		store.record(obs('air', 'R1'));
-		app = makeWebServer({ getRecentAlerts: () => [], store });
+		const composition = makeComposition();
+		composition.ingest([obs('DDHQ', 'R1'), obs('air', 'R1')]);
+		app = makeWebServer({ composition });
 		const res = await app.inject({ method: 'GET', url: '/api/state' });
 		const body = res.json() as {
 			sources: { observations: number; races: number; source: string }[];
@@ -56,62 +76,9 @@ describe('web server', () => {
 		expect(ross.observations).toBe(0);
 	});
 
-	it('returns recent alerts newest-first', async () => {
-		const alerts: Anomaly[] = [
-			{
-				detail: 'a',
-				involves: {},
-				observedAt: 1,
-				owner: 'us',
-				raceKey: 'R',
-				severity: 'low',
-				type: 'vote_drop',
-			},
-			{
-				detail: 'b',
-				involves: {},
-				observedAt: 2,
-				owner: 'us',
-				raceKey: 'R',
-				severity: 'high',
-				type: 'premature_call',
-			},
-		];
-		app = makeWebServer({ getRecentAlerts: () => alerts, store: makeStore() });
-		const res = await app.inject({ method: 'GET', url: '/api/state' });
-		const body = res.json() as { alerts: { detail: string }[] };
-		expect(body.alerts.map((a) => a.detail)).toEqual(['b', 'a']);
-	});
-
-	it('serves alert history newest-first with a bounded limit', async () => {
-		const events = [20, 10].map((ts) => ({
-			detail: 'd',
-			kind: 'raised' as const,
-			owner: 'us' as const,
-			raceKey: 'r',
-			severity: 'high' as const,
-			ts,
-			type: 'votes_mismatch' as const,
-		}));
-		app = makeWebServer({
-			getAlertHistory: (limit) => events.slice(0, limit),
-			getRecentAlerts: () => [],
-			store: makeStore(),
-		});
-		const all = await app.inject({ method: 'GET', url: '/api/alert-history' });
-		expect((all.json() as { events: { ts: number }[] }).events.map((e) => e.ts)).toEqual([20, 10]);
-		const one = await app.inject({ method: 'GET', url: '/api/alert-history?limit=1' });
-		expect((one.json() as { events: { ts: number }[] }).events.map((e) => e.ts)).toEqual([20]);
-		const unwired = makeWebServer({ getRecentAlerts: () => [], store: makeStore() });
-		expect((await unwired.inject({ method: 'GET', url: '/api/alert-history' })).json()).toEqual({
-			events: [],
-		});
-		await unwired.close();
-	});
-
 	it('gets and sets DDHQ queries', async () => {
 		const queryStore = makeQueryStore();
-		app = makeWebServer({ getRecentAlerts: () => [], queryStore, store: makeStore() });
+		app = makeWebServer({ composition: makeComposition(), queryStore });
 
 		expect((await app.inject({ method: 'GET', url: '/api/queries' })).json()).toEqual({
 			queries: [],
@@ -128,9 +95,8 @@ describe('web server', () => {
 
 	it('rejects malformed query payloads', async () => {
 		app = makeWebServer({
-			getRecentAlerts: () => [],
+			composition: makeComposition(),
 			queryStore: makeQueryStore(),
-			store: makeStore(),
 		});
 		const res = await app.inject({
 			method: 'POST',
@@ -143,8 +109,7 @@ describe('web server', () => {
 	it('triggers a manual capture and reports the result', async () => {
 		let captures = 0;
 		app = makeWebServer({
-			getRecentAlerts: () => [],
-			store: makeStore(),
+			composition: makeComposition(),
 			triggerCapture: async () => {
 				captures += 1;
 				return { status: 'ran' };
@@ -157,8 +122,7 @@ describe('web server', () => {
 
 	it('reports a failed capture honestly (500 + message), not ran:true', async () => {
 		app = makeWebServer({
-			getRecentAlerts: () => [],
-			store: makeStore(),
+			composition: makeComposition(),
 			triggerCapture: async () => ({ message: 'no browser', status: 'error' }),
 		});
 		const res = await app.inject({ method: 'POST', url: '/api/capture' });
@@ -174,7 +138,7 @@ describe('web server', () => {
 			startedAt: running ? 1 : null,
 		});
 		app = makeWebServer({
-			getRecentAlerts: () => [],
+			composition: makeComposition(),
 			session: {
 				start: () => {
 					running = true;
@@ -186,7 +150,6 @@ describe('web server', () => {
 					return status();
 				},
 			},
-			store: makeStore(),
 			triggerCapture: async () => ({ status: 'ran' }),
 		});
 		const stopped = await app.inject({ method: 'POST', url: '/api/session/stop' });
@@ -202,9 +165,8 @@ describe('web server', () => {
 	it('serves the last frame PNG', async () => {
 		const png = Buffer.from('\x89PNG fake');
 		app = makeWebServer({
+			composition: makeComposition(),
 			getLastFrame: () => ({ hash: 'h', observations: [], png, ts: 5 }),
-			getRecentAlerts: () => [],
-			store: makeStore(),
 		});
 		const res = await app.inject({ method: 'GET', url: '/api/last-frame' });
 		expect(res.statusCode).toBe(200);
@@ -215,9 +177,8 @@ describe('web server', () => {
 	it('exposes the last frame observations in /api/state', async () => {
 		const airObs = { ...obs('air', 'TX-SEN'), templateId: 'ticker_v1' };
 		app = makeWebServer({
+			composition: makeComposition(),
 			getLastFrame: () => ({ hash: 'h', observations: [airObs], png: Buffer.from('x'), ts: 9 }),
-			getRecentAlerts: () => [],
-			store: makeStore(),
 		});
 		const res = await app.inject({ method: 'GET', url: '/api/state' });
 		const body = res.json() as { lastFrame: { observations: { raceKey: string }[]; ts: number } };
@@ -226,139 +187,133 @@ describe('web server', () => {
 	});
 
 	it('serves a fallback page at / when the SPA is not built', async () => {
-		app = makeWebServer({ getRecentAlerts: () => [], store: makeStore() });
+		app = makeWebServer({ composition: makeComposition() });
 		const res = await app.inject({ method: 'GET', url: '/' });
 		expect(res.headers['content-type']).toContain('text/html');
 		expect(res.body).toContain('Eagle Eye');
 	});
 
-	it('lists races with per-source summaries and alert count', async () => {
-		const store = makeStore();
-		store.record(
-			obs('DDHQ', 'TX-SEN', {
-				calledFor: ['p1'],
-				candidates: [
-					{ key: 'p2', name: 'Allred', pct: 40, votes: 50 },
-					{ key: 'p1', name: 'Paxton', pct: 60, votes: 100 },
-				],
-				pctIn: 80,
-			}),
-		);
-		store.record(obs('air', 'TX-SEN'));
-		store.record(obs('Ross', 'GA-HOUSE'));
-		app = makeWebServer({
-			getRecentAlerts: () => [],
-			reconcileRace: (raceKey) => (raceKey === 'TX-SEN' ? [{} as Anomaly] : []),
-			store,
-		});
+	it('serves alert history newest-first with a bounded limit', async () => {
+		const composition = makeComposition();
+		composition.ingest([ross(1_000, 100)]);
+		composition.ingest([air(10_000, 150)]);
+		composition.ingest([air(20_000, 100)]);
+		app = makeWebServer({ composition });
+		type Events = { events: { kind: string; ts: number; type: string }[] };
+		const all = (await app.inject({ method: 'GET', url: '/api/alert-history' })).json() as Events;
+		expect(all.events.map((event) => [event.kind, event.type, event.ts])).toEqual([
+			['cleared', 'votes_mismatch', 20_000],
+			['raised', 'votes_mismatch', 10_000],
+		]);
+		const one = (
+			await app.inject({ method: 'GET', url: '/api/alert-history?limit=1' })
+		).json() as Events;
+		expect(one.events.map((event) => event.ts)).toEqual([20_000]);
+	});
+
+	it('lists each aired race once, as its latest read, beside what its sources said then', async () => {
+		const composition = makeComposition();
+		composition.ingest([
+			{
+				...obs('DDHQ', TX_SENATE, {
+					calledFor: ['p1'],
+					candidates: [
+						{ key: 'p3', name: 'Third Party', pct: 5, votes: 10 },
+						{ key: 'p2', name: 'Colin Allred', pct: 35, votes: 50 },
+						{ key: 'p1', name: 'Ken Paxton', pct: 60, votes: 100 },
+					],
+					pctIn: 80,
+				}),
+				observedAt: 500,
+				providerRaceId: '77',
+			},
+		]);
+		composition.ingest([ross(1_000, 100), { ...obs('Ross', 'GA-HOUSE'), observedAt: 1_000 }]);
+		composition.ingest([air(10_000, 150)]);
+		// Ross catches up after the read; the read is a record of what it was held against.
+		composition.ingest([ross(11_000, 150)]);
+		app = makeWebServer({ composition });
+
 		const body = (await app.inject({ method: 'GET', url: '/api/races' })).json() as {
-			races: {
-				alertCount: number;
-				raceKey: string;
-				sources: Record<
-					string,
+			races: Record<string, unknown>[];
+		};
+		// GA-HOUSE never aired, so it isn't listed.
+		expect(body.races).toEqual([
+			{
+				airedAt: 10_000,
+				anomalies: [
 					{
-						candidates: { called: boolean; name: string }[];
-						pctIn: null | number;
-						present: boolean;
-					}
-				>;
-			}[];
-		};
-		const tx = body.races.find((r) => r.raceKey === 'TX-SEN')!;
-		expect(tx.sources.DDHQ!.present).toBe(true);
-		expect(tx.sources.air!.present).toBe(true);
-		expect(tx.sources.Ross!.present).toBe(false);
-		expect(tx.sources.DDHQ!.pctIn).toBe(80);
-		expect(tx.alertCount).toBe(1);
-		// Candidates ranked by votes desc, with the called flag set on the winner.
-		expect(tx.sources.DDHQ!.candidates.map((c) => c.name)).toEqual(['Paxton', 'Allred']);
-		expect(tx.sources.DDHQ!.candidates[0]!.called).toBe(true);
-		expect(tx.sources.DDHQ!.candidates[1]!.called).toBe(false);
-		const ga = body.races.find((r) => r.raceKey === 'GA-HOUSE')!;
-		expect(ga.sources.Ross!.present).toBe(true);
-		expect(ga.sources.DDHQ!.present).toBe(false);
+						detail: 'Air shows 150 for KEN PAXTON; Ross had 100',
+						severity: 'high',
+						type: 'votes_mismatch',
+					},
+				],
+				// The graphic's candidates; the others on DDHQ's ballot aren't on it.
+				candidates: [
+					{
+						cells: {
+							air: { called: true, pct: 60, votes: 150 },
+							DDHQ: { called: true, pct: 60, votes: 100 },
+							Ross: { called: true, pct: 60, votes: 100 },
+						},
+						name: 'KEN PAXTON',
+						party: 'D',
+					},
+				],
+				heading: 'TX U.S. SENATE',
+				linked: true,
+				pctIn: { air: 80, DDHQ: 80, Ross: 80 },
+				pctInIsMinimum: false,
+				raceKey: TX_SENATE,
+				saidAt: { air: 10_000, DDHQ: 500, Ross: 1_000 },
+				templateId: 'ticker_v1',
+			},
+		]);
 	});
 
-	it('orders races by last air read; DDHQ/Ross updates never move a race', async () => {
-		const store = makeStore();
-		const at = (observation: RaceObservation, observedAt: number): RaceObservation => ({
-			...observation,
-			observedAt,
-		});
-		store.record(at(obs('air', 'EARLIER', { pctIn: 10 }), 1_000));
-		store.record(at(obs('air', 'LATER', { pctIn: 10 }), 2_000));
-		store.record(at(obs('DDHQ', 'EARLIER', { pctIn: 20 }), 3_000));
-		store.record(at(obs('Ross', 'EARLIER', { pctIn: 30 }), 4_000));
-		store.record(at(obs('DDHQ', 'NEVER-AIRED', { pctIn: 20 }), 5_000));
-		app = makeWebServer({ getRecentAlerts: () => [], store });
+	it('marks a read whose heading fits no DDHQ race, with nothing beside it', async () => {
+		const composition = makeComposition();
+		composition.ingest([air(10_000, 150)]);
+		app = makeWebServer({ composition });
 		const body = (await app.inject({ method: 'GET', url: '/api/races' })).json() as {
-			races: { lastAt: null | number; raceKey: string }[];
+			races: Record<string, unknown>[];
 		};
-		expect(body.races.map((race) => [race.raceKey, race.lastAt])).toEqual([
-			['LATER', 2_000],
-			['EARLIER', 1_000],
-			['NEVER-AIRED', null],
+		expect(body.races).toMatchObject([
+			{
+				anomalies: [],
+				heading: 'TX U.S. SENATE',
+				linked: false,
+				pctIn: { air: 80, DDHQ: null, Ross: null },
+				raceKey: 'TX U.S. SENATE',
+			},
 		]);
 	});
 
-	it('lists air reads newest first, and every observation of a race from all sources', async () => {
-		const store = makeStore();
-		const at = (observation: RaceObservation, observedAt: number): RaceObservation => ({
-			...observation,
-			observedAt,
-		});
-		store.record(at(obs('air', 'TX-SEN', { pctIn: 10 }), 1_000));
-		store.record(at(obs('DDHQ', 'TX-SEN', { pctIn: 20 }), 2_000));
-		store.record(at(obs('air', 'GA-SEN', { pctIn: 30 }), 3_000));
-		store.record(at(obs('Ross', 'TX-SEN', { pctIn: 40 }), 4_000));
-		store.record(at(obs('air', 'TX-SEN', { pctIn: 50 }), 5_000));
-		app = makeWebServer({ getRecentAlerts: () => [], store });
-
-		const reads = (await app.inject({ method: 'GET', url: '/api/air-reads' })).json() as {
-			reads: RaceObservation[];
-		};
-		expect(reads.reads.map((read) => [read.raceKey, read.observedAt])).toEqual([
-			['TX-SEN', 5_000],
-			['GA-SEN', 3_000],
-			['TX-SEN', 1_000],
-		]);
-
-		const race = (await app.inject({ method: 'GET', url: '/api/race/TX-SEN' })).json() as {
+	it('serves every read of a race and every observation of it, newest first', async () => {
+		const composition = makeComposition();
+		composition.ingest([ross(1_000, 100)]);
+		composition.ingest([air(10_000, 150)]);
+		composition.ingest([ross(11_000, 150)]);
+		composition.ingest([air(20_000, 150)]);
+		app = makeWebServer({ composition });
+		const race = (
+			await app.inject({ method: 'GET', url: `/api/race/${encodeURIComponent(TX_SENATE)}` })
+		).json() as {
 			observations: RaceObservation[];
+			reads: { airedAt: number; anomalies: unknown[]; saidAt: { Ross: number } }[];
 		};
-		expect(race.observations.map((read) => [read.source, read.observedAt])).toEqual([
-			['air', 5_000],
-			['Ross', 4_000],
-			['DDHQ', 2_000],
-			['air', 1_000],
+		expect(
+			race.reads.map((read) => [read.airedAt, read.saidAt.Ross, read.anomalies.length]),
+		).toEqual([
+			[20_000, 11_000, 0],
+			[10_000, 1_000, 1],
 		]);
-	});
-
-	it('aligns candidates across sources by normalized name in /api/race/:key', async () => {
-		const store = makeStore();
-		// Same candidate, different casing/source; air missed the call, DDHQ has it.
-		store.record(
-			obs('DDHQ', 'TX-SEN', {
-				calledFor: ['p1'],
-				candidates: [{ key: 'p1', name: 'Ken Paxton', pct: 63.8, votes: 885949 }],
-			}),
-		);
-		store.record(
-			obs('air', 'TX-SEN', {
-				candidates: [{ key: 'air-a', name: 'KEN PAXTON', pct: 63.8, votes: 885950 }],
-			}),
-		);
-		app = makeWebServer({ getRecentAlerts: () => [], reconcileRace: () => [], store });
-		const body = (await app.inject({ method: 'GET', url: '/api/race/TX-SEN' })).json() as {
-			candidates: { cells: Record<string, { called: boolean; votes: number }>; name: string }[];
-		};
-		expect(body.candidates).toHaveLength(1); // both sources collapse to one row
-		const row = body.candidates[0]!;
-		expect(row.cells.DDHQ!.votes).toBe(885949);
-		expect(row.cells.air!.votes).toBe(885950);
-		expect(row.cells.DDHQ!.called).toBe(true); // DDHQ called this candidate
-		expect(row.cells.air!.called).toBe(false); // air did not
+		expect(race.observations.map((entry) => [entry.source, entry.observedAt])).toEqual([
+			['air', 20_000],
+			['Ross', 11_000],
+			['air', 10_000],
+			['Ross', 1_000],
+		]);
 	});
 
 	it('gets and sets cadence', async () => {
@@ -367,12 +322,11 @@ describe('web server', () => {
 			mode: 'interval',
 		};
 		app = makeWebServer({
+			composition: makeComposition(),
 			getCadence: () => cadence,
-			getRecentAlerts: () => [],
 			setCadence: (next) => {
 				cadence = { ...cadence, ...next };
 			},
-			store: makeStore(),
 		});
 		expect((await app.inject({ method: 'GET', url: '/api/cadence' })).json()).toEqual({
 			intervalMs: 5000,
@@ -388,7 +342,7 @@ describe('web server', () => {
 
 	it('gets and sets the air tab match', async () => {
 		const matchStore = makeMatchStore('directv');
-		app = makeWebServer({ getRecentAlerts: () => [], matchStore, store: makeStore() });
+		app = makeWebServer({ composition: makeComposition(), matchStore });
 
 		expect((await app.inject({ method: 'GET', url: '/api/air-match' })).json()).toEqual({
 			match: 'directv',
@@ -409,14 +363,13 @@ describe('web server', () => {
 	it('switches the DDHQ host and reports it in /api/state', async () => {
 		let host: DdhqHost = 'production';
 		const server = makeWebServer({
+			composition: makeComposition(),
 			ddhqHost: {
 				get: () => host,
 				set: (next) => {
 					host = next;
 				},
 			},
-			getRecentAlerts: () => [],
-			store: makeStore(),
 		});
 		app = server;
 		const post = (payload: unknown) =>
@@ -433,7 +386,7 @@ describe('web server', () => {
 		let running = false;
 		const status = () => ({ id: running ? 's' : null, running, startedAt: running ? 1 : null });
 		const server = makeWebServer({
-			getRecentAlerts: () => [],
+			composition: makeComposition(),
 			mode: {
 				get: () => mode,
 				set: (next) => {
@@ -441,7 +394,6 @@ describe('web server', () => {
 				},
 			},
 			session: { start: status, status, stop: status },
-			store: makeStore(),
 		});
 		app = server;
 		const post = (payload: unknown) =>
@@ -456,7 +408,7 @@ describe('web server', () => {
 	});
 
 	it('refuses mode and host switches when neither is wired', async () => {
-		app = makeWebServer({ getRecentAlerts: () => [], store: makeStore() });
+		app = makeWebServer({ composition: makeComposition() });
 		const mode = await app.inject({ method: 'POST', payload: { mode: 'sim' }, url: '/api/mode' });
 		const host = await app.inject({
 			method: 'POST',
@@ -472,10 +424,9 @@ describe('web server', () => {
 
 	it("reports each source's current failure in /api/state", async () => {
 		app = makeWebServer({
-			getRecentAlerts: () => [],
+			composition: makeComposition(),
 			getSourceError: (source) =>
 				source === 'air' ? { count: 2, message: 'no open tab', since: 1_000 } : undefined,
-			store: makeStore(),
 		});
 		const state = (await app.inject({ method: 'GET', url: '/api/state' })).json() as {
 			sources: { error: unknown; source: string }[];
@@ -489,9 +440,8 @@ describe('web server', () => {
 
 	it('rejects an empty air match', async () => {
 		app = makeWebServer({
-			getRecentAlerts: () => [],
+			composition: makeComposition(),
 			matchStore: makeMatchStore(),
-			store: makeStore(),
 		});
 		const res = await app.inject({
 			method: 'POST',
@@ -501,65 +451,9 @@ describe('web server', () => {
 		expect(res.statusCode).toBe(400);
 	});
 
-	it('lists and manually updates race aliases', async () => {
-		const raceIdentity = makeRaceIdentityResolver();
-		await raceIdentity.resolveObservation(obs('DDHQ', 'DDHQ:RACE'));
-		await raceIdentity.resolveObservation(obs('air', 'AIR HEADING'));
-		const store = makeStore();
-		store.record({ ...obs('air', 'provisional:air:AIR-HEADING'), sourceRaceKey: 'AIR HEADING' });
-		let relinked: unknown;
-		app = makeWebServer({
-			getRecentAlerts: () => [],
-			onRaceRelink: (source, sourceRaceKey, canonicalRaceKey) => {
-				relinked = { canonicalRaceKey, source, sourceRaceKey };
-			},
-			raceIdentity,
-			store,
-		});
-
-		const list = (await app.inject({ method: 'GET', url: '/api/race-links' })).json() as {
-			aliases: { sourceRaceKey: string }[];
-		};
-		expect(list.aliases.some((alias) => alias.sourceRaceKey === 'AIR HEADING')).toBe(true);
-
-		const post = await app.inject({
-			method: 'POST',
-			payload: { canonicalRaceKey: 'DDHQ:RACE', source: 'air', sourceRaceKey: 'AIR HEADING' },
-			url: '/api/race-links/aliases',
-		});
-		expect(post.statusCode).toBe(200);
-		expect(relinked).toEqual({
-			canonicalRaceKey: 'DDHQ:RACE',
-			source: 'air',
-			sourceRaceKey: 'AIR HEADING',
-		});
-	});
-
-	it('clears race links only while monitoring is stopped', async () => {
-		const raceIdentity = makeRaceIdentityResolver();
-		await raceIdentity.resolveObservation(obs('DDHQ', 'DDHQ:RACE'));
-		await raceIdentity.resolveObservation(obs('air', 'AIR HEADING'));
-		let running = true;
-		const status = () => ({ id: running ? 's' : null, running, startedAt: running ? 1 : null });
-		const server = makeWebServer({
-			getRecentAlerts: () => [],
-			raceIdentity,
-			session: { start: status, status, stop: status },
-			store: makeStore(),
-		});
-		app = server;
-		const reset = () => server.inject({ method: 'POST', url: '/api/race-links/reset' });
-		expect((await reset()).statusCode).toBe(409);
-		expect(raceIdentity.getSnapshot().aliases).toHaveLength(2);
-		running = false;
-		expect((await reset()).json()).toEqual({
-			raceLinks: { aliases: [], canonicalRaces: [], proposals: [] },
-		});
-	});
-
 	it('lists sessions and maps prune and delete refusals to 409', async () => {
 		app = makeWebServer({
-			getRecentAlerts: () => [],
+			composition: makeComposition(),
 			sessions: {
 				deleteSession: (id) => {
 					if (id === 'live') throw new Error('session live is being recorded');
@@ -572,7 +466,6 @@ describe('web server', () => {
 					return 42;
 				},
 			},
-			store: makeStore(),
 		});
 		expect((await app.inject({ method: 'GET', url: '/api/sessions' })).json()).toEqual({
 			disk: { freeBytes: 5, totalBytes: 10 },

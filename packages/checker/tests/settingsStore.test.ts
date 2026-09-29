@@ -22,14 +22,6 @@ describe('settings store', () => {
 		settings.close();
 	});
 
-	it('persists race identity state as JSON', () => {
-		const settings = makeSettingsStore(':memory:');
-		const state = { aliases: [{ canonicalRaceKey: 'B', source: 'air', sourceRaceKey: 'A' }] };
-		settings.setIdentityState(state);
-		expect(settings.getIdentityState()).toEqual(state);
-		settings.close();
-	});
-
 	it('persists the air tab match, undefined until set', () => {
 		const settings = makeSettingsStore(':memory:');
 		expect(settings.getAirMatch()).toBeUndefined();

@@ -40,6 +40,18 @@ describe('source errors', () => {
 		expect(errors.get('Ross')).toEqual({ count: 2, message: 'HTTP 503', since: 1_000 });
 	});
 
+	it('remembers when each source last answered', () => {
+		let clock = 1_000;
+		const errors = makeSourceErrors({ now: () => clock });
+		expect(errors.lastOk('Ross')).toBeUndefined();
+		errors.ok('Ross');
+		clock = 6_000;
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+		errors.fail('Ross', new Error('timeout'));
+		expect(errors.lastOk('Ross')).toBe(1_000);
+		expect(errors.lastOk('DDHQ')).toBeUndefined();
+	});
+
 	it('ok on a healthy source is silent', () => {
 		const recovered = vi.spyOn(console, 'log').mockImplementation(() => {});
 		makeSourceErrors().ok('DDHQ');

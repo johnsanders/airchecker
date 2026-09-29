@@ -17,17 +17,19 @@ npm scripts are only for what a human types (`test`, `backend`, `frontend:*`, `c
 
 ## Architecture
 
-Single Node service. Three long-running loops feed one shared store; a pure reconciler runs over rolling per-race timelines; surgical LLM calls handle vision; an always-on recorder makes replay the test backbone.
+Single Node service. Three long-running loops feed one shared store. Each graphic read off air is checked once, against what Ross and DDHQ had said by the time it was read; surgical LLM calls handle vision; an always-on recorder makes replay the test backbone.
 
 ```
-provider API   →  providerPoller  ─┐  (feeds vendor-driven reconciliation AND magic-wall direct comparison)
-vendor DB      →  vendorPoller    ─┼→  Store (per-race timelines + append log)
-DirecTV window →  airCapturer     ─┤        ↓
-                  └─ extractFrame (two-pass: Haiku reads full frame + registry menu →
-                     templates present; Sonnet re-reads upscaled crop for the called ✓)
-                                            ↓
-                                        Reconciler  →  AlertSink (log + Fastify web view)
+provider API   →  providerPoller  ─┐
+vendor DB      →  vendorPoller    ─┼→  link to its race  →  Store (per source, per race)
+DirecTV window →  airCapturer     ─┤                           ↓  on each air read
+                  └─ extractFrame (each template's region of the frame cropped and
+                     read on its own by Gemini)
+                                                               ↓
+                                        Reconciler, as of the read  →  alert log + web view
 ```
+
+`src/runtime/composition.ts` is that whole pipeline, and live, replay and the session goldens all run it.
 
 Full plan (architecture rationale, MVP scope, deferred work, verification approach): [`docs/PLAN.md`](docs/PLAN.md).
 
@@ -41,16 +43,16 @@ src/
     provider/       DDHQ schema + adapter + OAuth paginated poller (queryStore = runtime race list)
     vendor/         Chameleon schema + adapter + poller (VPN-only playlist URL)
     air/            browserCapturer (puppeteer-core over CDP :9222; pins the tab's viewport to 1920×1080 at 1×, so every frame is a full 16:9 1920×1080; opens the tab when none matches: the simulator's /air/ in Sim, the DirecTV player for Live's DirecTV preset) + captureScheduler + matchStore
-  identity/         raceIdentity — cross-source race-linking (DDHQ canonical spine + provisional buckets + one-time Haiku proposal, for air races only; Ross races carrying Chameleon `raceID` link by DDHQ `race_id` only; air headings link by state/office/district/party when exactly one DDHQ race fits and its ballot has every surname shown, airHeading.ts); a race leaving its provisional bucket is moved in the store (onRelink). The Setup tab's Race links lists only air races (Ross links to DDHQ by ID on its own) and can clear every link while monitoring is stopped
-  vision/           extractFrame (two-pass VLM: Haiku bulk + Gemini crop read), llmClient, anthropicClient, googleClient, openRouterClient, retryingFetch, liveLlmClient (routes by model ID), goldenClient, cropRegion, redact
-  tools/            calibrate / probe / capture-golden / verify (also the model-comparison harness) / measure-call / freeze-session / air-probe / probe-identity; usageMeter totals per-model cost for verify + measure-call
-  store/            In-memory ring buffer per source with onRecord hook for recorder
-  reconcile/        Pure triangulation + severity functions; thresholds in thresholds.ts
-  settings/         settingsStore — persistent settings.sqlite (DDHQ query list + identity snapshot survive restarts)
+  identity/         linkRace: which race an observation is about, a pure lookup against the races known so far (Ross by the DDHQ `race_id` its Chameleon contest names; air by its heading's state/office/district/party when exactly one race fits and its ballot has a surname the graphic shows, airHeading.ts). Nothing is remembered or persisted, and no model is asked
+  vision/           extractFrame (each template's region cropped and read by Gemini), llmClient, anthropicClient, googleClient, openRouterClient, retryingFetch, liveLlmClient (routes by model ID), goldenClient, cropRegion, redact
+  tools/            calibrate / probe / capture-golden / verify (also the model-comparison harness) / measure-call / freeze-session / air-probe; usageMeter totals per-model cost for verify + measure-call
+  store/            In memory, per source per race, with an onRecord hook for the recorder. Every air read is kept for 30 minutes; DDHQ and Ross are kept only when what they say changes
+  reconcile/        Pure rules over an air read and what the sources had said by then; thresholds in thresholds.ts
+  settings/         settingsStore — persistent settings.sqlite (the DDHQ query list, mode, DDHQ host and air tab survive restarts)
   web/              Fastify JSON API + websocket push (server.ts, changeBus.ts) + Vite/React/MUI SPA (client/)
   replay/           Recorder + player + sessionGolden; recorder is sessions/observations/frames/llm_calls SQLite + content-addressed PNGs
-  runtime/          composition.ts + liveMain.ts + replayMain.ts + anomalyTracker (emission/hysteresis — the alert layer, no separate alerts/ dir)
-tests/              Vitest; reconciler rules + adapters + store + identity + frame & session goldens
+  runtime/          composition.ts (the pipeline: link, store, check each air read, alert log) + liveMain.ts + replayMain.ts + alertLog
+tests/              Vitest; reconciler rules + adapters + store + linking + the pipeline + frame & session goldens
 ```
 
 Sample fixtures (real responses, kept in this package's root):
@@ -74,27 +76,35 @@ type RaceObservation = {
 	candidates: CandidateState[];
 	calledFor: string[]; // candidate keys called/advancing; empty = none. A SET, order-insensitive.
 	templateId?: string; // air only
-	extractedFields?: Record<string, string>; // air only
 };
 ```
 
-`calledFor` is a **set of candidate keys**, not a single winner — top-two primaries/runoffs (and multi-seat races) genuinely call two. DDHQ uses all `called_candidates`; Chameleon all `elected` choices; the air extractor's recall pass reads every ✓. The reconciler's call rules compare it set-wise (order-insensitive), and flag `missing_call` when air shows a strict subset of the provider's called set (e.g. air caught only the leader's check mark in a two-winner race). The `recordings/goldens/fs_ga11_house_*` goldens lock this in.
+`calledFor` is a **set of candidate keys**, not a single winner — top-two primaries/runoffs (and multi-seat races) genuinely call two. DDHQ uses all `called_candidates`; Chameleon all `elected` choices; the air extractor reads every ✓. The reconciler's call rules compare it set-wise (order-insensitive), and flag `missing_call` when air shows a strict subset of the provider's called set (e.g. air caught only the leader's check mark in a two-winner race). The `recordings/goldens/fs_ga11_house_*` goldens lock this in.
 
 `pctIn` is **a share of estimated turnout, not of precincts.** DDHQ reports progress two ways and names which per race in `reporting_type`: `estimated` → `topline_results.estimated_votes.turnout_mid` (total votes as a share of the modeled expected vote, revised through the night — so it can legitimately _fall_ while votes keep rising, e.g. when early turnout beats the forecast), `precincts` → `topline_results.precincts.percent` (municipal races only). Every race in scope is `estimated`. Chameleon's `dbVotesPercent` is its copy of `turnout_mid` and is what the Nov 3 template renders as `% IN`; its `polls.reportedPercent` is the precinct figure and is not used. (June 2026 evidence: the air badge showed 78/81/65/76 while our precinct-based vendor figure said 67/75/77/85 — the three June `pct_in_mismatch` alerts were this.) Never add a rule that treats `pctIn` as monotonic.
 
+### An air read is a record
+
+The product is one list: the graphics read off air, each beside what Ross and DDHQ said, and what's wrong with it. Everything about a read is settled when it is read and never changes after:
+
+- **It is checked once, as of the read.** `composition.ingest` links and stores a batch, then checks each air read in it against the sources' histories up to the read's `observedAt`. A DDHQ or Ross poll is never checked on its own; it only adds to what later reads are held against. So a mismatch stays a mismatch after the source catches up.
+- **It is held against one Ross state**: of the states Ross was in during the 35 s before the read (the one it was already in when that window opened included), the one the graphic disagrees with least. A graphic is drawn from one state, so its votes and its `% IN` must both come from it. With no state in the window the last one Ross was in stands, so no read goes unchecked.
+- **Ross is polled every 5 s**, faster than its state reaches air (8–30 s). Polled slower, air shows figures we haven't seen and a correct graphic reads as a mismatch. DDHQ is polled every 60 s, which is slower than a call reaches air, so a ✓ the graphic could have drawn from Ross is never `premature_call`.
+- **The store keeps DDHQ and Ross only when what they say changes**, stamped when first seen, so the last entry at or before a moment is what the source was saying then. It keeps them 5 minutes longer than air reads, and always the latest of each race.
+- **Each monitoring start begins from nothing** (`composition.reset`): because the latest of each race is always kept, a Sim rehearsal's figures would otherwise stand in a Live session for any race not yet reported again.
+- **Alerts are per graphic.** The alert log raises what a read found that the previous read of that race on that template didn't, and clears what it no longer finds. There is no hysteresis: a single bad graphic alerts when seen (decision, 2026-09-25).
+- **The web view** lists each race once as its latest read (`/api/races`); when one frame shows a race on two graphics, the one with something wrong stands for it. A race's dialog lists every read of it.
+
 ### `TemplateSpec`
 
-Declarative description of an on-air template — what it looks like and what to read off it, NOT pixel coordinates for each field. The VLM localizes fields itself within the crop. Each spec has:
+An on-air template: where it sits in the frame and what it looks like, NOT pixel coordinates for each field. The VLM finds the fields itself within the crop. Each spec has an `id`, a `surface`, and:
 
-- `captureRegion?` — ONE loose region (as normalized `{x,y,w,h}` fractions in `[0..1]`, resolution-independent via `scaleRectToFrame`) that contains the whole graphic. Not a per-field map — it's the crop the pass-2 call-detection re-reads (upscaled). Absent for locatable templates (magic wall), where detection returns a bbox.
-- `vlmPromptHint` — prose telling the model what the surface looks like (used as the per-template entry in the extract-all menu).
-- `singletons` — single-valued fields the model reads (e.g. `race_heading`, `pct_in`). No rects.
-- `candidateList?` — the reflowing candidate cards. The model returns an **array** of whatever length is on screen, so the spec is agnostic to candidate count; the current package always shows exactly two. `layout: 'row' | 'column'`.
-- `bind` — `raceKeyFrom(singletons)` and `candidateKeyFrom(candidate)`.
+- `captureRegion` — ONE loose region (as normalized `{x,y,w,h}` fractions in `[0..1]`, resolution-independent via `scaleRectToFrame`) that contains the whole graphic. Not a per-field map — it's the crop that is read, on every frame.
+- `vlmPromptHint` — prose telling the model what the graphic looks like and what else may sit in its region (chyrons, promos). It is part of the measured prompt: changing it means measuring again and recording the frame goldens again.
+
+What's read off a graphic is the same for every template (the heading, the `% IN`, each candidate's two name lines, party, percent, votes and ✓), and the race key comes from the printed heading (`headingRaceKey`). The candidates are whatever cards the model finds, so a spec says nothing about how many there are or how they're laid out; the current package always shows exactly two.
 
 Three real specs exist (`fullscreenResults`, `lowerThird`, `tickerV1`), authored against the September 2026 package's reference frames in `recordings/reference-frames/` (see its README for layout bands and ground truth). The fullscreen + lower-third layer has **two geometries** — native (layer exports) and on-air (scaled 0.979 in y from the top, shifted up 42 px; the ticker stays put). The fullscreen may appear natively on a test feed and reads fine either way (measured); the lower third only ever airs shifted, since natively it would overlap the always-on ticker, so its `captureRegion` is authored to the on-air band only. The side slab was retired 2026-09-25 (may return; restore from git history). The ticker FLIPS between races (one race per flip; not a scroll), so fixed regions hold. Per-field pixel rects and pixel/color fingerprints were removed — they were brittle and the VLM doesn't need them.
-
-`dataPath` is either `'vendor'` (3-source reconciliation: DDHQ + Ross + air) or `'provider_direct'` (2-source: DDHQ + air — for the magic wall, which bypasses Ross).
 
 ### Race-key composition (load-bearing invariant)
 
@@ -108,33 +118,29 @@ DDHQ uses `cand_id`, Chameleon uses its own choice `id`, and the VLM extractor w
 
 ### Surgical LLM boundary
 
-Deterministic code does all polling, all DB queries, all reconciliation math, all severity assignment, all hysteresis. Vision is a plain Anthropic **Messages API** call (`@anthropic-ai/sdk`) — NOT the Agent SDK / Claude Code, which can't run a model locally, can't authenticate programmatically with a Pro/Max subscription, and is the wrong shape for a single-shot image→JSON task. An `ANTHROPIC_API_KEY` is required for live mode only; replay + `--stub-llm` need no key.
+Deterministic code does all polling, all DB queries, all reconciliation math, all severity assignment. Vision is a plain single-shot image→JSON call with a forced tool — NOT the Agent SDK / Claude Code, which is the wrong shape for it. A `GEMINI_API_KEY` is required for live mode only; replay and the goldens need no key.
 
-`makeLiveLlmClient` (`src/vision/liveLlmClient.ts`) is the one client every live tool builds, and the model ID picks the backend. A native Google ID (`gemini-3.8-flash`) goes straight to **Google's Interactions API** through `googleClient.ts` — inline image part, function tool forced by `tool_choice`, `thinking_level: 'low'` by default, `store: false`, thought tokens folded into output usage, same two-retry policy (shared `retryingFetch.ts`). A model ID containing a slash (`google/gemini-3.8-flash`, `deepseek/deepseek-v4.1-flash`) is routed to **OpenRouter** through `openRouterClient.ts` — OpenAI chat-completions dialect, image as a data URL, the reporting tool as a forced function call, `provider.require_parameters` so a provider that would ignore `tool_choice` is never chosen, two retries on dropped connections / 429 / 5xx, and OpenRouter's per-response USD cost surfaced on `LlmResponse.usage`; everything else goes to Anthropic direct. `missingLiveKeys(models)` names the env vars the requested models need (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, `OPENROUTER_API_KEY`) that are unset; live mode out of the box needs the first two — pass 1 is Haiku on Anthropic, the crop read is Gemini direct. OpenRouter is only for trials of other vendors. Both backends sit behind the same `LlmClient` interface, so recording/replay is unchanged (the prompt hash already includes the model). Qwen models are not usable this way: no OpenRouter provider honors a forced `tool_choice` for them.
+`makeLiveLlmClient` (`src/vision/liveLlmClient.ts`) is the one client every live tool builds, and the model ID picks the backend. A native Google ID (`gemini-3.8-flash`) goes straight to **Google's Interactions API** through `googleClient.ts` — inline image part, function tool forced by `tool_choice`, `thinking_level: 'low'` by default, `store: false`, thought tokens folded into output usage, two retries (shared `retryingFetch.ts`). A model ID containing a slash (`google/gemini-3.8-flash`, `deepseek/deepseek-v4.1-flash`) is routed to **OpenRouter** through `openRouterClient.ts` — OpenAI chat-completions dialect, image as a data URL, the reporting tool as a forced function call, `provider.require_parameters` so a provider that would ignore `tool_choice` is never chosen, and OpenRouter's per-response USD cost surfaced on `LlmResponse.usage`; everything else goes to Anthropic direct. `missingLiveKeys(models)` names the env vars the requested models need (`GEMINI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENROUTER_API_KEY`) that are unset; live mode out of the box needs only the first. Anthropic and OpenRouter are for trials of other readers. All backends sit behind the same `LlmClient` interface, so recording/replay is unchanged (the prompt hash already includes the model). Qwen models are not usable this way: no OpenRouter provider honors a forced `tool_choice` for them.
 
-`extractFrame(frame)` (`src/vision/extractFrame.ts`) runs **two passes**, because the ✓/called glyph needs different handling than the bulk fields (proven by measurement):
+`extractFrame(frame)` (`src/vision/extractFrame.ts`) reads **each template's region on its own**. Every template sits in a fixed region of the frame, so on every frame each region is cropped (`cropAndUpscaleRegion`, sized to the API's standard-tier limits — 1568 px long edge / 1568 visual tokens — since anything larger is downsized server-side and a 3× upscale once blew the 10 MB image limit) and read by one call to **Gemini 3.8 Flash at low thinking**, which is told which graphic the region holds when it holds any and that it may hold none. What comes back becomes that template's observation: the race key from the printed heading, the name from its two printed lines (asked for one name field, the model returned one line often enough to lose legible tickers), the `% IN` with its `>` floor or its absence, votes, percent and every ✓. A region showing no graphic yields nothing. Guards drop a read that isn't a whole graphic: a name that isn't first and last, a placeholder, a heading that doesn't open with a state, a share with no votes (the mid-flip signatures). One failed read fails the frame. Every read is recorded under the hash of the frame it came from. `judge()`, a second opinion on an anomaly the rules have already raised, is still deferred.
 
-1. **Pass 1 — bulk extraction. Haiku 4.5.** ONE call: full frame + the template registry as a menu (each template's `vlmPromptHint` + a forced-tool output schema) → an array of whichever templates are present, each with `singletons` + a `candidates` array. Multiple simultaneous surfaces fall out naturally. Each item becomes a `RaceObservation`. Duplicate detections de-duped; unknown template IDs dropped; format validators normalize ints/percents.
-2. **Pass 2 — the crop read. Gemini 3.8 Flash at low thinking, called directly on Google's Interactions API (Sonnet 4.6 is the Anthropic-only fallback), on the template's region crop.** For each detected template with a `captureRegion`, crop to that region (`cropAndUpscaleRegion`, sized to the API's standard-tier limits — 1568 px long edge / 1568 visual tokens — since anything larger is downsized server-side and a 3× upscale once blew the 10 MB image limit) and re-read the small print: votes, pct, the ✓, the `% IN` badge, and the heading. **Pass 1 keeps the roster** (names/keys — it reads full names reliably; the crop read tends to return one of the two stacked name lines); crop rows are matched back by position, then partial name. The crop read also self-corrects pass 1's template label: reads are cached per _region_ for the frame, and a roster that its own region's crop doesn't show is matched against the other regions (pass 1 occasionally swaps the ticker and lower-third labels). A roster no region shows is dropped. The crop read's heading wins for the race key (pass 1 sometimes folds the badge into it). Tunable via `recallModel` / `recallVotes`.
-3. **`judge(anomalyContext)`** — Sonnet 4.6, only when rules have already decided an anomaly is real. Can downgrade or annotate, never raise severity. Deferred until v1.1.
+**Why crops, and why only crops (measured, not assumed).** On the full 1920-wide frame the small gold ✓ glyph read only ~37–60% and small ticker digits were misread; isolating the graphic in its own crop is what fixes it (Sonnet single-shot on the region crop = 20/20 called and 20/20 uncalled). Until 2026-09-29 a full-frame pass by Haiku 4.5 ran first, to say which graphics were on the frame and to own their names, and the crop reads then filled in the small print. Measured that day against reading the three regions directly: all 23 frame goldens × 3 and the 8 hardest × 20 exact either way; on 50 frames of the simulator's air, 74 of 74 graphics found with every field right, where two passes found 71 and misread a name (the full-frame pass called the lower third the ticker on 9 of 10 frames and read "Amy Acton" as "Amy Action"); ≈ $4 an hour at the 5 s cadence against ≈ $6. Sonnet 4.6 reads the crops as well at ≈ $19 an hour. The 2026-09-26 model trial (`NEXT_STEPS.md`) is why the reader is Gemini 3.8 Flash at low reasoning: Sonnet 5 regressed (153/160) and every cheaper model either invented the `% IN` badge or hallucinated a ✓. Measure reliability with `node --env-file-if-exists=../../.env --import tsx src/tools/verifyExtraction.ts` / `src/tools/measureCall.ts` against a golden's ground truth — never trust count-only checks. `node --env-file-if-exists=../../.env --import tsx src/tools/verifyExtraction.ts all 2 --model X [--reasoning E]` is the **model-comparison harness**: exact-reproduction rate per golden, drift tallied by field, errors counted separately, and the measured cost per model, per frame and per broadcast hour. **Resolution floor:** ticker vote totals legible at 1920-wide, mush at 1280 — do NOT downscale frames below ~1920. Not yet measured on real air: the goldens are single frames and the simulator's graphics are copies.
 
-**Why two passes (measured, not assumed).** On the full 1920-wide frame all bulk fields read 30/30, but the small gold ✓ glyph read only ~37–60% (`race_heading` also dropped ~25% until its schema field was made required). Isolating the graphic in its own crop is what fixes it — **Sonnet single-shot on the region crop = 20/20** called and 20/20 uncalled on the September 2026 package (ticker, lower-third, fullscreen). The 2026-09-26 model trial (`NEXT_STEPS.md`) then measured **Gemini 3.8 Flash at low reasoning at the same 160/160 on the eight hardest goldens and 46/46 on all 23, at 42% of Sonnet 4.6's cost** (≈ $6/h vs ≈ $14/h at the 5 s cadence), so it is the default crop reader, called directly on Google (the OpenRouter-routed form of the same model measured identically; direct spot-check in `NEXT_STEPS.md`); Sonnet 5 regressed (153/160) and every cheaper model either invented the `% IN` badge or hallucinated a ✓. Measure reliability with `node --env-file-if-exists=../../.env --import tsx src/tools/verifyExtraction.ts` / `src/tools/measureCall.ts` against a golden's ground truth — never trust count-only checks. `node --env-file-if-exists=../../.env --import tsx src/tools/verifyExtraction.ts all 2 --model X --recall-model Y [--reasoning E]` is the **model-comparison harness**: exact-reproduction rate per golden, drift tallied by field, errors counted separately, and the measured cost per model, per frame and per broadcast hour; pass 1 and the crop read can be pointed at different models and different backends. **Resolution floor:** ticker vote totals legible at 1920-wide, mush at 1280 — do NOT downscale frames below ~1920 (the API's ~1.15MP auto-shrink, ≈1432×806, was tested and reads fine).
-
-Opus 4.7/4.8 is not used. **Prompt caching is NOT used** — measured, the stable prefix (tools + menu) is ~1,200 tokens, below Haiku 4.5's 4,096-token cache floor, and the per-frame image (~1,560 tokens, most of the cost) is unique and uncacheable. The cost lever is capture cadence (don't extract every frame), not caching. Goldens record every call of both passes, so `node --env-file-if-exists=../../.env --import tsx src/tools/captureGolden.ts` freezes a frame and the replay test re-runs the full two-pass flow deterministically with **no API key**.
+**Prompt caching is NOT used** — the image, most of the cost, is unique to each call and uncacheable. The cost lever is capture cadence (don't read every frame), not caching. Goldens record every region's read, so `node --env-file-if-exists=../../.env --import tsx src/tools/captureGolden.ts` freezes a frame and the replay test re-runs the extraction deterministically with **no API key**.
 
 ### Replay harness (the test backbone)
 
-Recorder is always on in live mode. Every observation, every frame PNG, every LLM request/response, and every identity event goes to `recordings/<sessionId>.sqlite` keyed by `(frame hash, prompt hash)`. Replay player swaps the three source modules for replay sources; `--stub-llm` mode reuses recorded LLM responses for zero-cost deterministic runs. Golden replays are the CI suite, in **two kinds**:
+Recorder is always on in live mode. Every observation the store keeps, every frame PNG, every LLM request/response, and every alert event goes to `recordings/<sessionId>.sqlite` keyed by `(frame hash, prompt hash)`. Replay player swaps the three source modules for replay sources; `--stub-llm` mode reuses recorded LLM responses for zero-cost deterministic runs. Golden replays are the CI suite, in **two kinds**:
 
-- **Frame goldens** (`recordings/goldens/*.golden.json` + PNG) — one image + its recorded two-pass LLM responses; regression for `extractFrame`. `node --env-file-if-exists=../../.env --import tsx src/tools/captureGolden.ts <framePng> <name>` freezes one live; `--from-session <sessionId> <frameHash> <name>` freezes one from a recorded session's frames + responses (**no API key**). Two real broadcast frames now sit alongside the synthetic ones.
-- **Session goldens** (`recordings/goldens/sessions/*.session.json`) — `src/replay/sessionGolden.ts` `replaySessionTimeline` replays a whole recorded timeline in its original poll batches, applies recorded identity events as mid-timeline rekeys, and freezes what the store + reconciler emit (distinct-anomaly set, final anomalies, identity + store summaries). `node --import tsx src/tools/freezeSessionGolden.ts <sessionId> <name>` writes the self-contained doc (session sqlites stay gitignored); `--refreeze <goldenFile>` recomputes expectations from the doc's own inputs after an intentional rule change. `tests/replay/sessionGoldens.test.ts` runs them hermetically. First one: `tx_runoffs_2026-06-01_all_sources` (64 min, 4,147 obs, all three sources).
+- **Frame goldens** (`recordings/goldens/*.golden.json` + PNG) — one image + the recorded read of each of its regions; regression for `extractFrame`. `node --env-file-if-exists=../../.env --import tsx src/tools/captureGolden.ts <framePng> <name>` freezes one live; `--from-session <sessionId> <frameHash> <name>` freezes one from a recorded session's frames + responses (**no API key**), for sessions recorded since the reads changed (2026-09-29). All 23 were recorded again that day, each reproducing what it already expected.
+- **Session goldens** (`recordings/goldens/sessions/*.session.json`) — `src/replay/sessionGolden.ts` `replaySessionTimeline` runs a whole recorded timeline through the pipeline in its original poll batches, linking every observation afresh from its source key, and freezes what comes out (alert events, the distinct-anomaly set, what stands at the end, how many aired races linked, what the store holds). `node --import tsx src/tools/freezeSessionGolden.ts <sessionId> <name>` writes the self-contained doc (session sqlites stay gitignored); `--refreeze <goldenFile>` recomputes expectations from the doc's own inputs after an intentional rule change. `tests/replay/sessionGoldens.test.ts` runs them hermetically. First one: `tx_runoffs_2026-06-01_all_sources` (64 min, 4,147 obs, all three sources).
 
-**Live / Sim mode** (app bar; `mode` in settings.sqlite; locked while monitoring). Live polls DDHQ on the chosen host (`ddhq_environment`: production or integration) with the saved query list, Chameleon's blade, and the saved air tab. Sim points all three at the [simulator package](../simulator/CLAUDE.md) (`SIM_BASE_URL`, default `http://localhost:8788`): DDHQ and Chameleon on its mirror with placeholder DDHQ credentials, the DDHQ queries fetched from its `/api/sim/queries` each poll, and air captured from its `/air/` page. The simulator serves either an invented night behind all three sources (lagged like the real pipeline: Chameleon 30 s behind DDHQ, graphics 19 s behind Chameleon) or a recorded night's API responses at 1×. Each session's `meta` records its mode; Sim race links persist to `settings.sqlite` like live ones. `src/tools/scoreSimAir.ts <sessionId>` scores a Sim session's air reads against what the simulator says aired.
+**Live / Sim mode** (app bar; `mode` in settings.sqlite; locked while monitoring). Live polls DDHQ on the chosen host (`ddhq_environment`: production or integration) with the saved query list, Chameleon's blade, and the saved air tab. Sim points all three at the [simulator package](../simulator/CLAUDE.md) (`SIM_BASE_URL`, default `http://localhost:8788`): DDHQ and Chameleon on its mirror with placeholder DDHQ credentials, the DDHQ queries fetched from its `/api/sim/queries` each poll, and air captured from its `/air/` page. The simulator serves either an invented night behind all three sources (lagged like the real pipeline: Chameleon 30 s behind DDHQ, graphics 19 s behind Chameleon) or a recorded night's API responses at 1×. Each session's `meta` records its mode. `src/tools/scoreSimAir.ts <sessionId>` scores a Sim session's air reads against what the simulator says aired.
 
 ## Conventions specific to this package
 
 - **Adapters are pure.** Source-shape → `RaceObservation` is a deterministic transform. No I/O, no logging, no clock reads. Tests use real sample JSON.
-- **Reconciler is pure.** All rules are functions over the three histories; hysteresis is applied at a higher layer that tracks emission history.
+- **Reconciler is pure.** All rules are functions over the three histories as they stood at the air read being checked.
 - **Store returns copies** (`[...list]`) so callers can't mutate internal state.
 
 ## Sample data and schema robustness
@@ -163,24 +169,24 @@ These are deliberate v1 cuts, written down so they're not forgotten:
 
 - **Presidential electoral votes.** Not in `RaceObservation`; can't reconcile EC-vote graphics. Add `electoralVotes?: number` field when an EC-vote template lands.
 - **County-level reconciliation.** We adapt only the topline; county-detail graphics can't be cross-checked. Extend `RaceObservation` (or introduce `SubRaceObservation`) when needed.
-- **Magic wall.** Plan accommodates it (`captureRegion?` + `dataPath: 'provider_direct'`) but locatable detection and dynamic-jurisdiction extraction are v1.1. User has a library of recordings that will become golden replays.
+- **Magic wall.** Not started: it bypasses Ross, so it is held against DDHQ directly, and it needs locatable detection and dynamic-jurisdiction extraction. User has a library of recordings that will become golden replays.
 - **`judge()` LLM call.** Deferred until rule volume is known.
-- **Slack / dashboard / paging sinks.** v1 is structured log + web view (`anomalyTracker` + `RaceLinks`/`Alerts`). Add only once severity tiers are trusted.
+- **Slack / dashboard / paging sinks.** v1 is structured log + web view (`alertLog`, the On air list). Add only once severity tiers are trusted.
 - **Multi-race concurrent monitoring.** Architecture supports it; runtime configures the tracked set via the DDHQ query list.
 - **Auth on the web view.**
 
 ## Build order (per the plan)
 
-types → store → reconciler with unit tests → adapters → recorder → replay player with stub sources → template specs + calibrate → **two-pass `extractFrame` + first golden** → real pollers → air capturer → wire `liveMain` → web view.
+types → store → reconciler with unit tests → adapters → recorder → replay player with stub sources → template specs + calibrate → **`extractFrame` + first golden** → real pollers → air capturer → wire `liveMain` → web view.
 
-Currently done: **the entire build order above, plus the identity resolver, live pollers, the air capturer, `liveMain`, the Fastify + websocket web view, and session goldens.** Proven live against two June 2026 broadcast nights (TX runoffs with all three sources + a DDHQ/Ross primary night). **297 tests passing.**
+Currently done: **the entire build order above (the extractor since rewritten to read each region on its own), plus race linking, live pollers, the air capturer, `liveMain`, the Fastify + websocket web view, and session goldens.** Proven live against two June 2026 broadcast nights (TX runoffs with all three sources + a DDHQ/Ross primary night). **286 tests passing.**
 
 Next up — see [`NEXT_STEPS.md`](NEXT_STEPS.md) for the current list: the rehearsal with all three sources, then the still-deferred items below.
 
 ## Don't (in addition to the root list)
 
 - **Don't drift the `composeRaceKey` formula** in any adapter. Always use the shared helper.
-- **Don't reach for ML/CV classifiers** when a Haiku VLM call would do. Cost is bounded (~$25 per 6-hour broadcast).
+- **Don't reach for ML/CV classifiers** when a VLM call would do. Cost is bounded (~$25 per 6-hour broadcast).
 - **Don't build a per-race state machine** for the reconciler. A flat observation list + pure rules is easier to replay and debug. Revisit only if rules start needing state context.
 
 ## References

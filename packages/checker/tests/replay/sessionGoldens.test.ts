@@ -23,12 +23,7 @@ describe('session golden replays', () => {
 		it(`replays ${file} deterministically with no API key`, () => {
 			const doc = JSON.parse(readFileSync(join(sessionsDir, file), 'utf8')) as SessionGoldenDoc;
 
-			const expectations = replaySessionTimeline({
-				identityEvents: doc.identityEvents,
-				observations: doc.observations,
-			});
-
-			expect(expectations).toEqual(doc.expected);
+			expect(replaySessionTimeline(doc.observations)).toEqual(doc.expected);
 		});
 	});
 });

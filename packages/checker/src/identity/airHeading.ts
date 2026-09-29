@@ -1,10 +1,12 @@
-// Links an air race to its DDHQ race without a model call, when the graphic's heading
-// says exactly which race it is. The heading key (headingKey.ts) reads like
-// "TX-15 U.S. HOUSE", "OK U.S. SENATE" or "TX U.S. SENATE (D)"; a DDHQ race key reads
-// like "2026-TX-US_House-15-NP-General_Election" (composeRaceKey in sources/common.ts).
-// A heading matches a race when state, office, district and party agree, and every
-// surname the graphic showed is on that race's ballot. The surname check is what keeps a
-// misread district ("TX-16" for "TX-15") from linking to the wrong race.
+// A graphic's heading says which race it is. The heading key (headingKey.ts) reads like
+// "TX-15 U.S. HOUSE", "OK U.S. SENATE" or "TX U.S. SENATE (D)", and on the ticker, which
+// prints the district on a second line, "WI U.S. HOUSE (D) DISTRICT 7"; a DDHQ race key
+// reads like "2026-TX-US_House-15-NP-General_Election" (composeRaceKey in
+// sources/common.ts). A heading matches a race when state, office, district and party
+// agree, and a surname the graphic showed is on that race's ballot. The surname is what
+// keeps a misread district ("TX-16" for "TX-15") from linking to the wrong race. One is
+// enough, and must be: a graphic that misspells a candidate has to reach its race to be
+// flagged for it.
 
 export type AirHeading = { district: string; office: string; party: string; state: string };
 
@@ -15,10 +17,13 @@ const AT_LARGE = 'AL';
 const NO_PARTY = 'NP';
 
 export const parseAirHeading = (headingKey: string): AirHeading | undefined => {
-	const match = /^([A-Z]{2})(?:-(\d+|AL))?\s+(.+?)(?:\s+\(([A-Z]+)\))?$/.exec(headingKey.trim());
+	const match =
+		/^([A-Z]{2})(?:-(\d+|AL))?\s+(.+?)(?:\s+\(([A-Z]+)\))?(?:\s+DISTRICT\s+(\d+))?$/.exec(
+			headingKey.trim(),
+		);
 	if (match === null) return undefined;
 	return {
-		district: match[2] ?? AT_LARGE,
+		district: match[2] ?? match[5] ?? AT_LARGE,
 		office: compact(match[3] ?? ''),
 		party: match[4] ?? NO_PARTY,
 		state: match[1] ?? '',
@@ -68,8 +73,7 @@ export const airHeadingMatches = (
 		race.office === heading.office &&
 		race.district === heading.district &&
 		partyAgrees &&
-		airCandidateNames.length > 0 &&
-		airCandidateNames.every((name) => {
+		airCandidateNames.some((name) => {
 			const last = surname(name);
 			return last.length > 0 && ballot.some((full) => full.includes(last));
 		})

@@ -28,12 +28,12 @@ afterEach(() => {
 });
 
 describe('runReplay', () => {
-	it('plays a recorded session through store, tracker and alert log with a recorded frame', async () => {
+	it('plays a recorded session through the pipeline with a recorded frame', async () => {
 		const recorder = makeRecorder({ baseDir, sessionId: 's' });
 		const t0 = 1_700_000_000_000;
 		recorder.recordObservation(observation('Ross', t0, 1000));
 		recorder.recordFrame({ png: Buffer.from('png-bytes'), ts: t0 + 8_000 });
-		// Air disagrees with the vendor snapshot in the lag window → votes_mismatch.
+		// Air disagrees with what Ross was saying → votes_mismatch.
 		recorder.recordObservation(observation('air', t0 + 8_000, 999));
 		recorder.close();
 
@@ -42,11 +42,12 @@ describe('runReplay', () => {
 
 		expect(replay.composition.store.getRaceKeys()).toEqual(['TX U.S. SENATE (D)']);
 		expect(replay.composition.store.getVendorHistory('TX U.S. SENATE (D)')).toHaveLength(1);
-		const raised = replay.alertLog.recent().filter((event) => event.kind === 'raised');
+		const raised = replay.composition.alertLog.recent().filter((event) => event.kind === 'raised');
 		expect(raised.map((event) => event.type)).toEqual(['votes_mismatch']);
-		expect(replay.tracker.list()).toHaveLength(1);
+		const standing = replay.composition.latestReads().flatMap((checked) => checked.anomalies);
+		expect(standing).toHaveLength(1);
 		// Timestamps are shifted to start "now" — observedAt is no longer the 2023 epoch.
-		expect(replay.tracker.list()[0]!.observedAt).toBeGreaterThan(t0 + 365 * 24 * 3_600_000);
+		expect(standing[0]!.observedAt).toBeGreaterThan(t0 + 365 * 24 * 3_600_000);
 		const frame = replay.getLastFrame();
 		expect(frame?.png.toString()).toBe('png-bytes');
 		expect(frame?.observations.map((o) => o.source)).toEqual(['air']);

@@ -7,6 +7,22 @@ export type SourceName = 'air' | 'DDHQ' | 'Ross';
 // on-air source in the reconciler/store/types); the UI shows 'Air'.
 export const sourceLabel = (source: SourceName): string => (source === 'air' ? 'Air' : source);
 
+// One graphic read off air, as a record: what it showed, the Ross state it was held
+// against, what DDHQ was saying, and what was found wrong. Nothing in it changes after
+// the read.
+export interface AirRead {
+	airedAt: number;
+	anomalies: { detail: string; severity: 'high' | 'low' | 'medium'; type: string }[];
+	candidates: { cells: Partial<Record<SourceName, RaceCell>>; name: string; party: string }[];
+	heading: string; // the race as the graphic printed it
+	linked: boolean; // false: the heading fit no one known race, so there is nothing to compare
+	pctIn: Record<SourceName, null | number>;
+	pctInIsMinimum: boolean; // the graphic printed ">N% IN"
+	raceKey: string;
+	saidAt: Record<SourceName, null | number>; // when each source was first seen saying this
+	templateId: null | string;
+}
+
 export interface AlertEvent {
 	detail: string;
 	kind: 'cleared' | 'raised';
@@ -15,15 +31,6 @@ export interface AlertEvent {
 	severity: 'high' | 'low' | 'medium';
 	subject?: string;
 	ts: number;
-	type: string;
-}
-
-export interface Anomaly {
-	detail: string;
-	observedAt: number;
-	raceKey: string;
-	severity: 'high' | 'low' | 'medium';
-	subject?: string;
 	type: string;
 }
 
@@ -38,12 +45,6 @@ export interface Candidate {
 	party: string;
 	pct: number;
 	votes: number;
-}
-
-export interface CanonicalRace {
-	canonicalRaceKey: string;
-	descriptor: RaceDescriptor;
-	provisional: boolean;
 }
 
 export type DdhqHost = 'integration' | 'production';
@@ -69,82 +70,16 @@ export interface Observation {
 	templateId?: string;
 }
 
-export interface RaceAlias {
-	canonicalRaceKey: string;
-	method: string;
-	source: SourceName;
-	sourceRaceKey: string;
-	updatedAt: number;
-}
-
 export interface RaceCell {
 	called: boolean;
 	pct: number;
 	votes: number;
 }
 
-export interface RaceDescriptor {
-	candidateNames: string[];
-	heading: null | string;
-	normalizedKey: string;
-	source: SourceName;
-	sourceRaceKey: string;
-}
-
 export interface RaceDetailResponse {
-	anomalies: Anomaly[];
-	candidates: { cells: Partial<Record<SourceName, RaceCell>>; name: string }[];
 	observations: Observation[]; // every retained observation, all sources, newest first
 	raceKey: string;
-	sources: {
-		aliasMethod: null | string;
-		canonicalRaceKey: null | string;
-		observedAt: null | number;
-		pctIn: null | number;
-		present: boolean;
-		reportedAt: null | number;
-		source: SourceName;
-		sourceRaceKey: null | string;
-	}[];
-}
-
-export interface RaceLinkProposal {
-	candidateCanonicalRaceKey: null | string;
-	id: string;
-	incoming: RaceDescriptor;
-	reason: string;
-	source: SourceName;
-	sourceRaceKey: string;
-	status: 'accepted' | 'pending' | 'rejected';
-}
-
-export interface RaceLinksResponse {
-	aliases: RaceAlias[];
-	canonicalRaces: CanonicalRace[];
-	proposals: RaceLinkProposal[];
-}
-
-export interface RaceSourceCandidate {
-	called: boolean;
-	name: string;
-	party: string;
-	pct: number;
-	votes: number;
-}
-
-export interface RaceSourceSummary {
-	candidates: RaceSourceCandidate[];
-	pctIn: null | number;
-	present: boolean;
-}
-
-export interface RaceSummary {
-	alertCount: number;
-	lastAt: null | number;
-	pendingLinkCount: number;
-	provisional: boolean;
-	raceKey: string;
-	sources: Record<SourceName, RaceSourceSummary>;
+	reads: AirRead[]; // every retained air read of the race, newest first
 }
 
 export type SessionStatus = { id: null | string; running: boolean; startedAt: null | number };
@@ -163,7 +98,7 @@ export interface SessionSummary {
 
 export interface SourceStat {
 	error: { count: number; message: string; since: number } | null; // current poll/capture failure
-	lastAt: null | number;
+	lastAt: null | number; // when the source last answered
 	observations: number;
 	races: number;
 	source: SourceName;
@@ -171,12 +106,10 @@ export interface SourceStat {
 
 export interface StateResponse {
 	airMatch: null | string;
-	alerts: Anomaly[];
 	cadence: Cadence | null;
 	ddhqHost: DdhqHost | null; // Live mode's DDHQ host; null: DDHQ not configured
 	lastFrame: { observations: Observation[]; ts: number } | null;
 	mode: Mode | null; // null: not switchable
-	pendingLinkCount: number;
 	session: null | SessionStatus;
 	sources: SourceStat[];
 }
@@ -198,11 +131,6 @@ const postJson = async <T>(url: string, body: unknown): Promise<T> => {
 };
 
 export const api = {
-	acceptRaceProposal: (id: string) =>
-		postJson<{ raceLinks: RaceLinksResponse }>(
-			`/api/race-links/proposals/${encodeURIComponent(id)}/accept`,
-			{},
-		),
 	// Reads the body even on a 500 so the real capture error reaches the UI.
 	capture: async (): Promise<{ error?: string; ran: boolean; status: string }> => {
 		const res = await fetch('/api/capture', { method: 'POST' });
@@ -214,31 +142,21 @@ export const api = {
 		if (!res.ok) throw new Error(`${res.status} ${url}`);
 		return res.json() as Promise<{ freedBytes: number }>;
 	},
-	getAirReads: () => getJson<{ reads: Observation[] }>('/api/air-reads'),
 	getAlertHistory: (limit = 100) =>
 		getJson<{ events: AlertEvent[] }>(`/api/alert-history?limit=${limit}`),
 	getQueries: () => getJson<{ queries: string[] }>('/api/queries'),
 	getRace: (raceKey: string) =>
 		getJson<RaceDetailResponse>(`/api/race/${encodeURIComponent(raceKey)}`),
-	getRaceLinks: () => getJson<RaceLinksResponse>('/api/race-links'),
-	getRaces: () => getJson<{ races: RaceSummary[] }>('/api/races'),
+	getRaces: () => getJson<{ races: AirRead[] }>('/api/races'),
 	getSessions: () => getJson<{ disk: DiskUsage; sessions: SessionSummary[] }>('/api/sessions'),
 	getState: () => getJson<StateResponse>('/api/state'),
 	pruneSessionFrames: (id: string) =>
 		postJson<{ freedBytes: number }>(`/api/sessions/${encodeURIComponent(id)}/prune-frames`, {}),
-	rejectRaceProposal: (id: string) =>
-		postJson<{ raceLinks: RaceLinksResponse }>(
-			`/api/race-links/proposals/${encodeURIComponent(id)}/reject`,
-			{},
-		),
-	resetRaceLinks: () => postJson<{ raceLinks: RaceLinksResponse }>('/api/race-links/reset', {}),
 	setAirMatch: (match: string) => postJson<{ match: string }>('/api/air-match', { match }),
 	setCadence: (next: Partial<Cadence>) => postJson<Cadence>('/api/cadence', next),
 	setDdhqHost: (host: DdhqHost) => postJson<{ host: DdhqHost }>('/api/ddhq-host', { host }),
 	setMode: (mode: Mode) => postJson<{ mode: Mode }>('/api/mode', { mode }),
 	setQueries: (queries: string[]) => postJson<{ queries: string[] }>('/api/queries', { queries }),
-	setRaceAlias: (body: { canonicalRaceKey: string; source: SourceName; sourceRaceKey: string }) =>
-		postJson<{ raceLinks: RaceLinksResponse }>('/api/race-links/aliases', body),
 	startSession: () => postJson<SessionStatus>('/api/session/start', {}),
 	stopSession: () => postJson<SessionStatus>('/api/session/stop', {}),
 };

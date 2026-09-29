@@ -12,14 +12,13 @@ export type Anomaly = {
 	raceKey: string;
 	severity: Severity;
 	// What the anomaly is about within the race (a candidate name, a field name) for
-	// rules that fire per candidate/field — the hysteresis identity is type + race +
-	// subject, since `detail` carries volatile numbers.
+	// rules that fire per candidate/field. With the type, it says which alert this is:
+	// `detail` carries figures that move.
 	subject?: string;
 	type: AnomalyType;
 };
 
 export type AnomalyType =
-	| 'air_ahead_of_upstream'
 	| 'call_mismatch'
 	| 'cross_surface_mismatch'
 	| 'field_missing'
@@ -44,7 +43,6 @@ export type Owner = 'observe' | 'provider' | 'us' | 'vendor';
 export type RaceObservation = {
 	calledFor: string[]; // candidate keys called/advancing; empty = none. Multiple for top-2 races.
 	candidates: CandidateState[];
-	extractedFields?: Record<string, string>;
 	// Air only: required on-screen fields the graphic did not show (e.g. 'pct_in').
 	// The numeric field is left at 0 and the reconciler alerts instead of comparing.
 	missingFields?: string[];
@@ -83,29 +81,6 @@ const normalizeName = (name: string): string =>
 
 const latest = (history: RaceObservation[]): RaceObservation | undefined =>
 	history.length === 0 ? undefined : history[history.length - 1];
-
-const findNearest = (
-	history: RaceObservation[],
-	targetTime: number,
-	windowMs: number,
-): RaceObservation | undefined =>
-	history
-		.filter((observation) => Math.abs(observation.observedAt - targetTime) <= windowMs)
-		.reduce<RaceObservation | undefined>((best, observation) => {
-			if (best === undefined) return observation;
-			return Math.abs(observation.observedAt - targetTime) < Math.abs(best.observedAt - targetTime)
-				? observation
-				: best;
-		}, undefined);
-
-const observationsInWindow = (
-	history: RaceObservation[],
-	fromTime: number,
-	toTime: number,
-): RaceObservation[] =>
-	history.filter(
-		(observation) => observation.observedAt >= fromTime && observation.observedAt <= toTime,
-	);
 
 const candidateBy = (observation: RaceObservation, key: string): CandidateState | undefined =>
 	observation.candidates.find((candidate) => candidate.key === key);
@@ -157,58 +132,35 @@ const checkNameAgreement = (
 		];
 	});
 
-const checkAirBehindOrAhead = (
-	raceKey: string,
-	airObservation: RaceObservation,
-	providerHistory: RaceObservation[],
-	thresholds: Thresholds,
-): Anomaly[] => {
-	const earliestProviderAllowed = airObservation.observedAt - thresholds.lagSlackMs;
-	const providerAfter = providerHistory.find(
-		(observation) => observation.observedAt > earliestProviderAllowed,
-	);
-	if (providerAfter === undefined) return [];
-	const airHasNewerData = airObservation.candidates.some((airCandidate) => {
-		const upstreamCandidate = findMatchingCandidate(providerAfter, airCandidate);
-		return upstreamCandidate !== undefined && airCandidate.votes > upstreamCandidate.votes;
-	});
-	if (!airHasNewerData) return [];
-	return [
-		{
-			detail: 'Air shows vote totals higher than any provider snapshot seen yet',
-			involves: { air: [airObservation], provider: providerAfter },
-			observedAt: airObservation.observedAt,
-			owner: 'observe',
-			raceKey,
-			severity: 'medium',
-			type: 'air_ahead_of_upstream',
-		},
-	];
-};
-
-const checkVotesMatchInLagWindow = (
-	raceKey: string,
+// A graphic is drawn from one Ross state, some seconds before it is read off air. These
+// are the states it could have been drawn from: each one Ross was seen in during the lag
+// window before the read, the one it was already in when the window opened included.
+const vendorStatesFor = (
 	airObservation: RaceObservation,
 	vendorHistory: RaceObservation[],
 	thresholds: Thresholds,
-): Anomaly[] => {
-	const fromTime =
-		airObservation.observedAt - thresholds.vendorToAirLagMaxMs - thresholds.lagSlackMs;
-	const toTime = airObservation.observedAt - thresholds.vendorToAirLagMs + thresholds.lagSlackMs;
-	const window = observationsInWindow(vendorHistory, fromTime, toTime);
-	if (window.length === 0) return [];
-	return airObservation.candidates.flatMap((airCandidate) => {
-		const sawMatch = window.some((vendorObservation) => {
-			const vendorCandidate = findMatchingCandidate(vendorObservation, airCandidate);
-			return vendorCandidate !== undefined && vendorCandidate.votes === airCandidate.votes;
-		});
-		if (sawMatch) return [];
-		const mostRecentVendor = window[window.length - 1]!;
-		const vendorCandidate = findMatchingCandidate(mostRecentVendor, airCandidate);
+): RaceObservation[] => {
+	const opened = airObservation.observedAt - thresholds.vendorToAirLagMaxMs - thresholds.lagSlackMs;
+	const byTheRead = vendorHistory.filter(
+		(observation) => observation.observedAt <= airObservation.observedAt,
+	);
+	const before = byTheRead.filter((observation) => observation.observedAt < opened).at(-1);
+	const during = byTheRead.filter((observation) => observation.observedAt >= opened);
+	return before === undefined ? during : [before, ...during];
+};
+
+const checkVotes = (
+	raceKey: string,
+	airObservation: RaceObservation,
+	vendorState: RaceObservation,
+): Anomaly[] =>
+	airObservation.candidates.flatMap((airCandidate) => {
+		const vendorCandidate = findMatchingCandidate(vendorState, airCandidate);
+		if (vendorCandidate?.votes === airCandidate.votes) return [];
 		return [
 			{
-				detail: `Air shows ${airCandidate.votes.toLocaleString()} for ${airCandidate.name}; no vendor snapshot in lag window matched (vendor latest: ${vendorCandidate?.votes ?? 'n/a'})`,
-				involves: { air: [airObservation], vendor: mostRecentVendor },
+				detail: `Air shows ${airCandidate.votes.toLocaleString('en-US')} for ${airCandidate.name}; Ross ${vendorCandidate === undefined ? 'has no candidate by that name' : `had ${vendorCandidate.votes.toLocaleString('en-US')}`}`,
+				involves: { air: [airObservation], vendor: vendorState },
 				observedAt: airObservation.observedAt,
 				owner: 'us' as const,
 				raceKey,
@@ -218,32 +170,26 @@ const checkVotesMatchInLagWindow = (
 			},
 		];
 	});
-};
 
 const checkPctIn = (
 	raceKey: string,
 	airObservation: RaceObservation,
-	vendorHistory: RaceObservation[],
+	vendorState: RaceObservation,
 	thresholds: Thresholds,
 ): Anomaly[] => {
-	const fromTime =
-		airObservation.observedAt - thresholds.vendorToAirLagMaxMs - thresholds.lagSlackMs;
-	const toTime = airObservation.observedAt - thresholds.vendorToAirLagMs + thresholds.lagSlackMs;
-	const window = observationsInWindow(vendorHistory, fromTime, toTime);
-	if (window.length === 0) return [];
+	// The extractor leaves 0 where the badge wasn't on screen; checkFieldMissing reports that.
+	if (airObservation.missingFields?.includes('pct_in') === true) return [];
 	// A ">95% IN" badge is a floor: any vendor figure at or above it (minus tolerance) agrees.
-	const sawMatch = window.some((vendorObservation) =>
+	const agrees =
 		airObservation.pctInIsMinimum === true
-			? vendorObservation.pctIn >= airObservation.pctIn - thresholds.pctInTolerance
-			: Math.abs(vendorObservation.pctIn - airObservation.pctIn) <= thresholds.pctInTolerance,
-	);
-	if (sawMatch) return [];
-	const mostRecentVendor = window[window.length - 1]!;
+			? vendorState.pctIn >= airObservation.pctIn - thresholds.pctInTolerance
+			: Math.abs(vendorState.pctIn - airObservation.pctIn) <= thresholds.pctInTolerance;
+	if (agrees) return [];
 	const airShown = `${airObservation.pctInIsMinimum === true ? '>' : ''}${airObservation.pctIn}`;
 	return [
 		{
-			detail: `Air pct_in ${airShown} not within ${thresholds.pctInTolerance} of any vendor snapshot in lag window (vendor latest: ${mostRecentVendor.pctIn})`,
-			involves: { air: [airObservation], vendor: mostRecentVendor },
+			detail: `Air shows ${airShown}% in; Ross had ${vendorState.pctIn}%`,
+			involves: { air: [airObservation], vendor: vendorState },
 			observedAt: airObservation.observedAt,
 			owner: 'us',
 			raceKey,
@@ -252,6 +198,35 @@ const checkPctIn = (
 		},
 	];
 };
+
+const checkAgainstVendor = (
+	raceKey: string,
+	airObservation: RaceObservation,
+	vendorState: RaceObservation,
+	thresholds: Thresholds,
+): Anomaly[] => [
+	...checkVotes(raceKey, airObservation, vendorState),
+	...checkPctIn(raceKey, airObservation, vendorState, thresholds),
+];
+
+// The Ross state an air read is held against: of those it could have been drawn from, the
+// one it disagrees with least, and the newest of those. Undefined when Ross had said
+// nothing about the race by the time of the read.
+const comparedVendorState = (
+	airObservation: RaceObservation,
+	vendorHistory: RaceObservation[],
+	thresholds: Thresholds,
+): RaceObservation | undefined =>
+	vendorStatesFor(airObservation, vendorHistory, thresholds)
+		.map((state) => ({
+			disagreements: checkAgainstVendor(state.raceKey, airObservation, state, thresholds).length,
+			state,
+		}))
+		.reduce<{ disagreements: number; state: RaceObservation } | undefined>(
+			(best, next) =>
+				best === undefined || next.disagreements <= best.disagreements ? next : best,
+			undefined,
+		)?.state;
 
 const sameMembers = (a: readonly string[], b: readonly string[]): boolean =>
 	a.length === b.length && a.every((value) => b.includes(value));
@@ -265,10 +240,18 @@ const checkCallConsistency = (
 	raceKey: string,
 	airObservation: RaceObservation,
 	providerHistory: RaceObservation[],
+	vendorHistory: RaceObservation[],
 	thresholds: Thresholds,
 ): Anomaly[] => {
 	const airCalledNames = calledCandidateNames(airObservation);
 	const airCalledNorm = airCalledNames.map(normalizeName);
+	// Ross is polled faster than a call takes to reach air; DDHQ is not, so a call can be on
+	// air before we have seen DDHQ make it. A ✓ the graphic could have drawn from Ross is a
+	// faithful copy of its feed, whatever we have seen of DDHQ.
+	const upstream = [
+		...providerHistory,
+		...vendorStatesFor(airObservation, vendorHistory, thresholds),
+	];
 
 	if (airObservation.calledFor.length === 0) {
 		// Air shows no call — flag only if provider called someone long enough ago.
@@ -292,22 +275,22 @@ const checkCallConsistency = (
 	}
 
 	// Compare by candidate IDENTITY (resolved name), not raw key: air calls by name,
-	// the provider by upstream ID, so a raw set compare would always falsely mismatch.
-	// Exact agreement with any provider snapshot → fine.
+	// the sources by upstream ID, so a raw set compare would always falsely mismatch.
+	// Exact agreement with any upstream snapshot → fine.
 	if (
-		providerHistory.some((observation) =>
+		upstream.some((observation) =>
 			sameMembers(calledCandidateNames(observation).map(normalizeName), airCalledNorm),
 		)
 	)
 		return [];
 
-	const providerUnionNorm = providerHistory.flatMap((observation) =>
+	const upstreamUnionNorm = upstream.flatMap((observation) =>
 		calledCandidateNames(observation).map(normalizeName),
 	);
-	const extra = airCalledNorm.filter((name) => !providerUnionNorm.includes(name));
+	const extra = airCalledNorm.filter((name) => !upstreamUnionNorm.includes(name));
 	if (extra.length > 0) {
-		// Air called someone the provider never called: premature (provider called
-		// nobody) or a mismatch (provider called someone else).
+		// Air called someone neither source ever called: premature (the provider called
+		// nobody) or a mismatch (the provider called someone else).
 		const anyProviderCall = providerHistory.find((observation) => observation.calledFor.length > 0);
 		return [
 			{
@@ -485,6 +468,9 @@ const checkMultipleWinners = (
 	];
 };
 
+// What's wrong with the race's latest air read, given what each source had said. Callers
+// pass the histories as they stood at the read (composition.ts), so the answer is a record
+// of that moment.
 const reconcile = (input: ReconcileInput): Anomaly[] => {
 	const { airHistory, now, providerHistory, raceKey, thresholds, vendorHistory } = input;
 	const anomalies: Anomaly[] = [];
@@ -503,22 +489,18 @@ const reconcile = (input: ReconcileInput): Anomaly[] => {
 		anomalies.push(...checkMultipleWinners(raceKey, latestProvider, 'DDHQ', thresholds));
 	if (latestVendor !== undefined)
 		anomalies.push(...checkMultipleWinners(raceKey, latestVendor, 'Ross', thresholds));
-	const airPctInMissing = latestAir?.missingFields?.includes('pct_in') === true;
 
 	if (latestAir !== undefined && latestProvider !== undefined) {
 		anomalies.push(
 			...checkNameAgreement(raceKey, latestAir, latestProvider, 'DDHQ'),
-			...checkAirBehindOrAhead(raceKey, latestAir, providerHistory, thresholds),
-			...checkCallConsistency(raceKey, latestAir, providerHistory, thresholds),
+			...checkCallConsistency(raceKey, latestAir, providerHistory, vendorHistory, thresholds),
 		);
 	}
 
-	if (latestAir !== undefined && latestVendor !== undefined) {
-		anomalies.push(
-			...checkVotesMatchInLagWindow(raceKey, latestAir, vendorHistory, thresholds),
-			...(airPctInMissing ? [] : checkPctIn(raceKey, latestAir, vendorHistory, thresholds)),
-		);
-	}
+	const vendorState =
+		latestAir === undefined ? undefined : comparedVendorState(latestAir, vendorHistory, thresholds);
+	if (latestAir !== undefined && vendorState !== undefined)
+		anomalies.push(...checkAgainstVendor(raceKey, latestAir, vendorState, thresholds));
 
 	if (latestProvider !== undefined) {
 		anomalies.push(...checkVoteDrop(raceKey, providerHistory, 'DDHQ', thresholds));
@@ -533,7 +515,6 @@ const reconcile = (input: ReconcileInput): Anomaly[] => {
 };
 
 export {
-	checkAirBehindOrAhead,
 	checkCallConsistency,
 	checkCrossSurface,
 	checkFieldMissing,
@@ -541,10 +522,9 @@ export {
 	checkNameAgreement,
 	checkPctIn,
 	checkVoteDrop,
-	checkVotesMatchInLagWindow,
-	findNearest,
+	checkVotes,
+	comparedVendorState,
 	normalizeName,
-	observationsInWindow,
 };
 
 export default reconcile;

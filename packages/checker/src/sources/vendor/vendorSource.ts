@@ -8,12 +8,15 @@ import { simBaseUrl } from '../provider/providerSource.js';
 import { makeVendorPoller } from './poller.js';
 
 // Assembles the live Chameleon vendor source. The playlist endpoint is the fixed,
-// known network Chameleon blade — hardcoded, polled once a minute (VPN-only). In Sim
-// mode the simulator's mirror serves the same path.
+// known network Chameleon blade — hardcoded (VPN-only). In Sim mode the simulator's
+// mirror serves the same path.
 const CHAMELEON_HOST = 'http://txdaldc1nnr001.nexstar.tv';
 const CHAMELEON_PATH =
 	'/chameleon/blade/election/playlist/128/DDHQ-MAIN/?format=json&pretty=yes&dynFieldDefaultAttr=false';
-const POLL_INTERVAL_MS = 60_000;
+// A graphic is drawn from Ross's state some seconds before it's read off air, and is held
+// against what we saw Ross say. Polled any slower than that state takes to reach air, air
+// would show figures we hadn't seen yet, and a correct graphic would read as a mismatch.
+const POLL_INTERVAL_MS = 5_000;
 
 export type VendorSource = {
 	intervalMs: number;

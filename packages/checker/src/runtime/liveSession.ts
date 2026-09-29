@@ -23,13 +23,13 @@ export type LiveSessionConfig = {
 	onStop: () => void; // stop them
 };
 
-// What the sources write through. It outlives any one session: the LLM client, air
-// source and identity resolver hold it for the life of the process, and it forwards to
-// whichever session is open. A poll or capture still in flight when monitoring stops
+// What the sources write through. It outlives any one session: the LLM client and the air
+// source hold it for the life of the process, and it forwards to whichever session is
+// open. A poll or capture still in flight when monitoring stops
 // lands here with no session open and is dropped.
 export type SessionRecorder = Pick<
 	Recorder,
-	'recordAlertEvent' | 'recordFrame' | 'recordIdentityEvent' | 'recordLlmCall' | 'recordObservation'
+	'recordAlertEvent' | 'recordFrame' | 'recordLlmCall' | 'recordObservation'
 >;
 
 export type SessionStatus = { id: null | string; running: boolean; startedAt: null | number };
@@ -52,7 +52,6 @@ export const makeLiveSession = (config: LiveSessionConfig): LiveSession => {
 			recordAlertEvent: (event) => current?.recorder.recordAlertEvent(event),
 			// The hash is content-derived, so it's the same whether or not it was written.
 			recordFrame: (input) => current?.recorder.recordFrame(input) ?? sha256Hex(input.png),
-			recordIdentityEvent: (event) => current?.recorder.recordIdentityEvent(event),
 			recordLlmCall: (input) => current?.recorder.recordLlmCall(input),
 			recordObservation: (observation) => current?.recorder.recordObservation(observation),
 		},
