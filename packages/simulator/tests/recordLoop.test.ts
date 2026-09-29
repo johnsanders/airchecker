@@ -14,7 +14,7 @@ import { makeDdhqAuth } from '../src/sources/ddhqAuth.js';
 const dirs: string[] = [];
 afterEach(() => dirs.splice(0).forEach((dir) => rmSync(dir, { force: true, recursive: true })));
 
-const LIVE = 'https://resultsapi.decisiondeskhq.com';
+const DDHQ = 'https://resultsapi-integration.decisiondeskhq.com';
 const VENDOR = 'http://vpn-only.test/chameleon/playlist/?format=json';
 
 const routedHttp = (routes: Record<string, unknown>, headersSeen: string[] = []): HttpJson => ({
@@ -28,14 +28,14 @@ const routedHttp = (routes: Record<string, unknown>, headersSeen: string[] = [])
 });
 
 describe('makeRecordLoop', () => {
-	it('records every DDHQ page (rebased) and the Chameleon playlist, never the token POST', async () => {
+	it("records every page from DDHQ's integration host (rebased) and the Chameleon playlist, never the token POST", async () => {
 		const baseDir = mkdtempSync(join(tmpdir(), 'record-loop-'));
 		dirs.push(baseDir);
 		const headersSeen: string[] = [];
 		const upstream = routedHttp(
 			{
-				[`${LIVE}/api/v4/races?state=TX&page=2`]: { data: [2], next_page_url: null },
-				[`${LIVE}/api/v4/races?state=TX`]: {
+				[`${DDHQ}/api/v4/races?state=TX&page=2`]: { data: [2], next_page_url: null },
+				[`${DDHQ}/api/v4/races?state=TX`]: {
 					data: [1],
 					next_page_url: 'other-host.test/api/v4/races?state=TX&page=2',
 				},
@@ -47,7 +47,7 @@ describe('makeRecordLoop', () => {
 		const ddhqHttp = makeRecordingHttp(upstream, 'DDHQ', recorder.record, () => 7);
 		const loop = makeRecordLoop({
 			auth: makeDdhqAuth({
-				getBaseUrl: () => LIVE,
+				getBaseUrl: () => DDHQ,
 				getCredentials: () => ({ clientId: 'id', clientSecret: 's', grantType: 'g' }),
 				http: ddhqHttp,
 			}),
@@ -55,7 +55,6 @@ describe('makeRecordLoop', () => {
 			ddhqHttp,
 			getSettings: () => ({
 				airSource: 'invented',
-				environment: 'production',
 				intervalSeconds: 60,
 				queries: ['state=TX', 'state=ZZ'],
 			}),
@@ -67,7 +66,7 @@ describe('makeRecordLoop', () => {
 		recorder.stop();
 
 		expect(headersSeen.filter((header) => header === 'Bearer real-token')).toHaveLength(3);
-		expect(loop.errors()).toEqual([`DDHQ state=ZZ: HTTP 404 for ${LIVE}/api/v4/races?state=ZZ`]);
+		expect(loop.errors()).toEqual([`DDHQ state=ZZ: HTTP 404 for ${DDHQ}/api/v4/races?state=ZZ`]);
 		const recording = loadApiRecording(recorder.list()[0]!.file);
 		expect(
 			recording.responses.map((row) => [row.source, row.path, row.error === null]).sort(),
@@ -81,7 +80,7 @@ describe('makeRecordLoop', () => {
 
 	it('reports a token failure without recording anything for DDHQ', async () => {
 		const failingAuth = makeDdhqAuth({
-			getBaseUrl: () => LIVE,
+			getBaseUrl: () => DDHQ,
 			getCredentials: () => {
 				throw new Error('DDHQ_CLIENT_ID, DDHQ_CLIENT_SECRET, and DDHQ_GRANT_TYPE must be set');
 			},
@@ -94,7 +93,6 @@ describe('makeRecordLoop', () => {
 			ddhqHttp: makeRecordingHttp(routedHttp({}), 'DDHQ', (row) => rows.push(row)),
 			getSettings: () => ({
 				airSource: 'invented',
-				environment: 'production',
 				intervalSeconds: 60,
 				queries: ['state=TX'],
 			}),

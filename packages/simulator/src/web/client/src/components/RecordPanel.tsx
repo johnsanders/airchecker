@@ -173,7 +173,8 @@ const RecordPanel: React.FC<Props> = (props) => {
 				</Typography>
 			</Stack>
 			<Typography color="text.secondary" sx={{ display: 'block', mb: 1 }} variant="caption">
-				Checks both APIs every {props.status?.recordIntervalSeconds ?? '…'} s while recording.
+				Records DDHQ's integration host and Chameleon, checking both every{' '}
+				{props.status?.recordIntervalSeconds ?? '…'} s. Production DDHQ is never recorded.
 			</Typography>
 			{props.status?.recordErrors.map((error) => (
 				<Typography color="error" key={error} sx={{ display: 'block' }} variant="caption">

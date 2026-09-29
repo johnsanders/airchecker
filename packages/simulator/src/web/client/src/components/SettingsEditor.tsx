@@ -1,28 +1,22 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-
-import type { DdhqEnvironment } from '../api.js';
 
 import { api } from '../api.js';
 
 // What the recorder polls: the DDHQ query list (one /api/v4/races query string per
-// line), the DDHQ host, and how often. Saved edits land on the recorder's next check;
-// a new interval, after the wait already underway.
+// line), asked of DDHQ's integration host, and how often. Saved edits land on the
+// recorder's next check; a new interval, after the wait already underway.
 const SettingsEditor: React.FC = () => {
 	const [text, setText] = React.useState('');
-	const [environment, setEnvironment] = React.useState<DdhqEnvironment>('production');
 	const [intervalText, setIntervalText] = React.useState('60');
 	const [msg, setMsg] = React.useState('');
 
 	React.useEffect(() => {
 		void api.getSettings().then((settings) => {
 			setText(settings.queries.join('\n'));
-			setEnvironment(settings.environment);
 			setIntervalText(String(settings.intervalSeconds));
 		});
 	}, []);
@@ -34,15 +28,12 @@ const SettingsEditor: React.FC = () => {
 			const latest = await api.getSettings();
 			const saved = await api.setSettings({
 				...latest,
-				environment,
 				intervalSeconds: Number(intervalText),
 				queries: text.split('\n'),
 			});
 			setText(saved.queries.join('\n'));
 			setIntervalText(String(saved.intervalSeconds));
-			setMsg(
-				`saved ${saved.queries.length} on ${saved.environment}, every ${saved.intervalSeconds} s`,
-			);
+			setMsg(`saved ${saved.queries.length}, every ${saved.intervalSeconds} s`);
 		} catch (error) {
 			setMsg(error instanceof Error ? `save failed: ${error.message}` : 'save failed');
 		}
@@ -50,27 +41,16 @@ const SettingsEditor: React.FC = () => {
 
 	return (
 		<Box>
-			<Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mb: 1.5 }}>
+			<Box sx={{ alignItems: 'center', display: 'flex', gap: 2, mb: 1.5 }}>
 				<Typography color="text.secondary" variant="caption">
-					DDHQ environment:
+					DDHQ queries, asked of its integration host (resultsapi-integration.decisiondeskhq.com)
 				</Typography>
-				<ToggleButtonGroup
-					exclusive={true}
-					onChange={(_event, next: DdhqEnvironment | null) => setEnvironment(next ?? environment)}
-					size="small"
-					value={environment}
-				>
-					<ToggleButton value="production">Production</ToggleButton>
-					<ToggleButton color="warning" value="integration">
-						Integration (test)
-					</ToggleButton>
-				</ToggleButtonGroup>
 				<TextField
 					label="Sample every (s)"
 					onChange={(event) => setIntervalText(event.target.value)}
 					size="small"
 					slotProps={{ htmlInput: { max: 3600, min: 5, step: 1 } }}
-					sx={{ ml: 2, width: 140 }}
+					sx={{ ml: 'auto', width: 140 }}
 					type="number"
 					value={intervalText}
 				/>

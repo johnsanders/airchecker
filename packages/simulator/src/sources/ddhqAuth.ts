@@ -5,7 +5,7 @@ import type { HttpJson } from './http.js';
 // DDHQ OAuth (client_credentials): POST {client_id, client_secret, grant_type} to
 // /api/v4/oauth/token → bearer token. Tokens are cached and reused across queries
 // and ticks, refreshed shortly before expiry, and re-issued when the host changes
-// (production vs integration issue their own tokens). Credentials come from process.env
+// (each host issues its own tokens). Credentials come from process.env
 // at the call site — they never live in this module or pass through logs.
 const tokenResponseSchema = z.object({
 	access_token: z.string(),

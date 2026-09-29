@@ -47,8 +47,6 @@ export interface ApiResponseSummary {
 
 export type ApiSource = 'DDHQ' | 'Ross';
 
-export type DdhqEnvironment = 'integration' | 'production';
-
 export interface PlaybackStatus {
 	ddhqQueries: string[];
 	durationMs: number;
@@ -60,7 +58,6 @@ export interface PlaybackStatus {
 
 export interface Settings {
 	airSource: AirSource;
-	environment: DdhqEnvironment;
 	intervalSeconds: number;
 	queries: string[];
 }

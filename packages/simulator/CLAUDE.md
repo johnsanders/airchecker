@@ -18,7 +18,7 @@ npm run frontend:dev     # hot-reload control page on :5174, proxied to :8788
 ```
 src/
   main.ts           composition + listen
-  settings.ts       what the recorder polls (DDHQ query list, host, sample interval) and a night's airSource (invented or ddhqIntegration), in settings.json
+  settings.ts       what the recorder polls (DDHQ query list, sample interval) and a night's airSource (invented or ddhqIntegration), in settings.json
   sources/          HttpJson over fetch, DDHQ OAuth (copied from the checker)
   recording/        API recording sqlite format, recorder (Record button), record loop (sample interval from settings, default 60 s), recording HTTP wrapper
   playback/         playback clock (1× only) + the mirror's answers
@@ -35,7 +35,7 @@ render-*.mjs, compare.html               render a graphic to PNG; compare a buil
 
 ## How it fits with the checker
 
-- **Recording.** Record polls DDHQ (every query, every page) and the Chameleon playlist every sample interval (5–3600 s, default 60, set under "What to record"). It needs `DDHQ_CLIENT_ID`, `DDHQ_CLIENT_SECRET` and `DDHQ_GRANT_TYPE` in the root `.env`, and the VPN for Chameleon. Only GETs are recorded; the OAuth POST never reaches disk. Recordings live in `recordings/api/<name>.sqlite`. The checker used to write the same format, so its older recordings play here unchanged.
+- **Recording.** Record polls DDHQ's integration host (every query, every page) and the Chameleon playlist every sample interval (5–3600 s, default 60, set under "What to record"). It needs `DDHQ_CLIENT_ID`, `DDHQ_CLIENT_SECRET` and `DDHQ_GRANT_TYPE` in the root `.env`, and the VPN for Chameleon. Production DDHQ is never recorded: the integration host, where DDHQ's test runs are served, is the only one the recorder asks, and the control page says so. Only GETs are recorded; the OAuth POST never reaches disk. Recordings live in `recordings/api/<name>.sqlite`. The checker used to write the same format, so its older recordings play here unchanged.
 - **Playback.** Play serves one recording on the mirror:
   - `POST /api/v4/oauth/token` returns a fake token.
   - `GET /api/v4/*` (DDHQ) and `GET /chameleon/*` (the Chameleon blade) answer with the response recorded for that exact path and query, the latest one at or before the playback clock.

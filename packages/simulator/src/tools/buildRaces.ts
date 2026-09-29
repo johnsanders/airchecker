@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 import type { Race, RaceCandidate } from '../air/races.js';
 
-import { ddhqBaseUrl } from '../settings.js';
 import { makeDdhqAuth } from '../sources/ddhqAuth.js';
 import { makeFetchHttp } from '../sources/http.js';
 
@@ -14,6 +13,9 @@ import { makeFetchHttp } from '../sources/http.js';
 // Run from packages/simulator: node --env-file-if-exists=../../.env --import tsx src/tools/buildRaces.ts
 
 const RACE_DATE = '2026-11-03';
+
+// The race list is the real one, so it is looked up on production. Nothing is recorded.
+const DDHQ_URL = process.env.DDHQ_BASE_URL ?? 'https://resultsapi.decisiondeskhq.com';
 
 // Ross group ids in the take list; the ticker (1) is data-driven and names no races.
 const GRAPHIC_BY_GROUP: Record<string, Graphic> = { '2': 'l3', '3': 'fs' };
@@ -103,7 +105,7 @@ const fetchOffice = async (
 			: [...page.data, ...(await fetchPage(`https://${page.next_page_url}`))];
 	};
 	return fetchPage(
-		`${ddhqBaseUrl('production')}/api/v4/races?race_date=${RACE_DATE}&office_id=${officeId}&limit=250`,
+		`${DDHQ_URL}/api/v4/races?race_date=${RACE_DATE}&office_id=${officeId}&limit=250`,
 	);
 };
 
@@ -135,7 +137,7 @@ const main = async () => {
 	}, new Map<string, TakeItem[]>());
 
 	const auth = makeDdhqAuth({
-		getBaseUrl: () => ddhqBaseUrl('production'),
+		getBaseUrl: () => DDHQ_URL,
 		getCredentials: readCredentials,
 		http: makeFetchHttp(),
 	});

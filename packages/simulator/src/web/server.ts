@@ -10,7 +10,7 @@ import type { AirShow } from '../air/airShow.js';
 import type { ApiPlayback, MirrorAnswer } from '../playback/apiPlayback.js';
 import type { ApiRecorder } from '../recording/apiRecorder.js';
 import type { ApiResponseQuery, ApiSource } from '../recording/apiRecording.js';
-import type { AirSource, DdhqEnvironment, SettingsStore } from '../settings.js';
+import type { AirSource, SettingsStore } from '../settings.js';
 
 import { MAX_INTERVAL_SECONDS, MIN_INTERVAL_SECONDS } from '../settings.js';
 
@@ -31,7 +31,6 @@ export type WebServerConfig = {
 
 const AIR_SOURCES: readonly AirSource[] = ['ddhqIntegration', 'invented'];
 const API_SOURCES: readonly ApiSource[] = ['DDHQ', 'Ross'];
-const ENVIRONMENTS: readonly DdhqEnvironment[] = ['integration', 'production'];
 const RESPONSES_PAGE = 200;
 const RESPONSES_PAGE_MAX = 1000;
 const WHOLE_NUMBER = /^\d+$/;
@@ -91,19 +90,15 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	app.post<{
 		Body: {
 			airSource?: unknown;
-			environment?: unknown;
 			intervalSeconds?: unknown;
 			queries?: unknown;
 		} | null;
 	}>('/api/settings', (req, reply) => {
 		const airSource = req.body?.airSource;
-		const environment = req.body?.environment;
 		const intervalSeconds = req.body?.intervalSeconds;
 		const queries = req.body?.queries;
 		if (!AIR_SOURCES.includes(airSource as AirSource))
 			return reply.code(400).send({ error: 'airSource must be invented or ddhqIntegration' });
-		if (!ENVIRONMENTS.includes(environment as DdhqEnvironment))
-			return reply.code(400).send({ error: 'environment must be production or integration' });
 		if (
 			typeof intervalSeconds !== 'number' ||
 			!Number.isInteger(intervalSeconds) ||
@@ -117,7 +112,6 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			return reply.code(400).send({ error: 'queries must be an array of strings' });
 		return config.settings.set({
 			airSource: airSource as AirSource,
-			environment: environment as DdhqEnvironment,
 			intervalSeconds,
 			queries: queries.map((query) => query.trim()).filter((query) => query.length > 0),
 		});

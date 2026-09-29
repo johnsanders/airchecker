@@ -4,11 +4,11 @@ import type { Settings } from '../settings.js';
 import type { DdhqAuth } from '../sources/ddhqAuth.js';
 import type { HttpJson } from '../sources/http.js';
 
-import { ddhqBaseUrl } from '../settings.js';
+import { DDHQ_INTEGRATION_URL } from '../settings.js';
 import { errorMessage } from '../sources/http.js';
 
 // While recording, fetches what airchecker's pollers fetch, every settings interval:
-// every DDHQ query (all pages) and the Chameleon playlist. The HTTP it's given records each GET;
+// every DDHQ query (all pages, from DDHQ's integration host) and the Chameleon playlist. The HTTP it's given records each GET;
 // this loop only makes the calls. Failures are kept for the web view and never stop
 // the loop, since a recording of the night's errors is still a recording of the night.
 
@@ -71,12 +71,10 @@ export const makeRecordLoop = (config: RecordLoopConfig): RecordLoop => {
 	};
 
 	const tickOnce = async (): Promise<void> => {
-		const settings = config.getSettings();
-		const baseUrl = ddhqBaseUrl(settings.environment);
 		const results = await Promise.allSettled([
-			...settings.queries.map(async (query) => {
+			...config.getSettings().queries.map(async (query) => {
 				try {
-					await recordQuery(baseUrl, query);
+					await recordQuery(DDHQ_INTEGRATION_URL, query);
 				} catch (error) {
 					throw new Error(`DDHQ ${query}: ${errorMessage(error)}`);
 				}

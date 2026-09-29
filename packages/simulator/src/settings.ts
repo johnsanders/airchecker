@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
 
 // Persisted, editable-from-the-web settings: what the recorder polls (the DDHQ query
-// list, host and sample interval) and what a simulated night's numbers come from.
+// list and sample interval) and what a simulated night's numbers come from.
 // Kept in a small JSON file so they survive restarts.
 
 // 'invented' makes up a night's numbers (night.ts); 'ddhqIntegration' pulls them from
@@ -10,11 +10,8 @@ import { z } from 'zod';
 // its testing windows.
 export type AirSource = 'ddhqIntegration' | 'invented';
 
-export type DdhqEnvironment = 'integration' | 'production';
-
 export type Settings = {
 	airSource: AirSource;
-	environment: DdhqEnvironment;
 	intervalSeconds: number;
 	queries: string[];
 };
@@ -31,7 +28,6 @@ export type SettingsStore = {
 const settingsSchema = z.object({
 	// Settings files from before airSource existed lack it.
 	airSource: z.enum(['ddhqIntegration', 'invented']).default('invented'),
-	environment: z.enum(['integration', 'production']),
 	// Settings files from before the interval was editable lack it.
 	intervalSeconds: z.number().int().min(MIN_INTERVAL_SECONDS).max(MAX_INTERVAL_SECONDS).default(60),
 	queries: z.array(z.string()),
@@ -39,15 +35,13 @@ const settingsSchema = z.object({
 
 const DEFAULTS: Settings = {
 	airSource: 'invented',
-	environment: 'production',
 	intervalSeconds: 60,
 	queries: [],
 };
 
-export const ddhqBaseUrl = (environment: DdhqEnvironment): string =>
-	environment === 'integration'
-		? 'https://resultsapi-integration.decisiondeskhq.com'
-		: (process.env.DDHQ_BASE_URL ?? 'https://resultsapi.decisiondeskhq.com');
+// DDHQ's integration host, where its test runs are served. It is the only DDHQ the
+// simulator records or pulls a night from: production is never recorded.
+export const DDHQ_INTEGRATION_URL = 'https://resultsapi-integration.decisiondeskhq.com';
 
 export const makeSettingsStore = (file: string): SettingsStore => {
 	let current = existsSync(file)

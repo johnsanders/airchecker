@@ -7,15 +7,14 @@ import { makeApiPlayback } from './playback/apiPlayback.js';
 import { makeApiRecorder } from './recording/apiRecorder.js';
 import { makeRecordingHttp } from './recording/recordingHttp.js';
 import { makeRecordLoop } from './recording/recordLoop.js';
-import { ddhqBaseUrl, makeSettingsStore } from './settings.js';
+import { DDHQ_INTEGRATION_URL, makeSettingsStore } from './settings.js';
 import { makeDdhqAuth } from './sources/ddhqAuth.js';
 import { makeFetchHttp } from './sources/http.js';
 import { makeWebServer } from './web/server.js';
 
-// Simulator server: records the live DDHQ + Chameleon APIs and plays recordings back
-// on mirror endpoints. Env: DDHQ_CLIENT_ID / DDHQ_CLIENT_SECRET / DDHQ_GRANT_TYPE
-// (recording and a live-DDHQ-integration night), DDHQ_BASE_URL (production host
-// override), PORT (default 8788).
+// Simulator server: records DDHQ's integration host and the Chameleon API, and plays
+// recordings back on mirror endpoints. Env: DDHQ_CLIENT_ID / DDHQ_CLIENT_SECRET /
+// DDHQ_GRANT_TYPE (recording and a live-DDHQ-integration night), PORT (default 8788).
 
 const RECORDINGS_DIR = 'recordings';
 
@@ -37,7 +36,7 @@ const main = async (): Promise<void> => {
 	const ddhqHttp = makeRecordingHttp(fetchHttp, 'DDHQ', record);
 	const recordLoop = makeRecordLoop({
 		auth: makeDdhqAuth({
-			getBaseUrl: () => ddhqBaseUrl(settings.get().environment),
+			getBaseUrl: () => DDHQ_INTEGRATION_URL,
 			getCredentials: readCredentials,
 			http: ddhqHttp,
 		}),
@@ -54,7 +53,7 @@ const main = async (): Promise<void> => {
 	const races = loadRaces('races.json');
 	const liveResults = makeLiveResults({
 		auth: makeDdhqAuth({
-			getBaseUrl: () => ddhqBaseUrl('integration'),
+			getBaseUrl: () => DDHQ_INTEGRATION_URL,
 			getCredentials: readCredentials,
 			http: fetchHttp,
 		}),

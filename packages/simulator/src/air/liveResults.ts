@@ -5,7 +5,7 @@ import type { HttpJson } from '../sources/http.js';
 import type { CandidateResult, RacePlan, RaceResult } from './night.js';
 import type { Race, RaceCandidate } from './races.js';
 
-import { ddhqBaseUrl } from '../settings.js';
+import { DDHQ_INTEGRATION_URL } from '../settings.js';
 import { errorMessage } from '../sources/http.js';
 
 // A night's numbers pulled from DDHQ's integration host instead of invented (night.ts),
@@ -67,7 +67,7 @@ export const makeLiveResults = (config: LiveResultsConfig): LiveResultsSource =>
 	let lastErrors: string[] = [];
 
 	const fetchChunk = async (ids: number[]): Promise<void> => {
-		const url = `${ddhqBaseUrl('integration')}/api/v4/races?race_ids=${ids.join(',')}`;
+		const url = `${DDHQ_INTEGRATION_URL}/api/v4/races?race_ids=${ids.join(',')}`;
 		const attempt = async (): Promise<unknown> =>
 			config.http.getJson(url, { Authorization: `Bearer ${await config.auth.getToken()}` });
 		let raw: unknown;

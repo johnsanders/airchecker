@@ -175,7 +175,6 @@ describe('control API', () => {
 			method: 'POST',
 			payload: {
 				airSource: 'ddhqIntegration',
-				environment: 'integration',
 				intervalSeconds: 15,
 				queries: [' state=TX ', ''],
 			},
@@ -183,7 +182,6 @@ describe('control API', () => {
 		});
 		const expected = {
 			airSource: 'ddhqIntegration',
-			environment: 'integration',
 			intervalSeconds: 15,
 			queries: ['state=TX'],
 		};
@@ -191,17 +189,16 @@ describe('control API', () => {
 		expect((await app.inject({ method: 'GET', url: '/api/settings' })).json()).toEqual(expected);
 		const statuses = await Promise.all(
 			[
-				{ airSource: 'made-up', environment: 'production', intervalSeconds: 60, queries: [] },
-				{ airSource: 'invented', environment: 'sim', intervalSeconds: 60, queries: [] },
-				{ airSource: 'invented', environment: 'production', intervalSeconds: 1, queries: [] },
-				{ airSource: 'invented', environment: 'production', intervalSeconds: 7.5, queries: [] },
-				{ airSource: 'invented', environment: 'production', queries: [] },
+				{ airSource: 'made-up', intervalSeconds: 60, queries: [] },
+				{ airSource: 'invented', intervalSeconds: 1, queries: [] },
+				{ airSource: 'invented', intervalSeconds: 7.5, queries: [] },
+				{ airSource: 'invented', queries: [] },
 			].map(
 				async (payload) =>
 					(await app.inject({ method: 'POST', payload, url: '/api/settings' })).statusCode,
 			),
 		);
-		expect(statuses).toEqual([400, 400, 400, 400, 400]);
+		expect(statuses).toEqual([400, 400, 400, 400]);
 	});
 
 	it('lists and browses recordings', async () => {
