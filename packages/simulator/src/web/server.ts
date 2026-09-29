@@ -240,21 +240,28 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		return { onAir: config.airShow.airedAt(Number(req.query.ts)) };
 	});
 
-	app.post<{ Body: { durationMinutes?: unknown } | null }>('/api/air/start', (req, reply) => {
-		const durationMinutes = req.body?.durationMinutes;
-		if (
-			typeof durationMinutes !== 'number' ||
-			!(durationMinutes > 0) ||
-			durationMinutes > MAX_AIR_MINUTES
-		)
-			return reply
-				.code(400)
-				.send({ error: `durationMinutes must be more than 0 and at most ${MAX_AIR_MINUTES}` });
-		// One thing serves the mirror at a time.
-		if (config.playback.status() !== undefined) config.playback.stop();
-		config.airShow.start(durationMinutes * 60_000);
-		return status();
-	});
+	app.post<{ Body: { durationMinutes?: unknown; faultPercent?: unknown } | null }>(
+		'/api/air/start',
+		(req, reply) => {
+			const durationMinutes = req.body?.durationMinutes;
+			// The share of airings that put something wrong on air; none unless asked for.
+			const faultPercent = req.body?.faultPercent ?? 0;
+			if (
+				typeof durationMinutes !== 'number' ||
+				!(durationMinutes > 0) ||
+				durationMinutes > MAX_AIR_MINUTES
+			)
+				return reply
+					.code(400)
+					.send({ error: `durationMinutes must be more than 0 and at most ${MAX_AIR_MINUTES}` });
+			if (typeof faultPercent !== 'number' || !(faultPercent >= 0) || faultPercent > 100)
+				return reply.code(400).send({ error: 'faultPercent must be from 0 to 100' });
+			// One thing serves the mirror at a time.
+			if (config.playback.status() !== undefined) config.playback.stop();
+			config.airShow.start(durationMinutes * 60_000, faultPercent / 100);
+			return status();
+		},
+	);
 
 	app.post('/api/air/stop', () => {
 		config.airShow.stop();

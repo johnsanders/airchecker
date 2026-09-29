@@ -17,7 +17,8 @@ import { onAirAt } from './schedule.js';
 // /air page polls onAir() and renders whatever it says. Once the night's duration is
 // up every race holds its final numbers and the ticker and overlays keep cycling.
 // Every night this process ran is kept, so airedAt() can say what aired at any past
-// moment: the ground truth to score the checker's reads of captured frames against.
+// moment, and what if anything was wrong with it (faults.ts): the ground truth to score
+// the checker's reads of captured frames, and what it caught, against.
 // While a night runs, the DDHQ and Chameleon mirrors serve it too (mirror()), so the
 // checker's Sim mode sees the same night on all three sources.
 //
@@ -40,7 +41,8 @@ export type AirShow = {
 	mirror: (source: ApiSource, path: string) => MirrorAnswer | undefined;
 	onAir: () => null | OnAir;
 	queries: () => string[] | undefined; // the DDHQ queries covering the running night
-	start: (durationMs: number) => AirShowStatus;
+	// faultRate: the share of airings, 0 to 1, that put something wrong on air. Default 0.
+	start: (durationMs: number, faultRate?: number) => AirShowStatus;
 	status: () => AirShowStatus | null;
 	stop: () => void;
 };
@@ -57,6 +59,7 @@ export type AirShowStatus = {
 	called: number;
 	durationMs: number;
 	elapsedMs: number;
+	faultRate: number;
 	races: number;
 	recording: null | string; // the API recording on air, if that's what's on air
 	seed: number;
@@ -111,6 +114,7 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 				running.recording === null
 					? elapsedMs
 					: Math.min(playing?.handle.clock.elapsedMs() ?? 0, running.night.durationMs),
+			faultRate: running.night.faultRate,
 			races: running.night.plans.length,
 			recording: running.recording,
 			seed: running.night.seed,
@@ -196,7 +200,7 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 				? undefined
 				: nightQueries(running.night);
 		},
-		start: (durationMs) => {
+		start: (durationMs, faultRate = 0) => {
 			const wasLive = current()?.live ?? false;
 			endCurrentRun();
 			const live =
@@ -204,7 +208,7 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 				config.liveResults !== undefined;
 			runs.push({
 				live,
-				night: makeNight(config.races, randomSeed(), durationMs),
+				night: makeNight(config.races, randomSeed(), durationMs, faultRate),
 				recording: null,
 				resolveResult: live
 					? (plan) => liveResultFor(plan, config.liveResults?.getResult(plan.race.ddhq.raceId))

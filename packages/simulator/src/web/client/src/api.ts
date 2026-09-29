@@ -7,6 +7,7 @@ export interface AirStatus {
 	called: number;
 	durationMs: number;
 	elapsedMs: number;
+	faultRate: number; // the share of airings, 0 to 1, that put something wrong on air
 	races: number;
 	recording: null | string; // the API recording on air, when playback is what's on air
 	seed: number;
@@ -131,7 +132,8 @@ export const api = {
 	playbackAction: (action: 'pause' | 'restart' | 'resume' | 'stop') =>
 		postJson<Status>(`/api/api-playback/${action}`, {}),
 	setSettings: (settings: Settings) => postJson<Settings>('/api/settings', settings),
-	startAir: (durationMinutes: number) => postJson<Status>('/api/air/start', { durationMinutes }),
+	startAir: (durationMinutes: number, faultPercent: number) =>
+		postJson<Status>('/api/air/start', { durationMinutes, faultPercent }),
 	startApiPlayback: (name: string) => postJson<Status>('/api/api-playback/start', { name }),
 	startApiRecording: (name?: string) =>
 		postJson<Status>('/api/api-recording/start', name === undefined ? {} : { name }),

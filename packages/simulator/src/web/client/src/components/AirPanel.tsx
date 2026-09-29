@@ -30,7 +30,9 @@ const airLine = (air: AirStatus | null, playing: boolean): string => {
 	const called = `${air.called} of ${air.races} races called`;
 	if (air.recording !== null)
 		return `Recording ${air.recording} on air · ${minutes(air.elapsedMs)} of ${minutes(air.durationMs)} · ${called}`;
-	return `${minutes(air.elapsedMs)} of ${minutes(air.durationMs)}${air.elapsedMs >= air.durationMs ? ' (all in)' : ''} · ${called} · seed ${air.seed}`;
+	const faulty =
+		air.faultRate > 0 ? ` · ${Math.round(air.faultRate * 100)}% of graphics wrong` : '';
+	return `${minutes(air.elapsedMs)} of ${minutes(air.durationMs)}${air.elapsedMs >= air.durationMs ? ' (all in)' : ''} · ${called}${faulty} · seed ${air.seed}`;
 };
 
 // Runs the simulated air feed at /air/: the ticker always up, an L3 or FS every 10–20 s,
@@ -38,9 +40,13 @@ const airLine = (air: AirStatus | null, playing: boolean): string => {
 // testing window, pulled live from DDHQ's integration host. Start rolls a new night (a
 // restart is just another Start); the source picked at Start is what that night uses,
 // so changing it mid-night takes effect on the next one. A recording playing back (the
-// API recordings section) is on air too, and a night started here replaces it.
+// API recordings section) is on air too, and a night started here replaces it. A night can
+// put wrong graphics on air, for the checker to catch: the share of airings given here get
+// wrong votes, a wrong % in, old figures, a wrong ✓ or a misspelled name, while DDHQ and
+// Chameleon stay right.
 const AirPanel: React.FC<Props> = (props) => {
 	const [durationMinutes, setDurationMinutes] = React.useState(String(DEFAULT_MINUTES));
+	const [faultPercent, setFaultPercent] = React.useState('0');
 	const [settings, setSettings] = React.useState<Settings | undefined>(undefined);
 	const [msg, setMsg] = React.useState('');
 	const air = props.status?.air ?? null;
@@ -92,8 +98,19 @@ const AirPanel: React.FC<Props> = (props) => {
 					type="number"
 					value={durationMinutes}
 				/>
+				<TextField
+					label="graphics wrong (%)"
+					onChange={(event) => setFaultPercent(event.target.value)}
+					size="small"
+					slotProps={{ htmlInput: { max: 100, min: 0 } }}
+					sx={{ width: 160 }}
+					type="number"
+					value={faultPercent}
+				/>
 				<Button
-					onClick={() => void act(() => api.startAir(Number(durationMinutes)))}
+					onClick={() =>
+						void act(() => api.startAir(Number(durationMinutes), Number(faultPercent)))
+					}
 					variant="contained"
 				>
 					{night ? '↺ New night' : '▶ Start night'}

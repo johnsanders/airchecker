@@ -34,7 +34,8 @@ export type GraphicData = {
 	state: string;
 };
 
-export type Night = { durationMs: number; plans: RacePlan[]; seed: number };
+// faultRate: the share of airings, 0 to 1, that put something wrong on air (faults.ts).
+export type Night = { durationMs: number; faultRate: number; plans: RacePlan[]; seed: number };
 
 export type RacePlan = {
 	// Early lean toward left (negative favors right). It fades as the vote comes in, and
@@ -145,8 +146,14 @@ const planRace = (race: Race, seed: number, durationMs: number): RacePlan => {
 	};
 };
 
-export const makeNight = (races: readonly Race[], seed: number, durationMs: number): Night => ({
+export const makeNight = (
+	races: readonly Race[],
+	seed: number,
+	durationMs: number,
+	faultRate = 0,
+): Night => ({
 	durationMs,
+	faultRate,
 	plans: races.map((race) => planRace(race, seed, durationMs)),
 	seed,
 });

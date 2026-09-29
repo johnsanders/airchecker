@@ -1,6 +1,8 @@
-import type { GraphicData, Night, RacePlan, ResultResolver } from './night.js';
+import type { Aired } from './faults.js';
+import type { Night, RacePlan, ResultResolver } from './night.js';
 
-import { AIR_LAG_MS, graphicData, raceAt } from './night.js';
+import { airedGraphic } from './faults.js';
+import { raceAt } from './night.js';
 import { between, makeRandom, pick, seedFrom, shuffle } from './random.js';
 
 // What's on air at a moment of the night. The ticker is always up and moves to the next
@@ -8,6 +10,7 @@ import { between, makeRandom, pick, seedFrom, shuffle } from './random.js';
 // Over it, an L3 or FS comes up after a 10–20 s gap, holds 10 s, and the cycle repeats.
 // The numbers in them trail the night by AIR_LAG_MS, as graphics trail DDHQ — unless
 // resolveResult is a source with no notion of lag (liveResultFor), which just ignores it.
+// An airing may have something wrong with it (faults.ts); `fault` says what.
 
 export const TICKER_SLOT_MS = 8_000;
 export const OVERLAY_MS = 10_000;
@@ -15,16 +18,18 @@ export const OVERLAY_GAP_MIN_MS = 10_000;
 export const OVERLAY_GAP_MAX_MS = 20_000;
 
 export type OnAir = {
-	overlay: { data: GraphicData; kind: OverlayKind; raceKey: string } | null;
-	ticker: { data: GraphicData; raceKey: string };
+	overlay: ({ kind: OverlayKind; raceKey: string } & Aired) | null;
+	ticker: { raceKey: string } & Aired;
 };
 
 export type OverlayKind = 'fs' | 'l3';
 
 type OverlayCycle = { index: number; kind: OverlayKind; plan: RacePlan; showAtMs: number };
 
+const tickerSlot = (elapsedMs: number): number => Math.floor(elapsedMs / TICKER_SLOT_MS);
+
 const tickerPlan = (night: Night, elapsedMs: number): RacePlan => {
-	const slot = Math.floor(elapsedMs / TICKER_SLOT_MS);
+	const slot = tickerSlot(elapsedMs);
 	const pass = Math.floor(slot / night.plans.length);
 	const order = shuffle(makeRandom(seedFrom(night.seed, 'ticker', pass)), night.plans);
 	return order[slot % night.plans.length] as RacePlan;
@@ -65,12 +70,18 @@ export const onAirAt = (
 			overlay === undefined
 				? null
 				: {
-						data: graphicData(overlay.plan, resolveResult(overlay.plan, elapsedMs - AIR_LAG_MS)),
+						...airedGraphic(
+							night,
+							overlay.plan,
+							`overlay ${overlay.index}`,
+							elapsedMs,
+							resolveResult,
+						),
 						kind: overlay.kind,
 						raceKey: overlay.plan.race.key,
 					},
 		ticker: {
-			data: graphicData(ticker, resolveResult(ticker, elapsedMs - AIR_LAG_MS)),
+			...airedGraphic(night, ticker, `ticker ${tickerSlot(elapsedMs)}`, elapsedMs, resolveResult),
 			raceKey: ticker.race.key,
 		},
 	};

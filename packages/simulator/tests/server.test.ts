@@ -258,6 +258,39 @@ describe('air feed', () => {
 		);
 	});
 
+	it('airs wrong graphics when asked to, and says what was wrong with each', async () => {
+		const { app, setWall } = setup();
+		const start = (payload: Record<string, unknown>) =>
+			app.inject({ method: 'POST', payload, url: '/api/air/start' });
+		expect((await start({ durationMinutes: 30 })).json()).toMatchObject({ air: { faultRate: 0 } });
+		expect((await start({ durationMinutes: 30, faultPercent: 100 })).json()).toMatchObject({
+			air: { faultRate: 1 },
+		});
+		// Poll close is behind every race by the end, so every fault has something to change.
+		setWall(29 * 60_000);
+		const faults = await Promise.all(
+			Array.from({ length: 40 }, async (_, slot) => {
+				const aired = await app.inject({
+					method: 'GET',
+					url: `/api/air/aired?ts=${20 * 60_000 + slot * 8_000}`,
+				});
+				return aired.json<{ onAir: { ticker: { fault: { kind: string; note: string } | null } } }>()
+					.onAir.ticker.fault;
+			}),
+		);
+		expect(faults.filter((fault) => fault !== null).length).toBeGreaterThan(30);
+		faults.forEach((fault) => {
+			if (fault !== null) expect(fault.note.length).toBeGreaterThan(0);
+		});
+		expect(
+			await Promise.all(
+				[{ faultPercent: -1 }, { faultPercent: 101 }, { faultPercent: '10' }].map(
+					async (payload) => (await start({ durationMinutes: 30, ...payload })).statusCode,
+				),
+			),
+		).toEqual([400, 400, 400]);
+	});
+
 	it('serves the running night on the mirrors, taking over from playback and back', async () => {
 		const { app } = setup();
 		const get = (url: string) => app.inject({ method: 'GET', url });
