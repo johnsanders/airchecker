@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { LlmClient, LlmRequest } from './llmClient.js';
 
-import { DEFAULT_RETRY_DELAYS_MS, postJsonWithRetry } from './retryingFetch.js';
+import { DEFAULT_RETRY_DELAYS_MS, DEFAULT_TIMEOUT_MS, postJsonWithRetry } from './retryingFetch.js';
 
 // OpenRouter speaks OpenAI's chat-completions dialect: the frame goes in as a
 // data URL, the reporting tool as a function, and tool_choice forces it.
@@ -46,6 +46,7 @@ export type OpenRouterLlmClientOptions = {
 	// sends nothing and leaves the provider's own setting in place.
 	reasoningEffort?: string;
 	retryDelaysMs?: readonly number[];
+	timeoutMs?: number;
 };
 
 const buildBody = (
@@ -105,6 +106,7 @@ export const makeOpenRouterLlmClient = (options: OpenRouterLlmClientOptions = {}
 				},
 				label: `OpenRouter ${request.model}`,
 				retryDelaysMs,
+				timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
 				url: `${baseUrl}/chat/completions`,
 			});
 			const parsed = completionSchema.parse(await response.json());

@@ -31,13 +31,13 @@ import { observationChanged } from './observationChanged.js';
 import { makeSourceErrors } from './sourceErrors.js';
 
 //   CAPTURE_MODE=interval|manual     air cadence (default interval)
-//   CAPTURE_INTERVAL_MS=<n>          default 5000; interval mode only
+//   CAPTURE_INTERVAL_MS=<n>          default 9000; interval mode only
 //   WEB_PORT=<n>                     web view port (default 8787)
 const readCaptureMode = (): CaptureMode =>
 	process.env.CAPTURE_MODE === 'manual' ? 'manual' : 'interval';
 const readIntervalMs = (): number => {
 	const raw = Number(process.env.CAPTURE_INTERVAL_MS);
-	return Number.isFinite(raw) && raw > 0 ? raw : 5000;
+	return Number.isFinite(raw) && raw > 0 ? raw : 9000;
 };
 
 const liveMain = async (): Promise<void> => {

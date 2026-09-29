@@ -26,7 +26,7 @@ const CapturePanel: React.FC<Props> = (props) => {
 	const [busy, setBusy] = React.useState(false);
 	const [msg, setMsg] = React.useState('');
 	const [seconds, setSeconds] = React.useState(
-		props.cadence ? Math.round(props.cadence.intervalMs / 1000) : 5,
+		props.cadence ? Math.round(props.cadence.intervalMs / 1000) : 9,
 	);
 	// No local copy of the selection: the server's value arrives with every state push,
 	// so the toggle can't drift from what the capturer actually targets.

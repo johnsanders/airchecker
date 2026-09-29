@@ -39,13 +39,13 @@ export type CaptureSchedulerConfig = {
 	// full interval — so a freshly-booted monitor shows data right away, not after
 	// up to `intervalMs`. Default false (preserves the wait-one-interval behavior).
 	immediate?: boolean;
-	intervalMs?: number; // interval mode only; default 5000
+	intervalMs?: number; // interval mode only; default 9000
 	mode: CaptureMode;
 	onError?: (error: unknown) => void;
 	onSkip?: () => void; // called when a fire is dropped because a capture is in flight
 };
 
-const DEFAULT_INTERVAL_MS = 5000;
+const DEFAULT_INTERVAL_MS = 9000;
 
 export const makeCaptureScheduler = (config: CaptureSchedulerConfig): CaptureScheduler => {
 	let busy = false;

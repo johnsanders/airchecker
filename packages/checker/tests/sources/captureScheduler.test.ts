@@ -35,11 +35,11 @@ describe('captureScheduler — interval mode', () => {
 		scheduler.stop();
 	});
 
-	it('defaults to a 5000ms interval', async () => {
+	it('defaults to a 9000ms interval', async () => {
 		const capture = makeCapture(10);
 		const scheduler = makeCaptureScheduler({ captureOnce: capture.captureOnce, mode: 'interval' });
 		scheduler.start();
-		await vi.advanceTimersByTimeAsync(4999);
+		await vi.advanceTimersByTimeAsync(8999);
 		expect(capture.calls()).toBe(0);
 		await vi.advanceTimersByTimeAsync(1);
 		expect(capture.calls()).toBe(1);

@@ -2,6 +2,8 @@ import Anthropic from '@anthropic-ai/sdk';
 
 import type { LlmClient } from './llmClient.js';
 
+import { DEFAULT_TIMEOUT_MS } from './retryingFetch.js';
+
 // The real Messages-API client. Builds an image + text user turn and forces the
 // reporting tool. Live mode only — an ANTHROPIC_API_KEY must be present (the SDK
 // reads it from the environment).
@@ -16,7 +18,11 @@ export type AnthropicLlmClientOptions = {
 };
 
 export const makeAnthropicLlmClient = (options: AnthropicLlmClientOptions = {}): LlmClient => {
-	const client = new Anthropic(options.apiKey === undefined ? {} : { apiKey: options.apiKey });
+	// The SDK's own timeout is 10 minutes, long enough to stall the air capture.
+	const client = new Anthropic({
+		timeout: DEFAULT_TIMEOUT_MS,
+		...(options.apiKey === undefined ? {} : { apiKey: options.apiKey }),
+	});
 	const maxTokens = options.maxTokens ?? 4096;
 	return {
 		call: async (request) => {

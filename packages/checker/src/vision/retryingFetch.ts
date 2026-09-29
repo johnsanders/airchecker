@@ -2,16 +2,21 @@
 // TypeError: fetch failed), a 429, or a 5xx — get two retries with backoff,
 // matching the Anthropic SDK's default. Everything else (other 4xx) surfaces
 // immediately as an Error naming the status and the first 300 bytes of the body.
+// Each attempt is cut off at timeoutMs and not retried: a request that never answers
+// would otherwise hold the air capture busy, and every tick after it gets skipped.
 export type PostJsonOptions = {
 	body: string;
 	fetchImpl: typeof fetch;
 	headers: Record<string, string>;
 	label: string;
 	retryDelaysMs: readonly number[];
+	timeoutMs: number;
 	url: string;
 };
 
 export const DEFAULT_RETRY_DELAYS_MS: readonly number[] = [500, 2000];
+
+export const DEFAULT_TIMEOUT_MS = 30_000;
 
 const isTransientStatus = (status: number): boolean => status === 429 || status >= 500;
 
@@ -30,9 +35,12 @@ export const postJsonWithRetry = async (options: PostJsonOptions): Promise<Respo
 				body: options.body,
 				headers: options.headers,
 				method: 'POST',
+				signal: AbortSignal.timeout(options.timeoutMs),
 			});
 		} catch (error) {
 			if (canRetry && error instanceof TypeError) return retry();
+			if (error instanceof DOMException && error.name === 'TimeoutError')
+				throw new Error(`${options.label} timed out after ${options.timeoutMs / 1000} s`);
 			throw error;
 		}
 		if (response.ok) return response;

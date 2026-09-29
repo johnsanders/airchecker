@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import type { LlmClient, LlmRequest } from './llmClient.js';
 
-import { DEFAULT_RETRY_DELAYS_MS, postJsonWithRetry } from './retryingFetch.js';
+import { DEFAULT_RETRY_DELAYS_MS, DEFAULT_TIMEOUT_MS, postJsonWithRetry } from './retryingFetch.js';
 
 // Google's Interactions API called directly — no router and no prepaid router
 // balance on the air path. The frame goes in as an inline image part, the
@@ -46,6 +46,7 @@ export type GoogleLlmClientOptions = {
 	// to 'low' — what the crop read was measured at (~160 thought tokens per
 	// crop). 'default' sends nothing and leaves Google's own setting in place.
 	thinkingLevel?: string;
+	timeoutMs?: number;
 };
 
 const buildBody = (
@@ -98,6 +99,7 @@ export const makeGoogleLlmClient = (options: GoogleLlmClientOptions = {}): LlmCl
 				headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
 				label: `Google ${request.model}`,
 				retryDelaysMs,
+				timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
 				url: `${baseUrl}/interactions`,
 			});
 			const parsed = interactionSchema.parse(await response.json());

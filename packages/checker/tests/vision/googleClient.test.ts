@@ -143,6 +143,16 @@ describe('makeGoogleLlmClient', () => {
 		expect(depleted.captured).toHaveLength(1);
 	});
 
+	it('gives up on a request that never answers', async () => {
+		const silent: typeof fetch = (_input, init) =>
+			new Promise((_resolve, reject) =>
+				init?.signal?.addEventListener('abort', () => reject(init.signal?.reason)),
+			);
+		await expect(
+			makeGoogleLlmClient({ apiKey: 'g-key', fetchImpl: silent, timeoutMs: 20 }).call(request),
+		).rejects.toThrow(/timed out after 0.02 s/);
+	});
+
 	it('refuses to start without a key', () => {
 		expect(() => makeGoogleLlmClient({ apiKey: '' })).toThrow(/GEMINI_API_KEY/);
 	});
