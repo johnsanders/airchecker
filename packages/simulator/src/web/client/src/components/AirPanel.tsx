@@ -8,7 +8,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import type { AirSource, Settings, Status } from '../api.js';
+import type { AirSource, AirStatus, Settings, Status } from '../api.js';
 
 import { api } from '../api.js';
 
@@ -22,16 +22,29 @@ const DEFAULT_MINUTES = 30;
 const minutes = (ms: number): string =>
 	`${Math.floor(ms / 60_000)}m ${Math.floor((ms % 60_000) / 1000)}s`;
 
+const airLine = (air: AirStatus | null, playing: boolean): string => {
+	if (air === null)
+		return playing
+			? "Off air: the recording playing has none of the take list's races in its Chameleon data"
+			: 'Off air';
+	const called = `${air.called} of ${air.races} races called`;
+	if (air.recording !== null)
+		return `Recording ${air.recording} on air · ${minutes(air.elapsedMs)} of ${minutes(air.durationMs)} · ${called}`;
+	return `${minutes(air.elapsedMs)} of ${minutes(air.durationMs)}${air.elapsedMs >= air.durationMs ? ' (all in)' : ''} · ${called} · seed ${air.seed}`;
+};
+
 // Runs the simulated air feed at /air/: the ticker always up, an L3 or FS every 10–20 s,
 // over a looping newscast, filled from a night of results — invented, or, during a DDHQ
 // testing window, pulled live from DDHQ's integration host. Start rolls a new night (a
 // restart is just another Start); the source picked at Start is what that night uses,
-// so changing it mid-night takes effect on the next one.
+// so changing it mid-night takes effect on the next one. A recording playing back (the
+// API recordings section) is on air too, and a night started here replaces it.
 const AirPanel: React.FC<Props> = (props) => {
 	const [durationMinutes, setDurationMinutes] = React.useState(String(DEFAULT_MINUTES));
 	const [settings, setSettings] = React.useState<Settings | undefined>(undefined);
 	const [msg, setMsg] = React.useState('');
 	const air = props.status?.air ?? null;
+	const night = air !== null && air.recording === null;
 
 	React.useEffect(() => {
 		void api.getSettings().then(setSettings);
@@ -58,7 +71,7 @@ const AirPanel: React.FC<Props> = (props) => {
 		<Box>
 			<Stack alignItems="center" direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1 }}>
 				<ToggleButtonGroup
-					disabled={air !== null}
+					disabled={night}
 					exclusive={true}
 					onChange={(_event, next: AirSource | null) => {
 						if (next !== null) void setAirSource(next);
@@ -83,9 +96,9 @@ const AirPanel: React.FC<Props> = (props) => {
 					onClick={() => void act(() => api.startAir(Number(durationMinutes)))}
 					variant="contained"
 				>
-					{air === null ? '▶ Start night' : '↺ New night'}
+					{night ? '↺ New night' : '▶ Start night'}
 				</Button>
-				{air !== null && (
+				{night && (
 					<Button color="error" onClick={() => void act(api.stopAir)} variant="outlined">
 						■ Stop
 					</Button>
@@ -94,9 +107,7 @@ const AirPanel: React.FC<Props> = (props) => {
 					Watch live feed ↗
 				</Button>
 				<Typography variant="body2">
-					{air === null
-						? 'Off air'
-						: `${minutes(air.elapsedMs)} of ${minutes(air.durationMs)}${air.elapsedMs >= air.durationMs ? ' (all in)' : ''} · ${air.called} of ${air.races} races called · seed ${air.seed}`}
+					{airLine(air, (props.status?.playback ?? null) !== null)}
 				</Typography>
 				<Typography color="text.secondary" variant="caption">
 					{msg}
@@ -109,7 +120,8 @@ const AirPanel: React.FC<Props> = (props) => {
 			)}
 			<Typography color="text.secondary" sx={{ display: 'block' }} variant="caption">
 				While a night runs, the DDHQ and Chameleon mirrors serve it too (starting one stops any
-				recording playback). Put the checker in Sim mode; it opens the feed (
+				recording playback). Playing an API recording puts it on air instead: its take-list races,
+				with its recorded Chameleon numbers. Put the checker in Sim mode; it opens the feed (
 				<Link href="/air/" target="_blank">
 					/air/
 				</Link>

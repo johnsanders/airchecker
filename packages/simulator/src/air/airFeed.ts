@@ -2,8 +2,8 @@ import type { PlaybackClock } from '../playback/playbackClock.js';
 import type { ApiRecording } from '../recording/apiRecording.js';
 
 // Playback hooks for an air feed driven by the recording at the clock's virtualNow(),
-// called on every playback start/pause/resume/restart/stop. Nothing uses them yet: the
-// simulated air feed (airShow.ts, the /air/ page) runs its own invented night instead.
+// called on every playback start/pause/resume/restart/stop. airShow.ts's feed is the one:
+// a recording playing back is on the simulated air.
 
 export type AirFeed = {
 	pause: () => void;
@@ -16,10 +16,3 @@ export type PlaybackHandle = {
 	clock: PlaybackClock;
 	recording: ApiRecording;
 };
-
-export const makeAirFeed = (): AirFeed => ({
-	pause: () => {},
-	resume: () => {},
-	start: () => {},
-	stop: () => {},
-});

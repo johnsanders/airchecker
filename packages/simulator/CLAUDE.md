@@ -22,8 +22,7 @@ src/
   sources/          HttpJson over fetch, DDHQ OAuth (copied from the checker)
   recording/        API recording sqlite format, recorder (Record button), record loop (sample interval from settings, default 60 s), recording HTTP wrapper
   playback/         playback clock (1× only) + the mirror's answers
-  air/              the simulated night: races.ts (races.json), night.ts (the invented results and source lags), liveResults.ts (a night's numbers pulled from DDHQ's integration host instead), schedule.ts (what airs when), nightMirror.ts (the night as DDHQ and Chameleon responses), airShow.ts (runs a night);
-                    airFeed.ts is an unused set of playback hooks for a recording-driven feed
+  air/              the simulated night: races.ts (races.json), night.ts (the invented results and source lags), liveResults.ts (a night's numbers pulled from DDHQ's integration host instead), schedule.ts (what airs when), nightMirror.ts (the night as DDHQ and Chameleon responses), airShow.ts (runs a night, or puts a playing recording on air through its airFeed.ts hooks), recordedResults.ts (a recording's Chameleon numbers per race)
   web/              Fastify control API + mirror (server.ts), Vite/React/MUI SPA (client/)
   tools/buildRaces.ts   takeitems.xml + one DDHQ lookup → races.json (run once; see the file header)
 tests/              vitest
@@ -43,6 +42,7 @@ render-*.mjs, compare.html               render a graphic to PNG; compare a buil
   - Status codes: 503 when nothing is playing, 404 for a path that was never recorded (or not recorded yet), 502 with the original message when the recorded response was an error.
 - **The checker's Sim mode** points all three of its sources here (`SIM_BASE_URL`, default `http://localhost:8788`): DDHQ and Chameleon at the mirror, air at `/air/`. It asks `GET /api/sim/queries` which DDHQ queries to poll: the running night's races (`race_ids=`, 50 per query), or the playing recording's queries. When playback restarts, stop and start monitoring in the checker.
 - **One thing serves the mirror at a time.** Starting a night stops recording playback, and starting playback stops the night.
+- **A recording on air.** Playing a recording also puts it on `/air/`: the take-list races its Chameleon playlists carry (matched by `raceID`; candidates by name, since Chameleon's choice ids are its own), each showing its contest from the last playlist recorded 19 s earlier, as graphics trail Chameleon. Before the first poll, the first poll's numbers show. Pause, resume and restart move the air with the playback; a recording with no take-list race airs nothing. The mirrors keep answering from the recording itself.
 - **A simulated night.** "Simulated air" on the control page starts a night (default 30 min). While it runs, the DDHQ and Chameleon mirrors serve it (`nightMirror.ts`, in the shapes the checker parses, with the DDHQ race and candidate ids from races.json) and `/air/` shows it at 1920×1080, scaled to the window.
   - **Lagged like the real pipeline** (`night.ts`): DDHQ has each drop first, Chameleon 30 s later, the graphics 19 s after that (the middle of the checker's 3–35 s air-to-Chameleon window). Every source carries the same whole-vote counts, so percents never disagree by rounding.
   - **Ground truth.** `GET /api/air/aired?ts=` says what was on screen at any moment of any night this process ran; the checker's `scoreSimAir.ts` scores a session against it.

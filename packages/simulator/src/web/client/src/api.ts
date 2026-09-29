@@ -8,6 +8,7 @@ export interface AirStatus {
 	durationMs: number;
 	elapsedMs: number;
 	races: number;
+	recording: null | string; // the API recording on air, when playback is what's on air
 	seed: number;
 }
 

@@ -1,6 +1,5 @@
 import type { ApiResponseRow } from './recording/apiRecording.js';
 
-import { makeAirFeed } from './air/airFeed.js';
 import { makeAirShow } from './air/airShow.js';
 import { makeLiveResults } from './air/liveResults.js';
 import { loadRaces } from './air/races.js';
@@ -52,7 +51,6 @@ const main = async (): Promise<void> => {
 		onStart: recordLoop.start,
 		onStop: recordLoop.stop,
 	});
-	const playback = makeApiPlayback({ airFeed: makeAirFeed(), baseDir: RECORDINGS_DIR });
 	const races = loadRaces('races.json');
 	const liveResults = makeLiveResults({
 		auth: makeDdhqAuth({
@@ -63,13 +61,14 @@ const main = async (): Promise<void> => {
 		http: fetchHttp,
 		races,
 	});
+	const airShow = makeAirShow({
+		getAirSource: () => settings.get().airSource,
+		liveResults,
+		races,
+	});
 	const web = makeWebServer({
-		airShow: makeAirShow({
-			getAirSource: () => settings.get().airSource,
-			liveResults,
-			races,
-		}),
-		playback,
+		airShow,
+		playback: makeApiPlayback({ airFeed: airShow.feed, baseDir: RECORDINGS_DIR }),
 		recorder,
 		recordErrors: recordLoop.errors,
 		settings,
