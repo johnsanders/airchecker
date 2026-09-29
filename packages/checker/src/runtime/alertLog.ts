@@ -8,6 +8,9 @@ import type { AnomalyDiff } from './anomalyTracker.js';
 // the recorder and the structured log.
 export type AlertEvent = {
 	detail: string;
+	// A raise keeps copies of the observations it compared: the race's current state
+	// moves on as the sources catch up, but the alert is a record of what disagreed.
+	evidence?: Anomaly['involves'];
 	kind: 'cleared' | 'raised';
 	owner: Owner;
 	raceKey: string;
@@ -32,6 +35,7 @@ const DEFAULT_CAPACITY = 1_000;
 
 const toEvent = (anomaly: Anomaly, kind: AlertEvent['kind'], ts: number): AlertEvent => ({
 	detail: anomaly.detail,
+	...(kind === 'raised' ? { evidence: structuredClone(anomaly.involves) } : {}),
 	kind,
 	owner: anomaly.owner,
 	raceKey: anomaly.raceKey,

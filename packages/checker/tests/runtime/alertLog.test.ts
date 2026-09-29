@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Anomaly } from '../../src/reconcile/reconcile.js';
+import type { Anomaly, RaceObservation } from '../../src/reconcile/reconcile.js';
 import type { AlertEvent } from '../../src/runtime/alertLog.js';
 
 import { makeAlertLog } from '../../src/runtime/alertLog.js';
@@ -29,6 +29,26 @@ describe('alertLog', () => {
 		]);
 		expect(log.recent()[2]!.subject).toBe('Ken Paxton');
 		expect(seen).toHaveLength(3);
+	});
+
+	it('keeps the evidence of a raise as it was, whatever happens to the observations later', () => {
+		const ross: RaceObservation = {
+			calledFor: [],
+			candidates: [{ key: 'c1', name: 'Greg Abbott', party: 'R', pct: 55, votes: 1000 }],
+			observedAt: 50,
+			pctIn: 40,
+			raceKey: 'race-a',
+			reportedAt: null,
+			source: 'Ross',
+		};
+		const raised = { ...anomaly('race-a', 'Greg Abbott'), involves: { vendor: ross } };
+		const log = makeAlertLog();
+		log.record({ cleared: [], raised: [raised] }, 100);
+		ross.candidates[0]!.votes = 2000;
+		log.record({ cleared: [raised], raised: [] }, 200);
+		const [cleared, raise] = log.recent();
+		expect(raise!.evidence?.vendor?.candidates[0]!.votes).toBe(1000);
+		expect(cleared!.evidence).toBeUndefined();
 	});
 
 	it('is bounded by capacity and honors the recent limit', () => {
