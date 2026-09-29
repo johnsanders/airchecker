@@ -47,7 +47,7 @@ describe('golden replays', () => {
 			const png = readFileSync(join(goldensDir, doc.frame));
 			const client = makeGoldenClient(doc.goldens);
 
-			// Full two-pass replay (pass 1 + recall votes), all served from the golden.
+			// Every region's read is served from the golden.
 			const observed = await extractFrame(png, 0, { client });
 
 			expect(observed.map(lowerNames)).toEqual(doc.observations.map(lowerNames));

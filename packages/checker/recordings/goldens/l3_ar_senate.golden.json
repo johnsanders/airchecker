@@ -2,80 +2,28 @@
   "frame": "../reference-frames/l3-ar-senate.png",
   "goldens": [
     {
-      "frameSha256": "d384796d51d6f5aa3e0d4ed82432944b1ab0dd4b09ce1139573f6bd7cce8a6c9",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
-      "response": {
-        "templates": [
-          {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "AR U.S. SENATE",
-              "pct_in": "34 IN"
-            },
-            "candidates": [
-              {
-                "name": "Hallie Shoffner",
-                "party": "D",
-                "pct": "60.5%",
-                "votes": "292309"
-              },
-              {
-                "name": "Tom Cotton",
-                "party": "R",
-                "pct": "40.2%",
-                "votes": "424234"
-              }
-            ]
-          },
-          {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "CT U.S. HOUSE (D) DISTRICT 1",
-              "pct_in": "84% IN"
-            },
-            "candidates": [
-              {
-                "name": "Luke Bronin",
-                "party": "D",
-                "pct": "54.3%",
-                "votes": "29658",
-                "called": "called"
-              },
-              {
-                "name": "John Larson",
-                "party": "D",
-                "pct": "32.8%",
-                "votes": "17933"
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "frameSha256": "dac6d6c2cca083e7769f25277f1f00440ab54acdce0c4eb0326ff11078015ace",
+      "frameSha256": "8b8cdb1637a9f397db7bd71ad7d05616dd53e6c4b3644d757285bdb8f68174ae",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
       "response": {
-        "pctIn": "84%",
-        "raceHeading": "CT | U.S. HOUSE (D) DISTRICT 1",
+        "raceHeading": "AR\nU.S. SENATE",
+        "pctIn": "34% IN",
         "candidates": [
           {
-            "surname": "BRONIN",
+            "pct": "60.5%",
+            "firstName": "HALLIE",
             "party": "D",
-            "called": "called",
-            "votes": "29,658",
-            "firstName": "LUKE",
-            "pct": "54.3%"
+            "votes": "292309",
+            "called": "",
+            "surname": "SHOFFNER"
           },
           {
-            "pct": "32.8%",
-            "firstName": "JOHN",
+            "firstName": "TOM",
+            "votes": "424234",
+            "pct": "40.2%",
             "called": "",
-            "party": "D",
-            "votes": "17,933",
-            "surname": "LARSON"
+            "party": "R",
+            "surname": "COTTON"
           }
         ]
       }
@@ -83,36 +31,36 @@
     {
       "frameSha256": "93c79dfc4a8704f33a8d54849de557b24e4806061b58a44dbe6d48486b233e38",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
       "response": {
+        "candidates": [],
         "pctIn": "",
-        "raceHeading": "",
-        "candidates": []
+        "raceHeading": ""
       }
     },
     {
-      "frameSha256": "8b8cdb1637a9f397db7bd71ad7d05616dd53e6c4b3644d757285bdb8f68174ae",
+      "frameSha256": "dac6d6c2cca083e7769f25277f1f00440ab54acdce0c4eb0326ff11078015ace",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
-        "raceHeading": "AR U.S. SENATE",
-        "pctIn": "34% IN",
+        "raceHeading": "CT | U.S. HOUSE (D) DISTRICT 1",
+        "pctIn": "84%",
         "candidates": [
           {
-            "called": "",
-            "firstName": "HALLIE",
-            "surname": "SHOFFNER",
-            "pct": "60.5%",
-            "votes": "292309",
-            "party": "D"
+            "votes": "29,658",
+            "party": "D",
+            "called": "called",
+            "pct": "54.3%",
+            "surname": "BRONIN",
+            "firstName": "LUKE"
           },
           {
-            "firstName": "TOM",
+            "party": "D",
+            "surname": "LARSON",
+            "firstName": "JOHN",
+            "votes": "17,933",
             "called": "",
-            "surname": "COTTON",
-            "party": "R",
-            "votes": "424234",
-            "pct": "40.2%"
+            "pct": "32.8%"
           }
         ]
       }
@@ -121,64 +69,56 @@
   "name": "l3_ar_senate",
   "observations": [
     {
-      "calledFor": [],
-      "candidates": [
-        {
-          "key": "Hallie Shoffner",
-          "name": "Hallie Shoffner",
-          "party": "D",
-          "pct": 60.5,
-          "votes": 292309
-        },
-        {
-          "key": "Tom Cotton",
-          "name": "Tom Cotton",
-          "party": "R",
-          "pct": 40.2,
-          "votes": 424234
-        }
-      ],
-      "extractedFields": {
-        "race_heading": "AR U.S. SENATE",
-        "pct_in": "34 IN"
-      },
-      "observedAt": 0,
-      "pctIn": 34,
-      "raceKey": "AR U.S. SENATE",
-      "reportedAt": null,
-      "source": "air",
-      "templateId": "lower_third"
-    },
-    {
       "calledFor": [
-        "Luke Bronin"
+        "LUKE BRONIN"
       ],
       "candidates": [
         {
-          "key": "Luke Bronin",
-          "name": "Luke Bronin",
+          "key": "LUKE BRONIN",
+          "name": "LUKE BRONIN",
           "party": "D",
           "pct": 54.3,
           "votes": 29658
         },
         {
-          "key": "John Larson",
-          "name": "John Larson",
+          "key": "JOHN LARSON",
+          "name": "JOHN LARSON",
           "party": "D",
           "pct": 32.8,
           "votes": 17933
         }
       ],
-      "extractedFields": {
-        "race_heading": "CT | U.S. HOUSE (D) DISTRICT 1",
-        "pct_in": "84% IN"
-      },
       "observedAt": 0,
       "pctIn": 84,
       "raceKey": "CT U.S. HOUSE (D) DISTRICT 1",
       "reportedAt": null,
       "source": "air",
       "templateId": "ticker_v1"
+    },
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "HALLIE SHOFFNER",
+          "name": "HALLIE SHOFFNER",
+          "party": "D",
+          "pct": 60.5,
+          "votes": 292309
+        },
+        {
+          "key": "TOM COTTON",
+          "name": "TOM COTTON",
+          "party": "R",
+          "pct": 40.2,
+          "votes": 424234
+        }
+      ],
+      "observedAt": 0,
+      "pctIn": 34,
+      "raceKey": "AR U.S. SENATE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "lower_third"
     }
   ],
   "sourceFrame": "l3-ar-senate.png"

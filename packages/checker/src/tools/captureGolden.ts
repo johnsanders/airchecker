@@ -13,12 +13,12 @@ import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { hashPrompt } from '../vision/llmClient.js';
 import { redactError } from '../vision/redact.js';
 
-// Captures a golden: the full two-pass extraction against a frame, recording the
-// exact (frameSha256, promptHash, response) tuples the flow produced plus the
-// resulting observations, so a stubbed replay can assert against it with no API key.
+// Captures a golden: the extraction of a frame, recording the exact (frameSha256,
+// promptHash, response) tuples it produced plus the resulting observations, so a
+// stubbed replay can assert against it with no API key.
 //
 //   node --env-file-if-exists=../../.env --import tsx src/tools/captureGolden.ts <framePng> <goldenName>
-//     live mode: real VLM calls (needs ANTHROPIC_API_KEY + OPENROUTER_API_KEY)
+//     live mode: real VLM calls (needs GEMINI_API_KEY)
 //
 //   node --env-file-if-exists=../../.env --import tsx src/tools/captureGolden.ts --from-session <sessionId> <frameHash> <goldenName>
 //     promote an already-recorded session frame: responses come from the session's
@@ -32,8 +32,8 @@ import { redactError } from '../vision/redact.js';
 // Writes recordings/goldens/<goldenName>.golden.json and copies the frame in.
 
 // Decorator that snapshots the request/response passing through the real client.
-// Records EVERY frame-bearing call (pass 1 + each recall vote) as its own golden
-// entry, so a stubbed replay can satisfy the full two-pass flow with no API key.
+// Records every region's read as its own golden entry, keyed by the crop it was sent, so
+// a stubbed replay can satisfy the whole extraction with no API key.
 const makeCapturingClient = (underlying: LlmClient, sink: Golden[]): LlmClient => ({
 	call: async (request) => {
 		const response = await underlying.call(request);
@@ -52,10 +52,9 @@ const makeCapturingClient = (underlying: LlmClient, sink: Golden[]): LlmClient =
 	},
 });
 
-// Serves recorded responses from the session DB. extractFrame stamps every
-// request's frameHash with the sha256 of the image it sends (full frame in pass 1,
-// upscaled crop in pass 2) — the same keying the recorder wrote — so the lookup
-// needs no image re-hashing.
+// Serves recorded responses from the session DB. extractFrame stamps every request's
+// frameHash with the sha256 of the frame the crop came from — the same keying the
+// recorder wrote — and each region's prompt is its own, so the pair finds the read.
 const makeSessionStubClient = (player: Player): LlmClient => ({
 	call: async (request) => {
 		const promptHash = hashPrompt(request);

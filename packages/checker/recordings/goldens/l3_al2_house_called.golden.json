@@ -2,110 +2,67 @@
   "frame": "../reference-frames/l3-al2-house.png",
   "goldens": [
     {
-      "frameSha256": "d5528905aa09c18697e7439d83daf2b4fe5af61cdf857020ba5662330e2fb945",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "frameSha256": "2e9ce28e8bdbfccb02d406300a789072d2554b223471705e951946d45f02a3d1",
+      "model": "gemini-3.8-flash",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
       "response": {
-        "templates": [
-          {
-            "templateId": "lower_third",
-            "singletons": {
-              "race_heading": "AL-2 U.S. HOUSE",
-              "pct_in": "76.IN"
-            },
-            "candidates": [
-              {
-                "name": "Shomari Figures",
-                "party": "D",
-                "pct": "34.0%",
-                "votes": "234234"
-              },
-              {
-                "name": "Rhett Marques",
-                "party": "R",
-                "pct": "66.0%",
-                "votes": "423432",
-                "called": "called"
-              }
-            ]
-          },
-          {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "TX | U.S. SENATE (D)",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "James Talarico",
-                "party": "D",
-                "pct": "52.4%",
-                "votes": "1,216,412",
-                "called": "called"
-              },
-              {
-                "name": "Jasmine Crockett",
-                "party": "D",
-                "pct": "46.2%",
-                "votes": "1,071,900"
-              }
-            ]
-          }
-        ]
+        "pctIn": "",
+        "candidates": [],
+        "raceHeading": ""
       }
     },
     {
       "frameSha256": "50b437d7b10774e0205792d15058988b4f06aa03b97151222f4c08ad132eecda",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
-        "pctIn": ">95%",
+        "raceHeading": "TX | U.S. SENATE (D)",
         "candidates": [
           {
-            "votes": "1,216,412",
             "surname": "TALARICO",
-            "firstName": "JAMES",
             "party": "D",
+            "firstName": "JAMES",
             "pct": "52.4%",
+            "votes": "1,216,412",
             "called": "called"
           },
           {
-            "pct": "46.2%",
-            "called": "",
-            "surname": "CROCKETT",
-            "votes": "1,071,900",
             "party": "D",
-            "firstName": "JASMINE"
+            "called": "",
+            "firstName": "JASMINE",
+            "pct": "46.2%",
+            "votes": "1,071,900",
+            "surname": "CROCKETT"
           }
         ],
-        "raceHeading": "TX | U.S. SENATE (D)"
+        "pctIn": ">95% IN"
       }
     },
     {
       "frameSha256": "65a6da04b0b78e3ee649c192c43592affc12423dccc706d1a0127bbfb9a9ef7b",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
       "response": {
-        "raceHeading": "AL-2 U.S. HOUSE",
-        "pctIn": "76% IN",
         "candidates": [
           {
-            "firstName": "SHOMARI",
-            "called": "",
-            "pct": "34.0%",
-            "party": "D",
+            "surname": "FIGURES",
             "votes": "234234",
-            "surname": "FIGURES"
+            "called": "",
+            "party": "D",
+            "firstName": "SHOMARI",
+            "pct": "34.0%"
           },
           {
-            "surname": "MARQUES",
             "votes": "4233432",
             "party": "R",
+            "called": "called",
             "firstName": "RHETT",
             "pct": "66.0%",
-            "called": "called"
+            "surname": "MARQUES"
           }
-        ]
+        ],
+        "raceHeading": "AL-2 U.S. HOUSE",
+        "pctIn": "76% IN"
       }
     }
   ],
@@ -113,66 +70,58 @@
   "observations": [
     {
       "calledFor": [
-        "Rhett Marques"
+        "JAMES TALARICO"
       ],
       "candidates": [
         {
-          "key": "Shomari Figures",
-          "name": "Shomari Figures",
+          "key": "JAMES TALARICO",
+          "name": "JAMES TALARICO",
+          "party": "D",
+          "pct": 52.4,
+          "votes": 1216412
+        },
+        {
+          "key": "JASMINE CROCKETT",
+          "name": "JASMINE CROCKETT",
+          "party": "D",
+          "pct": 46.2,
+          "votes": 1071900
+        }
+      ],
+      "observedAt": 0,
+      "pctIn": 95,
+      "pctInIsMinimum": true,
+      "raceKey": "TX U.S. SENATE (D)",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "ticker_v1"
+    },
+    {
+      "calledFor": [
+        "RHETT MARQUES"
+      ],
+      "candidates": [
+        {
+          "key": "SHOMARI FIGURES",
+          "name": "SHOMARI FIGURES",
           "party": "D",
           "pct": 34,
           "votes": 234234
         },
         {
-          "key": "Rhett Marques",
-          "name": "Rhett Marques",
+          "key": "RHETT MARQUES",
+          "name": "RHETT MARQUES",
           "party": "R",
           "pct": 66,
           "votes": 4233432
         }
       ],
-      "extractedFields": {
-        "race_heading": "AL-2 U.S. HOUSE",
-        "pct_in": "76.IN"
-      },
       "observedAt": 0,
       "pctIn": 76,
       "raceKey": "AL-2 U.S. HOUSE",
       "reportedAt": null,
       "source": "air",
       "templateId": "lower_third"
-    },
-    {
-      "calledFor": [
-        "James Talarico"
-      ],
-      "candidates": [
-        {
-          "key": "James Talarico",
-          "name": "James Talarico",
-          "party": "D",
-          "pct": 52.4,
-          "votes": 1216412
-        },
-        {
-          "key": "Jasmine Crockett",
-          "name": "Jasmine Crockett",
-          "party": "D",
-          "pct": 46.2,
-          "votes": 1071900
-        }
-      ],
-      "extractedFields": {
-        "race_heading": "TX | U.S. SENATE (D)",
-        "pct_in": ">95% IN"
-      },
-      "observedAt": 0,
-      "pctIn": 95,
-      "raceKey": "TX U.S. SENATE (D)",
-      "reportedAt": null,
-      "source": "air",
-      "templateId": "ticker_v1",
-      "pctInIsMinimum": true
     }
   ],
   "sourceFrame": "l3-al2-house.png"

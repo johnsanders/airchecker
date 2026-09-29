@@ -2,53 +2,38 @@
   "frame": "../reference-frames/fs-ks-governor.png",
   "goldens": [
     {
-      "frameSha256": "239f48bd29316f34efb8a037621eab1e87eeb05dd35e5fcc3388d552011adfe7",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "frameSha256": "c3c0c865b824f46cec623d9d5c1eb29655fc03d6f460793db9fad05d9f649a93",
+      "model": "gemini-3.8-flash",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
       "response": {
-        "templates": [
+        "pctIn": "",
+        "candidates": [],
+        "raceHeading": ""
+      }
+    },
+    {
+      "frameSha256": "ee3a8dc33f35c0b6bed1933fd8cd2b56f4e6e6010d5f15d4798c630a1f7f4bad",
+      "model": "gemini-3.8-flash",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
+      "response": {
+        "raceHeading": "KS GOVERNOR",
+        "pctIn": ">95% IN",
+        "candidates": [
           {
-            "templateId": "fullscreen_results",
-            "singletons": {
-              "race_heading": "KS GOVERNOR",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "Cindy Holscher",
-                "party": "D",
-                "pct": "62.0%",
-                "votes": "3783929"
-              },
-              {
-                "name": "Ty Masterson",
-                "party": "R",
-                "pct": "48.0%",
-                "votes": "2729283"
-              }
-            ]
+            "party": "D",
+            "firstName": "CINDY",
+            "votes": "3783929",
+            "surname": "HOLSCHER",
+            "pct": "62.0%",
+            "called": ""
           },
           {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "SC | U.S. SENATE (R)",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "Darline Graham",
-                "party": "R",
-                "pct": "33.0%",
-                "votes": "109,881",
-                "called": "called"
-              },
-              {
-                "name": "Ralph Norman",
-                "party": "R",
-                "pct": "24.8%",
-                "votes": "82,628"
-              }
-            ]
+            "surname": "MASTERSON",
+            "votes": "2729283",
+            "firstName": "TY",
+            "pct": "48.0%",
+            "called": "",
+            "party": "R"
           }
         ]
       }
@@ -56,53 +41,26 @@
     {
       "frameSha256": "f4a3c10e7d1d08b69ca8f931b63f083d6582eeb75c77f4d559ba29f18e85c2d6",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
         "pctIn": ">95% IN",
+        "raceHeading": "SC | U.S. SENATE (R)",
         "candidates": [
           {
-            "votes": "109,881",
-            "pct": "33.0%",
-            "surname": "GRAHAM",
             "firstName": "DARLINE",
-            "party": "R",
-            "called": "called"
-          },
-          {
             "called": "called",
             "party": "R",
-            "firstName": "RALPH",
-            "surname": "NORMAN",
-            "votes": "82,628",
-            "pct": "24.8%"
-          }
-        ],
-        "raceHeading": "SC | U.S. SENATE (R)"
-      }
-    },
-    {
-      "frameSha256": "ee3a8dc33f35c0b6bed1933fd8cd2b56f4e6e6010d5f15d4798c630a1f7f4bad",
-      "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
-      "response": {
-        "pctIn": ">95% IN",
-        "raceHeading": "KS GOVERNOR",
-        "candidates": [
-          {
-            "called": "",
-            "votes": "3783929",
-            "pct": "62.0%",
-            "firstName": "CINDY",
-            "party": "D",
-            "surname": "HOLSCHER"
+            "surname": "GRAHAM",
+            "pct": "33.0%",
+            "votes": "109,881"
           },
           {
-            "votes": "2729283",
-            "firstName": "TY",
-            "called": "",
-            "surname": "MASTERSON",
+            "surname": "NORMAN",
+            "votes": "82,628",
+            "pct": "24.8%",
             "party": "R",
-            "pct": "48.0%"
+            "called": "called",
+            "firstName": "RALPH"
           }
         ]
       }
@@ -111,67 +69,59 @@
   "name": "fs_ks_governor_ticker_two_winners",
   "observations": [
     {
-      "calledFor": [],
-      "candidates": [
-        {
-          "key": "Cindy Holscher",
-          "name": "Cindy Holscher",
-          "party": "D",
-          "pct": 62,
-          "votes": 3783929
-        },
-        {
-          "key": "Ty Masterson",
-          "name": "Ty Masterson",
-          "party": "R",
-          "pct": 48,
-          "votes": 2729283
-        }
-      ],
-      "extractedFields": {
-        "race_heading": "KS GOVERNOR",
-        "pct_in": ">95% IN"
-      },
-      "observedAt": 0,
-      "pctIn": 95,
-      "raceKey": "KS GOVERNOR",
-      "reportedAt": null,
-      "source": "air",
-      "templateId": "fullscreen_results",
-      "pctInIsMinimum": true
-    },
-    {
       "calledFor": [
-        "Darline Graham",
-        "Ralph Norman"
+        "DARLINE GRAHAM",
+        "RALPH NORMAN"
       ],
       "candidates": [
         {
-          "key": "Darline Graham",
-          "name": "Darline Graham",
+          "key": "DARLINE GRAHAM",
+          "name": "DARLINE GRAHAM",
           "party": "R",
           "pct": 33,
           "votes": 109881
         },
         {
-          "key": "Ralph Norman",
-          "name": "Ralph Norman",
+          "key": "RALPH NORMAN",
+          "name": "RALPH NORMAN",
           "party": "R",
           "pct": 24.8,
           "votes": 82628
         }
       ],
-      "extractedFields": {
-        "race_heading": "SC | U.S. SENATE (R)",
-        "pct_in": ">95% IN"
-      },
       "observedAt": 0,
       "pctIn": 95,
+      "pctInIsMinimum": true,
       "raceKey": "SC U.S. SENATE (R)",
       "reportedAt": null,
       "source": "air",
-      "templateId": "ticker_v1",
-      "pctInIsMinimum": true
+      "templateId": "ticker_v1"
+    },
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "CINDY HOLSCHER",
+          "name": "CINDY HOLSCHER",
+          "party": "D",
+          "pct": 62,
+          "votes": 3783929
+        },
+        {
+          "key": "TY MASTERSON",
+          "name": "TY MASTERSON",
+          "party": "R",
+          "pct": 48,
+          "votes": 2729283
+        }
+      ],
+      "observedAt": 0,
+      "pctIn": 95,
+      "pctInIsMinimum": true,
+      "raceKey": "KS GOVERNOR",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results"
     }
   ],
   "sourceFrame": "fs-ks-governor.png"

@@ -2,54 +2,38 @@
   "frame": "../reference-frames/fs-fl22-house-no-pctin.png",
   "goldens": [
     {
-      "frameSha256": "4a0f6accb0ceda7f35c0ad7e36e2df0f99dab445f211b8b6f168305bb0ee8eeb",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "frameSha256": "25e265bf1b7849d8aa2456d0a2b410a40f2cf5c435ab438ab197bc98479c13b6",
+      "model": "gemini-3.8-flash",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
       "response": {
-        "templates": [
+        "raceHeading": "",
+        "pctIn": "",
+        "candidates": []
+      }
+    },
+    {
+      "frameSha256": "7c3f8e37be83355ecc1b1ded192bb2c45c95bf9b174cdbd734babe6a55d03062",
+      "model": "gemini-3.8-flash",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
+      "response": {
+        "raceHeading": "FL-22 U.S. HOUSE",
+        "pctIn": "",
+        "candidates": [
           {
-            "templateId": "fullscreen_results",
-            "singletons": {
-              "race_heading": "FL-22 U.S. HOUSE",
-              "pct_in": "<UNKNOWN>"
-            },
-            "candidates": [
-              {
-                "name": "Pia Dandiya",
-                "party": "D",
-                "pct": "32.0%",
-                "votes": "373632"
-              },
-              {
-                "name": "Casey Askar",
-                "party": "R",
-                "pct": "66.0%",
-                "votes": "827282",
-                "called": "called"
-              }
-            ]
+            "party": "D",
+            "called": "",
+            "pct": "32.0%",
+            "surname": "DANDIYA",
+            "firstName": "PIA",
+            "votes": "373632"
           },
           {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "WI | GOVERNOR (R)",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "Tom Tiffany",
-                "party": "R",
-                "pct": "95.4%",
-                "votes": "467,745",
-                "called": "called"
-              },
-              {
-                "name": "Andy Manske",
-                "party": "R",
-                "pct": "4.6%",
-                "votes": "22,546"
-              }
-            ]
+            "firstName": "CASEY",
+            "party": "R",
+            "called": "",
+            "pct": "66.0%",
+            "votes": "827282",
+            "surname": "ASKAR"
           }
         ]
       }
@@ -57,123 +41,88 @@
     {
       "frameSha256": "e0e0fb0475137bc62972ad67f546e2420a8dc79ea8feb1c6e4da81253c8e4202",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
         "candidates": [
           {
-            "called": "called",
-            "votes": "467,745",
-            "party": "R",
             "firstName": "TOM",
-            "pct": "95.4%",
-            "surname": "TIFFANY"
+            "votes": "467,745",
+            "surname": "TIFFANY",
+            "called": "called",
+            "party": "R",
+            "pct": "95.4%"
           },
           {
-            "pct": "4.6%",
             "surname": "MANSKE",
             "called": "",
-            "firstName": "ANDY",
             "votes": "22,546",
+            "firstName": "ANDY",
+            "pct": "4.6%",
             "party": "R"
           }
         ],
-        "raceHeading": "WI | GOVERNOR (R)",
-        "pctIn": ">95%"
-      }
-    },
-    {
-      "frameSha256": "7c3f8e37be83355ecc1b1ded192bb2c45c95bf9b174cdbd734babe6a55d03062",
-      "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
-      "response": {
-        "raceHeading": "FL-22 U.S. HOUSE",
-        "pctIn": "",
-        "candidates": [
-          {
-            "called": "",
-            "pct": "32.0%",
-            "votes": "373632",
-            "surname": "DANDIYA",
-            "party": "D",
-            "firstName": "PIA"
-          },
-          {
-            "votes": "827282",
-            "party": "R",
-            "surname": "ASKAR",
-            "pct": "66.0%",
-            "called": "",
-            "firstName": "CASEY"
-          }
-        ]
+        "pctIn": ">95% IN",
+        "raceHeading": "WI | GOVERNOR (R)"
       }
     }
   ],
   "name": "fs_fl22_house_pctin_missing",
   "observations": [
     {
-      "calledFor": [],
-      "candidates": [
-        {
-          "key": "Pia Dandiya",
-          "name": "Pia Dandiya",
-          "party": "D",
-          "pct": 32,
-          "votes": 373632
-        },
-        {
-          "key": "Casey Askar",
-          "name": "Casey Askar",
-          "party": "R",
-          "pct": 66,
-          "votes": 827282
-        }
-      ],
-      "extractedFields": {
-        "race_heading": "FL-22 U.S. HOUSE",
-        "pct_in": "<UNKNOWN>"
-      },
-      "observedAt": 0,
-      "pctIn": 0,
-      "raceKey": "FL-22 U.S. HOUSE",
-      "reportedAt": null,
-      "source": "air",
-      "templateId": "fullscreen_results",
-      "missingFields": [
-        "pct_in"
-      ]
-    },
-    {
       "calledFor": [
-        "Tom Tiffany"
+        "TOM TIFFANY"
       ],
       "candidates": [
         {
-          "key": "Tom Tiffany",
-          "name": "Tom Tiffany",
+          "key": "TOM TIFFANY",
+          "name": "TOM TIFFANY",
           "party": "R",
           "pct": 95.4,
           "votes": 467745
         },
         {
-          "key": "Andy Manske",
-          "name": "Andy Manske",
+          "key": "ANDY MANSKE",
+          "name": "ANDY MANSKE",
           "party": "R",
           "pct": 4.6,
           "votes": 22546
         }
       ],
-      "extractedFields": {
-        "race_heading": "WI | GOVERNOR (R)",
-        "pct_in": ">95% IN"
-      },
       "observedAt": 0,
       "pctIn": 95,
+      "pctInIsMinimum": true,
       "raceKey": "WI GOVERNOR (R)",
       "reportedAt": null,
       "source": "air",
-      "templateId": "ticker_v1",
-      "pctInIsMinimum": true
+      "templateId": "ticker_v1"
+    },
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "PIA DANDIYA",
+          "name": "PIA DANDIYA",
+          "party": "D",
+          "pct": 32,
+          "votes": 373632
+        },
+        {
+          "key": "CASEY ASKAR",
+          "name": "CASEY ASKAR",
+          "party": "R",
+          "pct": 66,
+          "votes": 827282
+        }
+      ],
+      "missingFields": [
+        "pct_in"
+      ],
+      "observedAt": 0,
+      "pctIn": 0,
+      "raceKey": "FL-22 U.S. HOUSE",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results"
     }
   ],
   "sourceFrame": "fs-fl22-house-no-pctin.png"

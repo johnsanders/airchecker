@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 
-import { DEFAULT_MODEL, DEFAULT_RECALL_MODEL, extractFrame } from '../vision/extractFrame.js';
+import { DEFAULT_MODEL, extractFrame } from '../vision/extractFrame.js';
 import { makeLiveLlmClient, missingLiveKeys } from '../vision/liveLlmClient.js';
 import { redactError } from '../vision/redact.js';
 import { formatUsage, makeUsageMeter } from './usageMeter.js';
@@ -11,8 +11,8 @@ import { formatUsage, makeUsageMeter } from './usageMeter.js';
 //
 //   node --env-file-if-exists=../../.env --import tsx src/tools/measureCall.ts <framePng> <expectedCalledForLowercase> [runs] [--template <id>]
 //     --template picks which observation to score on a multi-surface frame (default: first)
-//     --model / --recall-model take Anthropic IDs or OpenRouter vendor/model IDs
-//     --reasoning sets OpenRouter's reasoning effort (none | minimal | low | medium | high)
+//     --model takes a Google, Anthropic or OpenRouter (vendor/model) ID
+//     --reasoning sets the reasoning effort (none | minimal | low | medium | high)
 
 const flagValue = (flag: string): string | undefined => {
 	const index = process.argv.indexOf(flag);
@@ -28,27 +28,21 @@ const run = async (): Promise<void> => {
 			: Number(process.argv[4]);
 	const model = flagValue('--model');
 	const template = flagValue('--template');
-	const recallModel = flagValue('--recall-model');
 	const reasoning = flagValue('--reasoning');
-	const votesFlag = flagValue('--votes');
-	const votes = votesFlag === undefined ? undefined : Number(votesFlag);
 	if (framePath === undefined || expected === undefined) {
 		console.error(
-			'Usage: node --env-file-if-exists=../../.env --import tsx src/tools/measureCall.ts <framePng> <expectedCalledForLowercase> [runs] [--template <id>] [--model X] [--recall-model Y] [--reasoning E] [--votes N]',
+			'Usage: node --env-file-if-exists=../../.env --import tsx src/tools/measureCall.ts <framePng> <expectedCalledForLowercase> [runs] [--template <id>] [--model X] [--reasoning E]',
 		);
 		process.exit(1);
 	}
-	const missingKeys = missingLiveKeys([
-		model ?? DEFAULT_MODEL,
-		recallModel ?? DEFAULT_RECALL_MODEL,
-	]);
+	const missingKeys = missingLiveKeys([model ?? DEFAULT_MODEL]);
 	if (missingKeys.length > 0) {
 		console.error(`${missingKeys.join(', ')} not set.`);
 		process.exit(1);
 	}
 
 	console.log(
-		`model=${model ?? DEFAULT_MODEL} recallModel=${recallModel ?? DEFAULT_RECALL_MODEL} reasoning=${reasoning ?? 'low (client default)'} recallVotes=${votes ?? '1 (default)'} runs=${runs}`,
+		`model=${model ?? DEFAULT_MODEL} reasoning=${reasoning ?? 'low (client default)'} runs=${runs}`,
 	);
 	const png = readFileSync(framePath);
 	const meter = makeUsageMeter(
@@ -57,8 +51,6 @@ const run = async (): Promise<void> => {
 	const deps = {
 		client: meter.client,
 		...(model === undefined ? {} : { model }),
-		...(recallModel === undefined ? {} : { recallModel }),
-		...(votes === undefined ? {} : { recallVotes: votes }),
 	};
 	let correct = 0;
 	const got = new Map<string, number>();

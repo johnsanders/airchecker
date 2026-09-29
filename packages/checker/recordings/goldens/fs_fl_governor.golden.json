@@ -2,178 +2,125 @@
   "frame": "../reference-frames/fs-fl-governor.png",
   "goldens": [
     {
-      "frameSha256": "03fe8f339523ad39187e2b9c2a942ee60d6479f0ebda4e1d53179025fa2e7591",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "frameSha256": "228d1cfacd87b485e15d19e27880bdca76fb6469528e8a1a0c8b7b08fce53d56",
+      "model": "gemini-3.8-flash",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
       "response": {
-        "templates": [
+        "candidates": [
           {
-            "templateId": "fullscreen_results",
-            "singletons": {
-              "race_heading": "FL GOVERNOR",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "David Jolly",
-                "party": "D",
-                "pct": "62.0%",
-                "votes": "3783929",
-                "called": ""
-              },
-              {
-                "name": "Byron Donalds",
-                "party": "R",
-                "pct": "48.0%",
-                "votes": "2729283",
-                "called": ""
-              }
-            ]
+            "pct": "62.0%",
+            "party": "D",
+            "called": "",
+            "firstName": "DAVID",
+            "surname": "JOLLY",
+            "votes": "3783929"
           },
           {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "MN | GOVERNOR (R)",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "Lisa Demuth",
-                "party": "R",
-                "pct": "43.4%",
-                "votes": "179,714",
-                "called": "called"
-              },
-              {
-                "name": "Mike Lindell",
-                "party": "R",
-                "pct": "32.5%",
-                "votes": "134,326",
-                "called": ""
-              }
-            ]
+            "pct": "48.0%",
+            "votes": "2729283",
+            "firstName": "BYRON",
+            "surname": "DONALDS",
+            "called": "",
+            "party": "R"
           }
-        ]
+        ],
+        "raceHeading": "FL GOVERNOR",
+        "pctIn": ">95% IN"
       }
     },
     {
       "frameSha256": "5832497869a1eb84975661b2eb34ae47ba4e5136d9f0c036176edc3736833f6f",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
+        "raceHeading": "MN | GOVERNOR (R)",
         "candidates": [
           {
-            "surname": "DEMUTH",
-            "votes": "179,714",
-            "called": "called",
+            "firstName": "LISA",
             "party": "R",
             "pct": "43.4%",
-            "firstName": "LISA"
+            "called": "called",
+            "votes": "179,714",
+            "surname": "DEMUTH"
           },
           {
-            "votes": "134,326",
-            "surname": "LINDELL",
             "called": "",
-            "firstName": "MIKE",
+            "party": "R",
             "pct": "32.5%",
-            "party": "R"
+            "surname": "LINDELL",
+            "votes": "134,326",
+            "firstName": "MIKE"
           }
         ],
-        "pctIn": ">95%",
-        "raceHeading": "MN | GOVERNOR (R)"
+        "pctIn": ">95% IN"
       }
     },
     {
-      "frameSha256": "228d1cfacd87b485e15d19e27880bdca76fb6469528e8a1a0c8b7b08fce53d56",
+      "frameSha256": "7e6077bdcfdafa79ffd6d75afb73070a4c6b822135344e75c0adaa5cc41da11e",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
       "response": {
-        "candidates": [
-          {
-            "firstName": "DAVID",
-            "party": "D",
-            "surname": "JOLLY",
-            "pct": "62.0%",
-            "votes": "3783929",
-            "called": ""
-          },
-          {
-            "pct": "48.0%",
-            "party": "R",
-            "called": "",
-            "votes": "2729283",
-            "surname": "DONALDS",
-            "firstName": "BYRON"
-          }
-        ],
-        "pctIn": ">95% IN",
-        "raceHeading": "FL GOVERNOR"
+        "raceHeading": "",
+        "pctIn": "",
+        "candidates": []
       }
     }
   ],
   "name": "fs_fl_governor",
   "observations": [
     {
-      "calledFor": [],
-      "candidates": [
-        {
-          "key": "David Jolly",
-          "name": "David Jolly",
-          "party": "D",
-          "pct": 62,
-          "votes": 3783929
-        },
-        {
-          "key": "Byron Donalds",
-          "name": "Byron Donalds",
-          "party": "R",
-          "pct": 48,
-          "votes": 2729283
-        }
-      ],
-      "extractedFields": {
-        "race_heading": "FL GOVERNOR",
-        "pct_in": ">95% IN"
-      },
-      "observedAt": 0,
-      "pctIn": 95,
-      "raceKey": "FL GOVERNOR",
-      "reportedAt": null,
-      "source": "air",
-      "templateId": "fullscreen_results",
-      "pctInIsMinimum": true
-    },
-    {
       "calledFor": [
-        "Lisa Demuth"
+        "LISA DEMUTH"
       ],
       "candidates": [
         {
-          "key": "Lisa Demuth",
-          "name": "Lisa Demuth",
+          "key": "LISA DEMUTH",
+          "name": "LISA DEMUTH",
           "party": "R",
           "pct": 43.4,
           "votes": 179714
         },
         {
-          "key": "Mike Lindell",
-          "name": "Mike Lindell",
+          "key": "MIKE LINDELL",
+          "name": "MIKE LINDELL",
           "party": "R",
           "pct": 32.5,
           "votes": 134326
         }
       ],
-      "extractedFields": {
-        "race_heading": "MN | GOVERNOR (R)",
-        "pct_in": ">95% IN"
-      },
       "observedAt": 0,
       "pctIn": 95,
+      "pctInIsMinimum": true,
       "raceKey": "MN GOVERNOR (R)",
       "reportedAt": null,
       "source": "air",
-      "templateId": "ticker_v1",
-      "pctInIsMinimum": true
+      "templateId": "ticker_v1"
+    },
+    {
+      "calledFor": [],
+      "candidates": [
+        {
+          "key": "DAVID JOLLY",
+          "name": "DAVID JOLLY",
+          "party": "D",
+          "pct": 62,
+          "votes": 3783929
+        },
+        {
+          "key": "BYRON DONALDS",
+          "name": "BYRON DONALDS",
+          "party": "R",
+          "pct": 48,
+          "votes": 2729283
+        }
+      ],
+      "observedAt": 0,
+      "pctIn": 95,
+      "pctInIsMinimum": true,
+      "raceKey": "FL GOVERNOR",
+      "reportedAt": null,
+      "source": "air",
+      "templateId": "fullscreen_results"
     }
   ],
   "sourceFrame": "fs-fl-governor.png"

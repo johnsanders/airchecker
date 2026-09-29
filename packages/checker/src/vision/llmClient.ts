@@ -69,7 +69,7 @@ const makeStubLlmClient = (recorder: Recorder): LlmClient => ({
 
 // The base64 image dominates recording size (~2.3MB per vision call, ~240MB/hour of
 // session DB) and is never read back — replay keys on (frame_hash, prompt_hash), full
-// frames are content-addressed on disk, and pass-2 crops regenerate deterministically.
+// frames are content-addressed on disk, and their crops regenerate deterministically.
 const stripImagePayload = (request: LlmRequest): LlmRequest =>
 	request.image === undefined
 		? request

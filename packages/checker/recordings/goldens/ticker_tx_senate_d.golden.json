@@ -2,62 +2,50 @@
   "frame": "../reference-frames/ticker-tx-senate-d.png",
   "goldens": [
     {
-      "frameSha256": "3863af196925dd2661465cb44b837d0f9cda455483ac7d1a844a48dc7184ffaa",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "frameSha256": "691ca3ac8554755581e77031cf48c64d3431f8ae30e4afcea97643d0877237c5",
+      "model": "gemini-3.8-flash",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
-        "templates": [
+        "raceHeading": "TX | U.S. SENATE (D)",
+        "pctIn": ">95% IN",
+        "candidates": [
           {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "TX | U.S. SENATE (D)",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "James Talarico",
-                "party": "D",
-                "pct": "52.4%",
-                "votes": "1,216,412",
-                "called": "called"
-              },
-              {
-                "name": "Jasmine Crockett",
-                "party": "D",
-                "pct": "46.2%",
-                "votes": "1,071,900",
-                "called": ""
-              }
-            ]
+            "surname": "TALARICO",
+            "party": "D",
+            "votes": "1,216,412",
+            "called": "called",
+            "pct": "52.4%",
+            "firstName": "JAMES"
+          },
+          {
+            "votes": "1,071,900",
+            "party": "D",
+            "firstName": "JASMINE",
+            "surname": "CROCKETT",
+            "called": "",
+            "pct": "46.2%"
           }
         ]
       }
     },
     {
-      "frameSha256": "691ca3ac8554755581e77031cf48c64d3431f8ae30e4afcea97643d0877237c5",
+      "frameSha256": "9ad942eb052c590148833a9a22774ff6d6bdd55d6cb977c890dc13109c174979",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
       "response": {
-        "pctIn": ">95% IN",
-        "raceHeading": "TX | U.S. SENATE (D)",
-        "candidates": [
-          {
-            "surname": "TALARICO",
-            "called": "called",
-            "party": "D",
-            "firstName": "JAMES",
-            "pct": "52.4%",
-            "votes": "1,216,412"
-          },
-          {
-            "firstName": "JASMINE",
-            "pct": "46.2%",
-            "surname": "CROCKETT",
-            "party": "D",
-            "votes": "1,071,900",
-            "called": ""
-          }
-        ]
+        "pctIn": "",
+        "raceHeading": "",
+        "candidates": []
+      }
+    },
+    {
+      "frameSha256": "ce82df47b56c0dc3e07a00a2804cbb1377d72484755dc8ac691d6f6f7037b5cb",
+      "model": "gemini-3.8-flash",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
+      "response": {
+        "candidates": [],
+        "pctIn": "",
+        "raceHeading": ""
       }
     }
   ],
@@ -65,35 +53,31 @@
   "observations": [
     {
       "calledFor": [
-        "James Talarico"
+        "JAMES TALARICO"
       ],
       "candidates": [
         {
-          "key": "James Talarico",
-          "name": "James Talarico",
+          "key": "JAMES TALARICO",
+          "name": "JAMES TALARICO",
           "party": "D",
           "pct": 52.4,
           "votes": 1216412
         },
         {
-          "key": "Jasmine Crockett",
-          "name": "Jasmine Crockett",
+          "key": "JASMINE CROCKETT",
+          "name": "JASMINE CROCKETT",
           "party": "D",
           "pct": 46.2,
           "votes": 1071900
         }
       ],
-      "extractedFields": {
-        "race_heading": "TX | U.S. SENATE (D)",
-        "pct_in": ">95% IN"
-      },
       "observedAt": 0,
       "pctIn": 95,
+      "pctInIsMinimum": true,
       "raceKey": "TX U.S. SENATE (D)",
       "reportedAt": null,
       "source": "air",
-      "templateId": "ticker_v1",
-      "pctInIsMinimum": true
+      "templateId": "ticker_v1"
     }
   ],
   "sourceFrame": "ticker-tx-senate-d.png"

@@ -1,7 +1,7 @@
 import type { LlmClient } from './llmClient.js';
 
 import { makeAnthropicLlmClient } from './anthropicClient.js';
-import { DEFAULT_MODEL, DEFAULT_RECALL_MODEL } from './extractFrame.js';
+import { DEFAULT_MODEL } from './extractFrame.js';
 import { makeGoogleLlmClient } from './googleClient.js';
 import { makeOpenRouterLlmClient } from './openRouterClient.js';
 
@@ -23,10 +23,8 @@ const KEY_FOR: Record<LiveBackend, string> = {
 };
 
 // The env var names the given models need that are not set. Defaults to the
-// two models the extractor uses out of the box.
-export const missingLiveKeys = (
-	models: readonly string[] = [DEFAULT_MODEL, DEFAULT_RECALL_MODEL],
-): string[] =>
+// model the extractor uses out of the box.
+export const missingLiveKeys = (models: readonly string[] = [DEFAULT_MODEL]): string[] =>
 	Array.from(new Set(models.map((model) => KEY_FOR[backendFor(model)]))).filter((name) => {
 		const value = process.env[name];
 		return value === undefined || value.length === 0;

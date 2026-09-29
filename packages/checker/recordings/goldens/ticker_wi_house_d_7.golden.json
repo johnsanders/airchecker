@@ -2,62 +2,50 @@
   "frame": "../reference-frames/ticker-wi-house-d-7.png",
   "goldens": [
     {
-      "frameSha256": "e2594ad429165a9e898a1b1fd52cd5d07dc468571a18326b18f3e257f6c121e3",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "frameSha256": "cde4b53d31b6cfc59d3d2dd2dab43c614010c138ff73880c60fbb0e3df256755",
+      "model": "gemini-3.8-flash",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
-        "templates": [
+        "raceHeading": "WI | U.S. HOUSE (D)\nDISTRICT 7",
+        "pctIn": ">95% IN",
+        "candidates": [
           {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "WI | U.S. HOUSE (D) DISTRICT 7",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "Fred Clark",
-                "party": "D",
-                "pct": "37.7%",
-                "votes": "25,492",
-                "called": "called"
-              },
-              {
-                "name": "Ginger Murray",
-                "party": "D",
-                "pct": "31.9%",
-                "votes": "21,603",
-                "called": ""
-              }
-            ]
+            "votes": "25,492",
+            "party": "D",
+            "pct": "37.7%",
+            "surname": "CLARK",
+            "firstName": "FRED",
+            "called": "called"
+          },
+          {
+            "called": "",
+            "surname": "MURRAY",
+            "party": "D",
+            "votes": "21,603",
+            "firstName": "GINGER",
+            "pct": "31.9%"
           }
         ]
       }
     },
     {
-      "frameSha256": "cde4b53d31b6cfc59d3d2dd2dab43c614010c138ff73880c60fbb0e3df256755",
+      "frameSha256": "ec12e964855e3236305308d496449acdaad26954ffb9cf056199f15a9693901d",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
       "response": {
-        "pctIn": ">95% IN",
-        "candidates": [
-          {
-            "pct": "37.7%",
-            "called": "called",
-            "firstName": "FRED",
-            "surname": "CLARK",
-            "party": "D",
-            "votes": "25,492"
-          },
-          {
-            "surname": "MURRAY",
-            "firstName": "GINGER",
-            "party": "D",
-            "votes": "21,603",
-            "pct": "31.9%",
-            "called": ""
-          }
-        ],
-        "raceHeading": "WI | U.S. HOUSE (D)\nDISTRICT 7"
+        "raceHeading": "",
+        "pctIn": "",
+        "candidates": []
+      }
+    },
+    {
+      "frameSha256": "fc5f1189fb4f7e2b710d954bca447a7a27d9a7c2c3b1db9fab1a6b46007d164d",
+      "model": "gemini-3.8-flash",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
+      "response": {
+        "candidates": [],
+        "raceHeading": "",
+        "pctIn": ""
       }
     }
   ],
@@ -65,35 +53,31 @@
   "observations": [
     {
       "calledFor": [
-        "Fred Clark"
+        "FRED CLARK"
       ],
       "candidates": [
         {
-          "key": "Fred Clark",
-          "name": "Fred Clark",
+          "key": "FRED CLARK",
+          "name": "FRED CLARK",
           "party": "D",
           "pct": 37.7,
           "votes": 25492
         },
         {
-          "key": "Ginger Murray",
-          "name": "Ginger Murray",
+          "key": "GINGER MURRAY",
+          "name": "GINGER MURRAY",
           "party": "D",
           "pct": 31.9,
           "votes": 21603
         }
       ],
-      "extractedFields": {
-        "race_heading": "WI | U.S. HOUSE (D)\nDISTRICT 7",
-        "pct_in": ">95% IN"
-      },
       "observedAt": 0,
       "pctIn": 95,
+      "pctInIsMinimum": true,
       "raceKey": "WI U.S. HOUSE (D) DISTRICT 7",
       "reportedAt": null,
       "source": "air",
-      "templateId": "ticker_v1",
-      "pctInIsMinimum": true
+      "templateId": "ticker_v1"
     }
   ],
   "sourceFrame": "ticker-wi-house-d-7.png"

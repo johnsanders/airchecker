@@ -2,21 +2,33 @@
   "frame": "../reference-frames/neg-promo-bar-no-ticker.png",
   "goldens": [
     {
-      "frameSha256": "e77e3f0fdbbcae38040471200bf654a6453d76ae51047a5b984aab3a98c609cb",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "frameSha256": "540266cfa21da9dbf7f37f624259703171c3fe816633d64c3ad648593c304c71",
+      "model": "gemini-3.8-flash",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
-        "templates": []
+        "pctIn": "",
+        "raceHeading": "",
+        "candidates": []
       }
     },
     {
-      "frameSha256": "540266cfa21da9dbf7f37f624259703171c3fe816633d64c3ad648593c304c71",
+      "frameSha256": "59fc539928c318fa6b9d57731135ad8f2b78a5915e5826f032764f754ad6f30a",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
       "response": {
         "pctIn": "",
-        "raceHeading": "FOR MORE INFO, GO TO NEWSNATIONNOW.COM",
-        "candidates": []
+        "candidates": [],
+        "raceHeading": ""
+      }
+    },
+    {
+      "frameSha256": "a1140819e089c8b98802892fdce626904198bad19be8e443d421d02be37dafbf",
+      "model": "gemini-3.8-flash",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
+      "response": {
+        "candidates": [],
+        "raceHeading": "",
+        "pctIn": ""
       }
     }
   ],

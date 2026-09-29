@@ -10,8 +10,8 @@ import { scaleRectToFrame } from '../templates/geometry.js';
 // is isolation (the model's attention and visual tokens go to the graphic alone),
 // not magnification.
 //
-// Sizing follows the standard resolution tier the crop reader runs on (Haiku 4.5,
-// Sonnet 4.6): the API downsizes anything over a 1568 px long edge or 1568 visual
+// Sizing follows Anthropic's standard resolution tier, which the crops were first read
+// on and Gemini reads as well: the API downsizes anything over a 1568 px long edge or 1568 visual
 // tokens (28×28 patches) before the model sees it. Sending more pixels than that
 // only bloats the upload — a 3× upscale of a wide region blew the 10 MB image limit
 // on photo-heavy frames — so the crop is scaled to fit those limits exactly and

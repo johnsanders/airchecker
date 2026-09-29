@@ -2,106 +2,65 @@
   "frame": "../reference-frames/ticker-midflip.png",
   "goldens": [
     {
-      "frameSha256": "a04e57c9b4332480b2548cff915b976d29e52ebb2a9c642eab4994001b82230d",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "frameSha256": "a6dd6d149fdcc0b59cbeee9da0dd95fe70b2e4a94b5aaf55dc0869c279b04f5e",
+      "model": "gemini-3.8-flash",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
-        "templates": [
+        "raceHeading": "TX | U.S. SENATE (R)",
+        "candidates": [
           {
-            "templateId": "lower_third",
-            "singletons": {
-              "race_heading": "AK U.S. SENATE",
-              "pct_in": "43% IN"
-            },
-            "candidates": [
-              {
-                "name": "Mary Peltola",
-                "party": "D",
-                "pct": "87.0%",
-                "votes": "448293"
-              },
-              {
-                "name": "Dan Sullivan",
-                "party": "R",
-                "pct": "13.0%",
-                "votes": "22453"
-              }
-            ]
+            "surname": "PAXTON",
+            "votes": "",
+            "called": "called",
+            "pct": "63.8%",
+            "party": "R",
+            "firstName": "KEN"
           },
           {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "TX U.S. SENATE (R)",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "Ken Paxton",
-                "party": "R",
-                "pct": "63.8%",
-                "votes": ""
-              },
-              {
-                "name": "John Cornyn",
-                "party": "R",
-                "pct": "36.2%",
-                "votes": ""
-              }
-            ]
+            "called": "",
+            "firstName": "JOHN",
+            "party": "R",
+            "pct": "36.2%",
+            "votes": "",
+            "surname": "CORNYN"
           }
-        ]
+        ],
+        "pctIn": ">95% IN"
       }
     },
     {
-      "frameSha256": "a6dd6d149fdcc0b59cbeee9da0dd95fe70b2e4a94b5aaf55dc0869c279b04f5e",
+      "frameSha256": "dae174b738c47357c65e705e15434bfacf111b1f7690f28ace8644494a515a82",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
       "response": {
-        "raceHeading": "TX | U.S. SENATE (R)",
-        "pctIn": ">95% IN",
-        "candidates": [
-          {
-            "called": "called",
-            "firstName": "KEN",
-            "party": "R",
-            "votes": "",
-            "surname": "PAXTON",
-            "pct": "63.8%"
-          },
-          {
-            "firstName": "JOHN",
-            "pct": "36.2%",
-            "votes": "",
-            "called": "",
-            "party": "R",
-            "surname": "CORNYN"
-          }
-        ]
+        "candidates": [],
+        "raceHeading": "",
+        "pctIn": ""
       }
     },
     {
       "frameSha256": "eb4d20bdab5e9b2fe405f6e2d57dc8ad7e488db6327917b9f3f75cfbb9d33e7d",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
       "response": {
-        "raceHeading": "AK U.S. SENATE",
-        "pctIn": "43%",
+        "pctIn": "43% IN",
+        "raceHeading": "AK | U.S. SENATE",
         "candidates": [
           {
-            "firstName": "MARY",
-            "called": "",
             "surname": "PELTOLA",
+            "votes": "448293",
+            "called": "",
             "pct": "87.0%",
             "party": "D",
-            "votes": "448293"
+            "firstName": "MARY"
           },
           {
-            "pct": "13.0%",
-            "votes": "22453",
+            "called": "",
             "party": "R",
-            "firstName": "DAN",
+            "pct": "13.0%",
             "surname": "SULLIVAN",
-            "called": ""
+            "firstName": "DAN",
+            "votes": "22453"
           }
         ]
       }
@@ -113,24 +72,20 @@
       "calledFor": [],
       "candidates": [
         {
-          "key": "Mary Peltola",
-          "name": "Mary Peltola",
+          "key": "MARY PELTOLA",
+          "name": "MARY PELTOLA",
           "party": "D",
           "pct": 87,
           "votes": 448293
         },
         {
-          "key": "Dan Sullivan",
-          "name": "Dan Sullivan",
+          "key": "DAN SULLIVAN",
+          "name": "DAN SULLIVAN",
           "party": "R",
           "pct": 13,
           "votes": 22453
         }
       ],
-      "extractedFields": {
-        "race_heading": "AK U.S. SENATE",
-        "pct_in": "43% IN"
-      },
       "observedAt": 0,
       "pctIn": 43,
       "raceKey": "AK U.S. SENATE",

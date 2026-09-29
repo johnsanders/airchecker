@@ -2,62 +2,50 @@
   "frame": "../reference-frames/neg-name-super-chyron.png",
   "goldens": [
     {
-      "frameSha256": "1b30eb10f60f1ab36ef16805a3674fe9596e78ffb89dc0253489d750fffb6d9e",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
-      "response": {
-        "templates": [
-          {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "TX | U.S. SENATE (R)",
-              "pct_in": ">95% IN"
-            },
-            "candidates": [
-              {
-                "name": "Ken Paxton",
-                "party": "R",
-                "pct": "63.8%",
-                "votes": "885,949",
-                "called": "called"
-              },
-              {
-                "name": "John Cornyn",
-                "party": "R",
-                "pct": "36.2%",
-                "votes": "501,725",
-                "called": ""
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
       "frameSha256": "258fdea6c0280628e5270a4ba487398ad76e85c2072dd4c2a5a345e354430930",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
-        "pctIn": ">95%",
         "candidates": [
           {
-            "votes": "885,949",
             "pct": "63.8%",
+            "votes": "885,949",
             "surname": "PAXTON",
-            "called": "called",
             "firstName": "KEN",
+            "called": "called",
             "party": "R"
           },
           {
             "party": "R",
             "surname": "CORNYN",
-            "called": "",
+            "votes": "501,725",
             "pct": "36.2%",
-            "firstName": "JOHN",
-            "votes": "501,725"
+            "called": "",
+            "firstName": "JOHN"
           }
         ],
+        "pctIn": ">95% IN",
         "raceHeading": "TX | U.S. SENATE (R)"
+      }
+    },
+    {
+      "frameSha256": "cc4069329418de7a6c2ea39eb90e5632430bc20a15d41768210460e9904884fc",
+      "model": "gemini-3.8-flash",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
+      "response": {
+        "raceHeading": "",
+        "pctIn": "",
+        "candidates": []
+      }
+    },
+    {
+      "frameSha256": "d245b64ff55b32b494004249ad72bc16ef89f8d2926246880efcc5b2d22d90b6",
+      "model": "gemini-3.8-flash",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
+      "response": {
+        "candidates": [],
+        "pctIn": "",
+        "raceHeading": ""
       }
     }
   ],
@@ -65,35 +53,31 @@
   "observations": [
     {
       "calledFor": [
-        "Ken Paxton"
+        "KEN PAXTON"
       ],
       "candidates": [
         {
-          "key": "Ken Paxton",
-          "name": "Ken Paxton",
+          "key": "KEN PAXTON",
+          "name": "KEN PAXTON",
           "party": "R",
           "pct": 63.8,
           "votes": 885949
         },
         {
-          "key": "John Cornyn",
-          "name": "John Cornyn",
+          "key": "JOHN CORNYN",
+          "name": "JOHN CORNYN",
           "party": "R",
           "pct": 36.2,
           "votes": 501725
         }
       ],
-      "extractedFields": {
-        "race_heading": "TX | U.S. SENATE (R)",
-        "pct_in": ">95% IN"
-      },
       "observedAt": 0,
       "pctIn": 95,
+      "pctInIsMinimum": true,
       "raceKey": "TX U.S. SENATE (R)",
       "reportedAt": null,
       "source": "air",
-      "templateId": "ticker_v1",
-      "pctInIsMinimum": true
+      "templateId": "ticker_v1"
     }
   ],
   "sourceFrame": "neg-name-super-chyron.png"

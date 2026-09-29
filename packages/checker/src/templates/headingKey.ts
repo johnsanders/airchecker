@@ -8,8 +8,8 @@
 const TRAILING_BADGE = /\s*>?\d+(?:\.\d+)?\s*%?\s*\.?\s*IN\s*$/i;
 const LITERAL_NEWLINE = /\\n/gi;
 
-export const headingRaceKey = (singletons: Record<string, string>): string =>
-	(singletons.race_heading ?? '')
+export const headingRaceKey = (heading: string): string =>
+	heading
 		.replace(LITERAL_NEWLINE, ' ')
 		.replace(TRAILING_BADGE, '')
 		.replace(/\|/g, ' ')

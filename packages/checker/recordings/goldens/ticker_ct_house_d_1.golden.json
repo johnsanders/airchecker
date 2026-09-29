@@ -2,60 +2,48 @@
   "frame": "../reference-frames/ticker-ct-house-d-1.png",
   "goldens": [
     {
-      "frameSha256": "c39458be7782db3bbff030777edd3cb84af829efceedf0f2dd7c24ad6097272e",
-      "model": "claude-haiku-4-5-20251001",
-      "promptHash": "57c18b2c8d1541bc3b9454a70150f4b6b820e0e05fd7944ac31fdc45075fc2d2",
+      "frameSha256": "0d54b6e5665486ad4d6d97e4c8cc316130fa839cc918f4916ac2a78b07b62d21",
+      "model": "gemini-3.8-flash",
+      "promptHash": "7eb1f750bb35a0f93599cdce4fb2f822ba2c8642b6c6ca4e0db04a020f35865d",
       "response": {
-        "templates": [
-          {
-            "templateId": "ticker_v1",
-            "singletons": {
-              "race_heading": "CT | U.S. HOUSE (D) DISTRICT 1",
-              "pct_in": "84% IN"
-            },
-            "candidates": [
-              {
-                "name": "Luke Bronin",
-                "party": "D",
-                "pct": "54.3%",
-                "votes": "29,658",
-                "called": "called"
-              },
-              {
-                "name": "John Larson",
-                "party": "D",
-                "pct": "32.8%",
-                "votes": "17,933",
-                "called": ""
-              }
-            ]
-          }
-        ]
+        "candidates": [],
+        "pctIn": "",
+        "raceHeading": ""
+      }
+    },
+    {
+      "frameSha256": "d3c3df56377017fdd2d1fb4ca1933cf78878136c177876fb92d141ddadae581a",
+      "model": "gemini-3.8-flash",
+      "promptHash": "6dc48d50a29d407af29856a601ac5630430b4ec3b09360087130cbb6c226821c",
+      "response": {
+        "raceHeading": "",
+        "candidates": [],
+        "pctIn": ""
       }
     },
     {
       "frameSha256": "dc93525caba6bfe77c1b94c5d25c91072dcd507492dff7143258c525814a6cc1",
       "model": "gemini-3.8-flash",
-      "promptHash": "541da83b2164e154feb2fb373cd62fa48bd8a9c7a552f41f6170cf41ccdd7346",
+      "promptHash": "866189941c978ce742dc9a7832b266e7bd52cde7561261f66cec592a6ac68efb",
       "response": {
-        "pctIn": "84% IN",
         "raceHeading": "CT | U.S. HOUSE (D) DISTRICT 1",
+        "pctIn": "84% IN",
         "candidates": [
           {
+            "firstName": "LUKE",
             "pct": "54.3%",
-            "surname": "BRONIN",
-            "called": "called",
             "votes": "29,658",
-            "party": "D",
-            "firstName": "LUKE"
+            "called": "called",
+            "surname": "BRONIN",
+            "party": "D"
           },
           {
             "votes": "17,933",
             "party": "D",
-            "pct": "32.8%",
             "called": "",
-            "firstName": "JOHN",
-            "surname": "LARSON"
+            "pct": "32.8%",
+            "surname": "LARSON",
+            "firstName": "JOHN"
           }
         ]
       }
@@ -65,28 +53,24 @@
   "observations": [
     {
       "calledFor": [
-        "Luke Bronin"
+        "LUKE BRONIN"
       ],
       "candidates": [
         {
-          "key": "Luke Bronin",
-          "name": "Luke Bronin",
+          "key": "LUKE BRONIN",
+          "name": "LUKE BRONIN",
           "party": "D",
           "pct": 54.3,
           "votes": 29658
         },
         {
-          "key": "John Larson",
-          "name": "John Larson",
+          "key": "JOHN LARSON",
+          "name": "JOHN LARSON",
           "party": "D",
           "pct": 32.8,
           "votes": 17933
         }
       ],
-      "extractedFields": {
-        "race_heading": "CT | U.S. HOUSE (D) DISTRICT 1",
-        "pct_in": "84% IN"
-      },
       "observedAt": 0,
       "pctIn": 84,
       "raceKey": "CT U.S. HOUSE (D) DISTRICT 1",

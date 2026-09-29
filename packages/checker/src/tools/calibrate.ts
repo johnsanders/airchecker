@@ -26,11 +26,6 @@ const run = async (): Promise<void> => {
 		);
 		process.exit(1);
 	}
-	if (spec.captureRegion === undefined) {
-		console.error(`Template "${templateId}" has no captureRegion (locatable template).`);
-		process.exit(1);
-	}
-
 	// metadata() reports wrong dimensions for some of these PNGs, so decode to get
 	// the true pixel size — the space extract() actually operates in.
 	const decoded = await sharp(framePath).raw().toBuffer({ resolveWithObject: true });

@@ -9,8 +9,8 @@ import { makeRecordingLlmClient } from '../vision/llmClient.js';
 import { redactError } from '../vision/redact.js';
 
 // Dry-runs the whole air pipeline against a recording instead of a broadcast:
-// samples the video at the capture cadence with ffmpeg, runs the two-pass
-// extractor over every frame with the recording LLM client, and writes a normal
+// samples the video at the capture cadence with ffmpeg, runs the extractor over
+// every frame with the recording LLM client, and writes a normal
 // session (frames, LLM calls, observations) under recordings/. The session can
 // then be frozen (`freeze-session`), mined for frame goldens
 // (`capture-golden --from-session`), or replayed — all with no API key.
