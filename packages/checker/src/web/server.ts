@@ -254,6 +254,16 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		return { proposal, raceLinks: config.raceIdentity.getSnapshot() };
 	});
 
+	app.post('/api/race-links/reset', (_req, reply) => {
+		if (config.raceIdentity === undefined)
+			return reply.code(503).send({ error: 'race identity not wired' });
+		if (config.session?.status().running === true)
+			return reply.code(409).send({ error: 'stop monitoring before clearing race links' });
+		config.raceIdentity.reset();
+		changeBus?.broadcast({ type: 'changed' });
+		return { raceLinks: config.raceIdentity.getSnapshot() };
+	});
+
 	app.post<{ Body: { canonicalRaceKey?: unknown; source?: unknown; sourceRaceKey?: unknown } }>(
 		'/api/race-links/aliases',
 		(req, reply) => {

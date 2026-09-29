@@ -231,6 +231,7 @@ export const api = {
 			`/api/race-links/proposals/${encodeURIComponent(id)}/reject`,
 			{},
 		),
+	resetRaceLinks: () => postJson<{ raceLinks: RaceLinksResponse }>('/api/race-links/reset', {}),
 	setAirMatch: (match: string) => postJson<{ match: string }>('/api/air-match', { match }),
 	setCadence: (next: Partial<Cadence>) => postJson<Cadence>('/api/cadence', next),
 	setDdhqHost: (host: DdhqHost) => postJson<{ host: DdhqHost }>('/api/ddhq-host', { host }),

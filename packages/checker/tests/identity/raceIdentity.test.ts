@@ -243,6 +243,44 @@ describe('race identity resolver', () => {
 		expect(counter.calls).toBe(1);
 		expect(resolver.getSnapshot().proposals.filter((p) => p.status === 'pending')).toHaveLength(0);
 	});
+
+	it('asks Haiku about air races only; a Ross race waits to link by race_id', async () => {
+		const counter = { calls: 0 };
+		const resolver = makeRaceIdentityResolver({ llmClient: matchClient(counter) });
+		await resolver.resolveObservation(obs('DDHQ', 'DDHQ:RACE'));
+		await resolver.resolveObservation(obs('Ross', 'ROSS RACE'));
+		await resolver.whenIdle();
+
+		expect(counter.calls).toBe(0);
+		expect(resolver.getSnapshot().proposals).toHaveLength(0);
+	});
+
+	it('forgets every link on reset, in memory and in settings', async () => {
+		let saved: unknown;
+		const counter = { calls: 0 };
+		const resolver = makeRaceIdentityResolver({
+			llmClient: matchClient(counter),
+			settings: {
+				getIdentityState: () => saved,
+				setIdentityState: (state) => {
+					saved = state;
+				},
+			},
+		});
+		await resolver.resolveObservation(obs('DDHQ', 'DDHQ:RACE'));
+		await resolver.resolveObservation(obs('air', 'AIR HEADING'));
+		await resolver.whenIdle();
+
+		resolver.reset();
+		expect(resolver.getSnapshot()).toEqual({ aliases: [], canonicalRaces: [], proposals: [] });
+		expect(saved).toEqual({ aliases: [], canonicalRaces: [], proposals: [] });
+
+		// A sighting after the reset gets its one Haiku reconcile again.
+		await resolver.resolveObservation(obs('DDHQ', 'DDHQ:RACE', 2_000));
+		await resolver.resolveObservation(obs('air', 'AIR HEADING', 2_000));
+		await resolver.whenIdle();
+		expect(counter.calls).toBe(2);
+	});
 });
 
 describe('race identity relink with store history', () => {

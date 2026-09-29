@@ -535,6 +535,28 @@ describe('web server', () => {
 		});
 	});
 
+	it('clears race links only while monitoring is stopped', async () => {
+		const raceIdentity = makeRaceIdentityResolver();
+		await raceIdentity.resolveObservation(obs('DDHQ', 'DDHQ:RACE'));
+		await raceIdentity.resolveObservation(obs('air', 'AIR HEADING'));
+		let running = true;
+		const status = () => ({ id: running ? 's' : null, running, startedAt: running ? 1 : null });
+		const server = makeWebServer({
+			getRecentAlerts: () => [],
+			raceIdentity,
+			session: { start: status, status, stop: status },
+			store: makeStore(),
+		});
+		app = server;
+		const reset = () => server.inject({ method: 'POST', url: '/api/race-links/reset' });
+		expect((await reset()).statusCode).toBe(409);
+		expect(raceIdentity.getSnapshot().aliases).toHaveLength(2);
+		running = false;
+		expect((await reset()).json()).toEqual({
+			raceLinks: { aliases: [], canonicalRaces: [], proposals: [] },
+		});
+	});
+
 	it('lists sessions and maps prune and delete refusals to 409', async () => {
 		app = makeWebServer({
 			getRecentAlerts: () => [],

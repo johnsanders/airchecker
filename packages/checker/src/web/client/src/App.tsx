@@ -161,7 +161,10 @@ const App: React.FC = () => {
 							<Section
 								title={`Race links${state?.pendingLinkCount ? ` (${state.pendingLinkCount})` : ''}`}
 							>
-								<RaceLinks />
+								<RaceLinks
+									monitoring={state?.session?.running ?? false}
+									onSelectRace={setSelected}
+								/>
 							</Section>
 						</Grid>
 					</Grid>
