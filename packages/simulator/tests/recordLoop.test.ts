@@ -9,6 +9,7 @@ import { makeApiRecorder } from '../src/recording/apiRecorder.js';
 import { loadApiRecording } from '../src/recording/apiRecording.js';
 import { makeRecordingHttp } from '../src/recording/recordingHttp.js';
 import { makeRecordLoop } from '../src/recording/recordLoop.js';
+import { DEFAULT_AIR_SCHEDULE } from '../src/settings.js';
 import { makeDdhqAuth } from '../src/sources/ddhqAuth.js';
 
 const dirs: string[] = [];
@@ -54,6 +55,7 @@ describe('makeRecordLoop', () => {
 			chameleonUrl: VENDOR,
 			ddhqHttp,
 			getSettings: () => ({
+				airSchedule: DEFAULT_AIR_SCHEDULE,
 				airSource: 'invented',
 				intervalSeconds: 60,
 				queries: ['state=TX', 'state=ZZ'],
@@ -92,6 +94,7 @@ describe('makeRecordLoop', () => {
 			chameleonUrl: VENDOR,
 			ddhqHttp: makeRecordingHttp(routedHttp({}), 'DDHQ', (row) => rows.push(row)),
 			getSettings: () => ({
+				airSchedule: DEFAULT_AIR_SCHEDULE,
 				airSource: 'invented',
 				intervalSeconds: 60,
 				queries: ['state=TX'],

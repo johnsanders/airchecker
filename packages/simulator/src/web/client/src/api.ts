@@ -1,6 +1,15 @@
 // Typed fetch wrappers + shared response shapes for the simulator's control API. These
 // mirror src/web/server.ts; kept narrow to what the UI renders.
 
+// How a night paces its graphics; see AirSchedule in src/settings.ts.
+export interface AirSchedule {
+	fsCount: number;
+	gapSeconds: number;
+	l3Count: number;
+	overlaySeconds: number;
+	tickerSeconds: number;
+}
+
 export type AirSource = 'ddhqIntegration' | 'invented';
 
 export interface AirStatus {
@@ -8,9 +17,13 @@ export interface AirStatus {
 	durationMs: number;
 	elapsedMs: number;
 	faultRate: number; // the share of airings, 0 to 1, that put something wrong on air
+	next: null | OverlayStatus; // the next overlay to come up; null when the mix has none
+	overlay: null | OverlayStatus; // the overlay up now
 	races: number;
 	recording: null | string; // the API recording on air, when playback is what's on air
+	schedule: AirSchedule;
 	seed: number;
+	ticker: string; // the race on the ticker now
 }
 
 export interface ApiRecordingDetail {
@@ -47,6 +60,13 @@ export interface ApiResponseSummary {
 
 export type ApiSource = 'DDHQ' | 'Ross';
 
+// atMs: when it comes up (next) or goes down (overlay), in epoch ms.
+export interface OverlayStatus {
+	atMs: number;
+	kind: 'fs' | 'l3';
+	race: string;
+}
+
 export interface PlaybackStatus {
 	ddhqQueries: string[];
 	durationMs: number;
@@ -57,6 +77,7 @@ export interface PlaybackStatus {
 }
 
 export interface Settings {
+	airSchedule: AirSchedule;
 	airSource: AirSource;
 	intervalSeconds: number;
 	queries: string[];

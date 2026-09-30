@@ -168,12 +168,16 @@ describe('mirror endpoints', () => {
 	});
 });
 
+const SCHEDULE = { fsCount: 1, gapSeconds: 5, l3Count: 3, overlaySeconds: 12, tickerSeconds: 6 };
+const VALID = { airSource: 'invented', intervalSeconds: 60, queries: [] };
+
 describe('control API', () => {
 	it('saves the recorder and air settings, trimmed, and rejects bad ones', async () => {
 		const { app } = setup();
 		const saved = await app.inject({
 			method: 'POST',
 			payload: {
+				airSchedule: SCHEDULE,
 				airSource: 'ddhqIntegration',
 				intervalSeconds: 15,
 				queries: [' state=TX ', ''],
@@ -181,6 +185,7 @@ describe('control API', () => {
 			url: '/api/settings',
 		});
 		const expected = {
+			airSchedule: SCHEDULE,
 			airSource: 'ddhqIntegration',
 			intervalSeconds: 15,
 			queries: ['state=TX'],
@@ -193,12 +198,17 @@ describe('control API', () => {
 				{ airSource: 'invented', intervalSeconds: 1, queries: [] },
 				{ airSource: 'invented', intervalSeconds: 7.5, queries: [] },
 				{ airSource: 'invented', queries: [] },
-			].map(
-				async (payload) =>
-					(await app.inject({ method: 'POST', payload, url: '/api/settings' })).statusCode,
-			),
+				VALID,
+				{ ...VALID, airSchedule: { ...SCHEDULE, tickerSeconds: 1 } },
+				{ ...VALID, airSchedule: { ...SCHEDULE, fsCount: 1.5 } },
+			]
+				.map((payload) => ({ airSchedule: SCHEDULE, ...payload }))
+				.map(
+					async (payload) =>
+						(await app.inject({ method: 'POST', payload, url: '/api/settings' })).statusCode,
+				),
 		);
-		expect(statuses).toEqual([400, 400, 400, 400]);
+		expect(statuses).toEqual([400, 400, 400, 400, 200, 400, 400]);
 	});
 
 	it('lists and browses recordings', async () => {

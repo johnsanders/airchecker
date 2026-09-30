@@ -8,7 +8,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Typography from '@mui/material/Typography';
 import React from 'react';
 
-import type { AirSource, AirStatus, Settings, Status } from '../api.js';
+import type { AirSchedule, AirSource, AirStatus, OverlayStatus, Settings, Status } from '../api.js';
 
 import { api } from '../api.js';
 
@@ -21,6 +21,40 @@ const DEFAULT_MINUTES = 30;
 
 const minutes = (ms: number): string =>
 	`${Math.floor(ms / 60_000)}m ${Math.floor((ms % 60_000) / 1000)}s`;
+
+const SCHEDULE_FIELDS: { key: keyof AirSchedule; label: string; width: number }[] = [
+	{ key: 'tickerSeconds', label: 'ticker (s per race)', width: 140 },
+	{ key: 'overlaySeconds', label: 'FS / L3 up (s)', width: 120 },
+	{ key: 'gapSeconds', label: 'gap between (s)', width: 120 },
+	{ key: 'fsCount', label: 'FS', width: 70 },
+	{ key: 'l3Count', label: 'for every L3', width: 110 },
+];
+
+const GRAPHIC_NAMES = { fs: 'FS', l3: 'L3' };
+
+const secondsUntil = (atMs: number): number => Math.max(0, Math.ceil((atMs - Date.now()) / 1000));
+
+const overlayText = (overlay: OverlayStatus): string =>
+	`${GRAPHIC_NAMES[overlay.kind]} ${overlay.race}`;
+
+const upNextLine = (air: AirStatus): string =>
+	[
+		`Ticker: ${air.ticker}`,
+		air.overlay === null
+			? 'no FS / L3 up'
+			: `Up: ${overlayText(air.overlay)}, ${secondsUntil(air.overlay.atMs)} s left`,
+		air.next === null
+			? 'ticker only'
+			: `Next: ${overlayText(air.next)} in ${secondsUntil(air.next.atMs)} s`,
+	].join(' · ');
+
+const scheduleDraft = (schedule: AirSchedule): Record<keyof AirSchedule, string> => ({
+	fsCount: String(schedule.fsCount),
+	gapSeconds: String(schedule.gapSeconds),
+	l3Count: String(schedule.l3Count),
+	overlaySeconds: String(schedule.overlaySeconds),
+	tickerSeconds: String(schedule.tickerSeconds),
+});
 
 const airLine = (air: AirStatus | null, playing: boolean): string => {
 	if (air === null)
@@ -35,11 +69,11 @@ const airLine = (air: AirStatus | null, playing: boolean): string => {
 	return `${minutes(air.elapsedMs)} of ${minutes(air.durationMs)}${air.elapsedMs >= air.durationMs ? ' (all in)' : ''} · ${called}${faulty} · seed ${air.seed}`;
 };
 
-// Runs the simulated air feed at /air/: the ticker always up, an L3 or FS every 10–20 s,
-// over a looping newscast, filled from a night of results — invented, or, during a DDHQ
-// testing window, pulled live from DDHQ's integration host. Start rolls a new night (a
-// restart is just another Start); the source picked at Start is what that night uses,
-// so changing it mid-night takes effect on the next one. A recording playing back (the
+// Runs the simulated air feed at /air/: the ticker always up and an FS or L3 over it,
+// paced as set here, over a looping newscast, filled from a night of results — invented,
+// or, during a DDHQ testing window, pulled live from DDHQ's integration host. Start rolls
+// a new night (a restart is just another Start); the source and pacing at Start are what
+// that night uses, so changing them mid-night takes effect on the next one. A recording playing back (the
 // API recordings section) is on air too, and a night started here replaces it. A night can
 // put wrong graphics on air, for the checker to catch: the share of airings given here get
 // wrong votes, a wrong % in, old figures, a wrong ✓ or a misspelled name, while DDHQ and
@@ -49,11 +83,17 @@ const AirPanel: React.FC<Props> = (props) => {
 	const [faultPercent, setFaultPercent] = React.useState('0');
 	const [settings, setSettings] = React.useState<Settings | undefined>(undefined);
 	const [msg, setMsg] = React.useState('');
+	const [draft, setDraft] = React.useState<Record<keyof AirSchedule, string> | undefined>(
+		undefined,
+	);
 	const air = props.status?.air ?? null;
 	const night = air !== null && air.recording === null;
 
 	React.useEffect(() => {
-		void api.getSettings().then(setSettings);
+		void api.getSettings().then((loaded) => {
+			setSettings(loaded);
+			setDraft(scheduleDraft(loaded.airSchedule));
+		});
 	}, []);
 
 	const act = async (action: () => Promise<unknown>): Promise<void> => {
@@ -71,6 +111,28 @@ const AirPanel: React.FC<Props> = (props) => {
 		// object, and a stale copy of it here would clobber that.
 		const latest = await api.getSettings();
 		setSettings(await api.setSettings({ ...latest, airSource }));
+	};
+
+	// Saved as each field is left; the server says what's out of range.
+	const saveSchedule = async (next: Record<keyof AirSchedule, string>): Promise<void> => {
+		const latest = await api.getSettings();
+		try {
+			setSettings(
+				await api.setSettings({
+					...latest,
+					airSchedule: {
+						fsCount: Number(next.fsCount),
+						gapSeconds: Number(next.gapSeconds),
+						l3Count: Number(next.l3Count),
+						overlaySeconds: Number(next.overlaySeconds),
+						tickerSeconds: Number(next.tickerSeconds),
+					},
+				}),
+			);
+			setMsg('');
+		} catch (error) {
+			setMsg(error instanceof Error ? error.message : 'failed');
+		}
 	};
 
 	return (
@@ -130,6 +192,32 @@ const AirPanel: React.FC<Props> = (props) => {
 					{msg}
 				</Typography>
 			</Stack>
+			{draft !== undefined && (
+				<Stack alignItems="center" direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1 }}>
+					{SCHEDULE_FIELDS.map((field) => (
+						<TextField
+							key={field.key}
+							label={field.label}
+							onBlur={() => void saveSchedule(draft)}
+							onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })}
+							size="small"
+							slotProps={{ htmlInput: { min: 0 } }}
+							sx={{ width: field.width }}
+							type="number"
+							value={draft[field.key]}
+						/>
+					))}
+					<Typography color="text.secondary" variant="caption">
+						Pacing takes effect at the next Start (or the next play, pause or resume of a
+						recording). FS and L3 both 0 is the ticker alone.
+					</Typography>
+				</Stack>
+			)}
+			{air !== null && (
+				<Typography sx={{ display: 'block', mb: 1 }} variant="body2">
+					{upNextLine(air)}
+				</Typography>
+			)}
 			{props.status !== undefined && props.status.liveResultErrors.length > 0 && (
 				<Typography color="error" sx={{ display: 'block', mb: 1 }} variant="caption">
 					DDHQ integration: {props.status.liveResultErrors.join('; ')}

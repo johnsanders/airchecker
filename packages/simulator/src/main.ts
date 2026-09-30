@@ -62,6 +62,7 @@ const main = async (): Promise<void> => {
 	});
 	const airShow = makeAirShow({
 		getAirSource: () => settings.get().airSource,
+		getSchedule: () => settings.get().airSchedule,
 		liveResults,
 		races,
 	});

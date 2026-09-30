@@ -1,6 +1,8 @@
+import type { AirSchedule } from '../settings.js';
 import type { Race, RaceCandidate } from './races.js';
 import type { Random } from './random.js';
 
+import { DEFAULT_AIR_SCHEDULE } from '../settings.js';
 import { between, makeRandom, pick, seedFrom } from './random.js';
 
 // An invented election night. Each race gets hidden final numbers and a reporting window
@@ -35,7 +37,14 @@ export type GraphicData = {
 };
 
 // faultRate: the share of airings, 0 to 1, that put something wrong on air (faults.ts).
-export type Night = { durationMs: number; faultRate: number; plans: RacePlan[]; seed: number };
+// schedule: how its graphics are paced (schedule.ts).
+export type Night = {
+	durationMs: number;
+	faultRate: number;
+	plans: RacePlan[];
+	schedule: AirSchedule;
+	seed: number;
+};
 
 export type RacePlan = {
 	// Early lean toward left (negative favors right). It fades as the vote comes in, and
@@ -151,10 +160,12 @@ export const makeNight = (
 	seed: number,
 	durationMs: number,
 	faultRate = 0,
+	schedule = DEFAULT_AIR_SCHEDULE,
 ): Night => ({
 	durationMs,
 	faultRate,
 	plans: races.map((race) => planRace(race, seed, durationMs)),
+	schedule,
 	seed,
 });
 

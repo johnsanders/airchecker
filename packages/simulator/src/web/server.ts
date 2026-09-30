@@ -12,7 +12,7 @@ import type { ApiRecorder } from '../recording/apiRecorder.js';
 import type { ApiResponseQuery, ApiSource } from '../recording/apiRecording.js';
 import type { AirSource, SettingsStore } from '../settings.js';
 
-import { MAX_INTERVAL_SECONDS, MIN_INTERVAL_SECONDS } from '../settings.js';
+import { airScheduleSchema, MAX_INTERVAL_SECONDS, MIN_INTERVAL_SECONDS } from '../settings.js';
 
 // Two faces on one port. The control API (/api/settings, /api/status,
 // /api/api-recording*, /api/api-playback/*) drives the web view. The mirror
@@ -89,14 +89,18 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 
 	app.post<{
 		Body: {
+			airSchedule?: unknown;
 			airSource?: unknown;
 			intervalSeconds?: unknown;
 			queries?: unknown;
 		} | null;
 	}>('/api/settings', (req, reply) => {
+		const airSchedule = airScheduleSchema.safeParse(req.body?.airSchedule);
 		const airSource = req.body?.airSource;
 		const intervalSeconds = req.body?.intervalSeconds;
 		const queries = req.body?.queries;
+		if (!airSchedule.success)
+			return reply.code(400).send({ error: `airSchedule: ${airSchedule.error.message}` });
 		if (!AIR_SOURCES.includes(airSource as AirSource))
 			return reply.code(400).send({ error: 'airSource must be invented or ddhqIntegration' });
 		if (
@@ -111,6 +115,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		if (!Array.isArray(queries) || !queries.every((query) => typeof query === 'string'))
 			return reply.code(400).send({ error: 'queries must be an array of strings' });
 		return config.settings.set({
+			airSchedule: airSchedule.data,
 			airSource: airSource as AirSource,
 			intervalSeconds,
 			queries: queries.map((query) => query.trim()).filter((query) => query.length > 0),

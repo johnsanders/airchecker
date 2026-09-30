@@ -5,12 +5,36 @@ import { z } from 'zod';
 // list and sample interval) and what a simulated night's numbers come from.
 // Kept in a small JSON file so they survive restarts.
 
+// How a simulated night paces its graphics (schedule.ts). The ticker moves to its next race
+// every tickerSeconds. Over it an overlay holds overlaySeconds, then gapSeconds pass with
+// none; the overlays run fsCount FS then l3Count L3, over and over. Both counts 0 is ticker
+// only. Read when a night or a recording goes on air, so a change shows from the next one:
+// changing what airs mid-run would rewrite what /api/air/aired says aired earlier in it.
+export type AirSchedule = z.infer<typeof airScheduleSchema>;
+
 // 'invented' makes up a night's numbers (night.ts); 'ddhqIntegration' pulls them from
 // DDHQ's integration host instead (liveResults.ts), for testing against DDHQ during
 // its testing windows.
 export type AirSource = 'ddhqIntegration' | 'invented';
 
+export const airScheduleSchema = z.object({
+	fsCount: z.number().int().min(0).max(20),
+	gapSeconds: z.number().int().min(0).max(600),
+	l3Count: z.number().int().min(0).max(20),
+	overlaySeconds: z.number().int().min(2).max(120),
+	tickerSeconds: z.number().int().min(2).max(60),
+});
+
+export const DEFAULT_AIR_SCHEDULE: AirSchedule = {
+	fsCount: 1,
+	gapSeconds: 15,
+	l3Count: 1,
+	overlaySeconds: 10,
+	tickerSeconds: 8,
+};
+
 export type Settings = {
+	airSchedule: AirSchedule;
 	airSource: AirSource;
 	intervalSeconds: number;
 	queries: string[];
@@ -26,6 +50,8 @@ export type SettingsStore = {
 };
 
 const settingsSchema = z.object({
+	// Settings files from before the schedule was editable lack it.
+	airSchedule: airScheduleSchema.default(DEFAULT_AIR_SCHEDULE),
 	// Settings files from before airSource existed lack it.
 	airSource: z.enum(['ddhqIntegration', 'invented']).default('invented'),
 	// Settings files from before the interval was editable lack it.
@@ -34,6 +60,7 @@ const settingsSchema = z.object({
 });
 
 const DEFAULTS: Settings = {
+	airSchedule: DEFAULT_AIR_SCHEDULE,
 	airSource: 'invented',
 	intervalSeconds: 60,
 	queries: [],

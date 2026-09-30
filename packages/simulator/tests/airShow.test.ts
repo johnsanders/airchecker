@@ -256,3 +256,31 @@ describe('makeAirShow feed (an API recording on air)', () => {
 		expect(airShow.onAir()).toBeNull();
 	});
 });
+
+describe('makeAirShow schedule', () => {
+	it('paces a night by the schedule read at its start, and says what comes up next', () => {
+		let wall = 1_000_000;
+		let schedule = { fsCount: 1, gapSeconds: 5, l3Count: 2, overlaySeconds: 10, tickerSeconds: 6 };
+		const airShow = makeAirShow({
+			getSchedule: () => schedule,
+			now: () => wall,
+			races,
+			randomSeed: () => 7,
+		});
+		airShow.start(30 * 60_000);
+		schedule = { ...schedule, gapSeconds: 60 };
+		expect(airShow.status()).toMatchObject({
+			next: { atMs: 1_005_000, kind: 'fs' },
+			overlay: null,
+			schedule: { gapSeconds: 5 },
+		});
+		wall = 1_007_000;
+		expect(airShow.status()).toMatchObject({
+			next: { atMs: 1_020_000, kind: 'l3' },
+			overlay: { atMs: 1_015_000, kind: 'fs' },
+		});
+		expect(airShow.status()?.overlay?.race).toMatch(/^[A-Z]{2}(-\d+)? /);
+		airShow.start(30 * 60_000);
+		expect(airShow.status()?.schedule.gapSeconds).toBe(60);
+	});
+});

@@ -6,13 +6,15 @@ import type { OnAir } from '../src/air/schedule.js';
 import { FAULT_KINDS, STALE_MS } from '../src/air/faults.js';
 import { AIR_LAG_MS, graphicData, makeNight, raceAt } from '../src/air/night.js';
 import { loadRaces } from '../src/air/races.js';
-import { onAirAt, TICKER_SLOT_MS } from '../src/air/schedule.js';
+import { onAirAt } from '../src/air/schedule.js';
+import { DEFAULT_AIR_SCHEDULE } from '../src/settings.js';
 
 const races = loadRaces('races.json');
 const DURATION_MS = 30 * 60_000;
 const clean = makeNight(races, 7, DURATION_MS);
 const faulty = makeNight(races, 7, DURATION_MS, 1);
 const half = makeNight(races, 7, DURATION_MS, 0.5);
+const TICKER_SLOT_MS = DEFAULT_AIR_SCHEDULE.tickerSeconds * 1000;
 
 // Every ticker slot of the night, sampled one second in.
 const slots = Array.from({ length: DURATION_MS / TICKER_SLOT_MS }, (_, slot) => slot).map(

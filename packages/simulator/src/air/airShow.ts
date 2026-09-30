@@ -1,17 +1,18 @@
 import type { MirrorAnswer } from '../playback/apiPlayback.js';
 import type { ApiSource } from '../recording/apiRecording.js';
-import type { AirSource } from '../settings.js';
+import type { AirSchedule, AirSource } from '../settings.js';
 import type { AirFeed, PlaybackHandle } from './airFeed.js';
 import type { LiveResultsSource } from './liveResults.js';
 import type { Night, RacePlan, RaceResult, ResultResolver } from './night.js';
 import type { Race } from './races.js';
-import type { OnAir } from './schedule.js';
+import type { OnAir, Overlay, OverlayKind } from './schedule.js';
 
+import { DEFAULT_AIR_SCHEDULE } from '../settings.js';
 import { liveResultFor } from './liveResults.js';
 import { AIR_LAG_MS, CHAMELEON_LAG_MS, makeNight, raceAt } from './night.js';
 import { chameleonPlaylist, ddhqResponse, nightQueries } from './nightMirror.js';
 import { makeRecordedResults } from './recordedResults.js';
-import { onAirAt } from './schedule.js';
+import { nextOverlay, onAirAt, overlayAt } from './schedule.js';
 
 // Runs the simulated air feed's night. Start rolls a new night on a random seed; the
 // /air page polls onAir() and renders whatever it says. Once the night's duration is
@@ -49,6 +50,7 @@ export type AirShow = {
 
 export type AirShowConfig = {
 	getAirSource?: () => AirSource; // defaults to 'invented' when omitted
+	getSchedule?: () => AirSchedule; // read as each run starts; defaults to DEFAULT_AIR_SCHEDULE
 	liveResults?: LiveResultsSource;
 	now?: () => number;
 	races: readonly Race[];
@@ -60,10 +62,20 @@ export type AirShowStatus = {
 	durationMs: number;
 	elapsedMs: number;
 	faultRate: number;
+	next: null | OverlayStatus; // the next overlay to come up; null when the mix has none
+	overlay: null | OverlayStatus; // the overlay up now
 	races: number;
 	recording: null | string; // the API recording on air, if that's what's on air
+	schedule: AirSchedule;
 	seed: number;
+	ticker: string; // the race on the ticker now
 };
+
+// atMs: when it comes up (next) or goes down (overlay), in epoch ms.
+export type OverlayStatus = { atMs: number; kind: OverlayKind; race: string };
+
+const raceLabel = (plan: RacePlan): string =>
+	`${plan.race.state}${plan.race.district === '' ? '' : `-${plan.race.district}`} ${plan.race.office}`;
 
 type Playing = {
 	handle: PlaybackHandle;
@@ -86,6 +98,7 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 	const runs: Run[] = [];
 	const current = (): Run | undefined => runs.find((run) => run.stoppedAt === null);
 	let playing: Playing | undefined;
+	const schedule = (): AirSchedule => config.getSchedule?.() ?? DEFAULT_AIR_SCHEDULE;
 
 	const endCurrentRun = () => {
 		const running = current();
@@ -104,6 +117,13 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 		const running = current();
 		if (running === undefined) return null;
 		const elapsedMs = now() - running.startedAt;
+		const overlayStatus = (overlay: Overlay | undefined, atMs: number): null | OverlayStatus =>
+			overlay === undefined
+				? null
+				: { atMs: running.startedAt + atMs, kind: overlay.kind, race: raceLabel(overlay.plan) };
+		const up = overlayAt(running.night, elapsedMs);
+		const next = nextOverlay(running.night, elapsedMs);
+		const onAir = onAirAt(running.night, elapsedMs, running.resolveResult);
 		return {
 			called: running.night.plans.filter((plan) => {
 				const result = running.resolveResult(plan, elapsedMs - AIR_LAG_MS); // called on air
@@ -115,9 +135,15 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 					? elapsedMs
 					: Math.min(playing?.handle.clock.elapsedMs() ?? 0, running.night.durationMs),
 			faultRate: running.night.faultRate,
+			next: overlayStatus(next, next?.showAtMs ?? 0),
+			overlay: overlayStatus(up, up?.hideAtMs ?? 0),
 			races: running.night.plans.length,
 			recording: running.recording,
+			schedule: running.night.schedule,
 			seed: running.night.seed,
+			ticker: raceLabel(
+				running.night.plans.find((plan) => plan.race.key === onAir.ticker.raceKey) as RacePlan,
+			),
 		};
 	};
 
@@ -176,6 +202,8 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 					config.races.filter((race) => results.raceIds.has(race.ddhq.raceId)),
 					randomSeed(),
 					handle.clock.durationMs,
+					0,
+					schedule(),
 				),
 				resolveAt: results.resultAt,
 			};
@@ -208,7 +236,7 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 				config.liveResults !== undefined;
 			runs.push({
 				live,
-				night: makeNight(config.races, randomSeed(), durationMs, faultRate),
+				night: makeNight(config.races, randomSeed(), durationMs, faultRate, schedule()),
 				recording: null,
 				resolveResult: live
 					? (plan) => liveResultFor(plan, config.liveResults?.getResult(plan.race.ddhq.raceId))
