@@ -161,22 +161,28 @@ const playlist = (mooreVotes: number, wessVotes: number, elected: boolean) => ({
 const makeRecording = (contests = true): ApiRecording => ({
 	meta: { ddhqQueries: ['race_ids=1'], name: 'nov3', startedAt: 0, stoppedAt: 120_000 },
 	responses: [
-		{ body: null, error: null, path: '/api/v4/races?race_ids=1', source: 'DDHQ', ts: 0 },
+		{ body: () => null, error: null, path: '/api/v4/races?race_ids=1', source: 'DDHQ', ts: 0 },
 		{
-			body: contests ? playlist(600, 400, false) : { ElectionPlaylist: { contest: [] } },
+			body: () => (contests ? playlist(600, 400, false) : { ElectionPlaylist: { contest: [] } }),
 			error: null,
 			path: PLAYLIST_PATH,
 			source: 'Ross',
 			ts: 0,
 		},
 		{
-			body: contests ? playlist(900, 600, true) : { ElectionPlaylist: { contest: [] } },
+			body: () => (contests ? playlist(900, 600, true) : { ElectionPlaylist: { contest: [] } }),
 			error: null,
 			path: PLAYLIST_PATH,
 			source: 'Ross',
 			ts: 60_000,
 		},
-		{ body: null, error: null, path: '/api/v4/races?race_ids=1', source: 'DDHQ', ts: 120_000 },
+		{
+			body: () => null,
+			error: null,
+			path: '/api/v4/races?race_ids=1',
+			source: 'DDHQ',
+			ts: 120_000,
+		},
 	],
 });
 

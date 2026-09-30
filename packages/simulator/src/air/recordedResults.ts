@@ -62,7 +62,9 @@ export const makeRecordedResults = (recording: ApiRecording): RecordedResults =>
 			(row) => row.source === 'Ross' && row.error === null && row.path.startsWith(PLAYLIST_ROUTE),
 		)
 		.flatMap((row) => {
-			const parsed = playlistSchema.safeParse(row.body);
+			// The schema keeps only the fields read here, so the rest of a ~350 KB playlist
+			// is let go as soon as it's parsed.
+			const parsed = playlistSchema.safeParse(row.body());
 			if (!parsed.success) return [];
 			const contests = parsed.data.ElectionPlaylist.contest.flatMap((contest) =>
 				contest.raceID === null || contest.raceID === undefined

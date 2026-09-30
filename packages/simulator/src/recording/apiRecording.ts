@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 export type ApiRecording = {
 	meta: ApiRecordingMeta;
-	responses: ApiResponseRow[];
+	responses: RecordedResponse[];
 };
 
 export type ApiRecordingDetail = { sources: ApiSourceCounts[] } & ApiRecordingMeta;
@@ -64,6 +64,16 @@ export type ApiResponseSummary = {
 export type ApiSource = 'DDHQ' | 'Ross';
 
 export type ApiSourceCounts = { errors: number; responses: number; source: ApiSource };
+
+// A loaded response, its body left on disk until asked for: a night's DDHQ pages run to
+// gigabytes, far past what one process can hold parsed.
+export type RecordedResponse = {
+	body: () => unknown; // parsed JSON; null when the call failed
+	error: null | string;
+	path: string;
+	source: ApiSource;
+	ts: number;
+};
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS meta (
@@ -138,9 +148,9 @@ type MetaRow = {
 	stopped_at: null | number;
 };
 type ResponseRow = {
-	body: null | string;
 	error: null | string;
 	path: string;
+	seq: number;
 	source: ApiSource;
 	ts: number;
 };
@@ -167,15 +177,22 @@ const readOnly = <T>(file: string, read: (db: Database.Database) => T): T => {
 	}
 };
 
+const readBody = (file: string, seq: number): unknown =>
+	readOnly(file, (db) => {
+		const row = db.prepare('SELECT body FROM responses WHERE seq = ?').get(seq) as
+			{ body: null | string } | undefined;
+		return row?.body === null || row?.body === undefined ? null : (JSON.parse(row.body) as unknown);
+	});
+
 export const loadApiRecording = (file: string): ApiRecording =>
 	readOnly(file, (db) => {
 		const rows = db
-			.prepare('SELECT ts, source, path, error, body FROM responses ORDER BY ts, seq')
+			.prepare('SELECT seq, ts, source, path, error FROM responses ORDER BY ts, seq')
 			.all() as ResponseRow[];
 		return {
 			meta: readMeta(db),
 			responses: rows.map((row) => ({
-				body: row.body === null ? null : (JSON.parse(row.body) as unknown),
+				body: () => (row.error === null ? readBody(file, row.seq) : null),
 				error: row.error,
 				path: row.path,
 				source: row.source,

@@ -72,14 +72,14 @@ describe('apiRecording', () => {
 			stoppedAt: 400,
 		});
 		expect(recording.responses.map((row) => row.ts)).toEqual([200, 250, 300]);
-		expect(recording.responses[1]).toEqual({
-			body: null,
+		expect(recording.responses[1]).toMatchObject({
 			error: 'HTTP 503 for x',
 			path: '/playlist',
 			source: 'Ross',
 			ts: 250,
 		});
-		expect(recording.responses[0]?.body).toEqual({ page: 1 });
+		expect(recording.responses[1]?.body()).toBeNull();
+		expect(recording.responses[0]?.body()).toEqual({ page: 1 });
 	});
 
 	it('refuses to overwrite an existing recording', () => {

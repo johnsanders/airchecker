@@ -1,5 +1,5 @@
 import type { AirFeed } from '../air/airFeed.js';
-import type { ApiRecording, ApiResponseRow, ApiSource } from '../recording/apiRecording.js';
+import type { ApiRecording, ApiSource, RecordedResponse } from '../recording/apiRecording.js';
 import type { PlaybackClock } from './playbackClock.js';
 
 import { listApiRecordings, loadApiRecording } from '../recording/apiRecording.js';
@@ -42,7 +42,7 @@ export type MirrorAnswer =
 	| { kind: 'miss'; message: string };
 
 type Playing = {
-	byPath: Map<string, ApiResponseRow[]>;
+	byPath: Map<string, RecordedResponse[]>;
 	clock: PlaybackClock;
 	recording: ApiRecording;
 };
@@ -68,7 +68,7 @@ export const makeApiPlayback = (config: ApiPlaybackConfig): ApiPlayback => {
 			if (row === undefined)
 				return { kind: 'miss', message: `${source} ${path} not recorded yet at this point` };
 			return row.error === null
-				? { body: row.body, kind: 'ok' }
+				? { body: row.body(), kind: 'ok' }
 				: { kind: 'error', message: row.error };
 		},
 		pause: () => {
@@ -99,7 +99,7 @@ export const makeApiPlayback = (config: ApiPlaybackConfig): ApiPlayback => {
 							...(index.get(pathKey(row.source, row.path)) ?? []),
 							row,
 						]),
-					new Map<string, ApiResponseRow[]>(),
+					new Map<string, RecordedResponse[]>(),
 				),
 				clock: makePlaybackClock(recording, config.now),
 				recording,
