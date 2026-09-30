@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Link from '@mui/material/Link';
+import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -24,6 +25,13 @@ const INLINE_BUTTON = { font: 'inherit', verticalAlign: 'baseline' } as const;
 
 const megabytes = (bytes: number): string => `${(bytes / 1024 ** 2).toFixed(1)} MB`;
 
+const clockTime = (ts: number): string =>
+	new Date(ts).toLocaleTimeString('en-US', {
+		hour: 'numeric',
+		minute: '2-digit',
+		second: '2-digit',
+	});
+
 const minutes = (ms: number): string =>
 	`${Math.floor(ms / 60_000)}m ${Math.floor((ms % 60_000) / 1000)}s`;
 
@@ -38,6 +46,9 @@ const RecordPanel: React.FC<Props> = (props) => {
 	const [now, setNow] = React.useState(() => Date.now());
 	const [browsing, setBrowsing] = React.useState<string | undefined>(undefined);
 	const [confirmingDelete, setConfirmingDelete] = React.useState<string | undefined>(undefined);
+	// Where the slider is while it's dragged; the playback only moves when it's let go.
+	const [draggingMs, setDraggingMs] = React.useState<null | number>(null);
+	const checkerWatching = props.status?.checkerWatching ?? false;
 	const recording = props.status?.recording ?? null;
 	const playback = props.status?.playback ?? null;
 	const onChange = props.onChange;
@@ -124,6 +135,34 @@ const RecordPanel: React.FC<Props> = (props) => {
 							{playback.ended ? ' · ended (last responses held)' : ''}
 						</Typography>
 					</Stack>
+					<Box sx={{ px: 1 }}>
+						<Slider
+							disabled={checkerWatching}
+							marks={[
+								{ label: clockTime(playback.startTs), value: 0 },
+								{
+									label: clockTime(playback.startTs + playback.durationMs),
+									value: playback.durationMs,
+								},
+							]}
+							max={playback.durationMs}
+							min={0}
+							onChange={(_event, value) => setDraggingMs(value as number)}
+							onChangeCommitted={(_event, value) =>
+								void act(() => api.seekApiPlayback(value as number)).then(() => setDraggingMs(null))
+							}
+							size="small"
+							step={1000}
+							value={draggingMs ?? Math.min(playback.elapsedMs, playback.durationMs)}
+							valueLabelDisplay="auto"
+							valueLabelFormat={(value) => clockTime(playback.startTs + value)}
+						/>
+					</Box>
+					{checkerWatching && (
+						<Typography color="warning.main" sx={{ display: 'block' }} variant="caption">
+							The checker is monitoring this playback. Stop monitoring in the checker to scrub.
+						</Typography>
+					)}
 					<Typography color="text.secondary" sx={{ display: 'block' }} variant="caption">
 						The mirror answers from this recording, and the simulated air shows its take-list races
 						(starting a simulated night stops it). The checker's Sim mode polls these DDHQ queries:

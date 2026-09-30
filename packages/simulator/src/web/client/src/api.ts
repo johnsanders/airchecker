@@ -74,6 +74,7 @@ export interface PlaybackStatus {
 	ended: boolean;
 	name: string;
 	paused: boolean;
+	startTs: number; // recording time at elapsed 0
 }
 
 export interface Settings {
@@ -85,6 +86,7 @@ export interface Settings {
 
 export interface Status {
 	air: AirStatus | null;
+	checkerWatching: boolean; // the checker asked the mirror in the last 15 s; seeking waits for it to stop
 	liveResultErrors: string[]; // the live-results poll's last check, while a ddhqIntegration night runs
 	playback: null | PlaybackStatus;
 	recordErrors: string[]; // the record loop's last check, while recording
@@ -149,6 +151,7 @@ export const api = {
 	},
 	playbackAction: (action: 'pause' | 'restart' | 'resume' | 'stop') =>
 		postJson<Status>(`/api/api-playback/${action}`, {}),
+	seekApiPlayback: (elapsedMs: number) => postJson<Status>('/api/api-playback/seek', { elapsedMs }),
 	setSettings: (settings: Settings) => postJson<Settings>('/api/settings', settings),
 	startAir: (durationMinutes: number, faultPercent: number) =>
 		postJson<Status>('/api/air/start', { durationMinutes, faultPercent }),

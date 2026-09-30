@@ -193,6 +193,7 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 	const feed: AirFeed = {
 		pause: airRecording,
 		resume: airRecording,
+		seek: airRecording,
 		start: (handle) => {
 			const wasLive = current()?.live ?? false;
 			const results = makeRecordedResults(handle.recording);

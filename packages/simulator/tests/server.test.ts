@@ -77,12 +77,14 @@ const setup = () => {
 	const airFeed: AirFeed = {
 		pause: () => feedCalls.push('pause'),
 		resume: () => feedCalls.push('resume'),
+		seek: () => feedCalls.push('seek'),
 		start: (playback) => feedCalls.push(`start ${playback.recording.meta.name}`),
 		stop: () => feedCalls.push('stop'),
 	};
 	const recorder = makeApiRecorder({ baseDir, getQueries: () => [] });
 	const app = makeWebServer({
 		airShow: makeAirShow({ now: () => wall, races: loadRaces('races.json'), randomSeed: () => 1 }),
+		now: () => wall,
 		playback: makeApiPlayback({ airFeed, baseDir, now: () => wall }),
 		recorder,
 		recordErrors: () => [],
@@ -148,6 +150,32 @@ describe('mirror endpoints', () => {
 		await app.inject({ method: 'POST', url: '/api/api-playback/stop' });
 		expect((await app.inject({ method: 'GET', url: CHAMELEON_PATH })).statusCode).toBe(503);
 		expect(feedCalls).toEqual(['start night', 'pause', 'resume', 'start night', 'stop']);
+	});
+
+	it('seeks only once the checker has stopped asking the mirror', async () => {
+		const { app, feedCalls, setWall } = setup();
+		await app.inject({
+			method: 'POST',
+			payload: { name: 'night' },
+			url: '/api/api-playback/start',
+		});
+		const seek = (elapsedMs: unknown) =>
+			app.inject({ method: 'POST', payload: { elapsedMs }, url: '/api/api-playback/seek' });
+
+		await app.inject({ method: 'GET', url: CHAMELEON_PATH });
+		const watched = await seek(59_000);
+		expect(watched.statusCode).toBe(409);
+		expect(watched.json()).toEqual({ error: 'stop monitoring in the checker before seeking' });
+
+		setWall(15_000);
+		const status = (await app.inject({ method: 'GET', url: '/api/status' })).json();
+		expect(status).toMatchObject({ checkerWatching: false, playback: { startTs: 0 } });
+		expect((await seek('soon')).statusCode).toBe(400);
+		expect((await seek(59_000)).json()).toMatchObject({ playback: { elapsedMs: 59_000 } });
+		expect((await app.inject({ method: 'GET', url: '/api/v4/races?state=TX' })).json()).toEqual({
+			page: 1,
+		});
+		expect(feedCalls).toEqual(['start night', 'seek']);
 	});
 
 	it('refuses to play an unknown recording or delete the one playing', async () => {

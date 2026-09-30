@@ -8,6 +8,8 @@ export type PlaybackClock = {
 	paused: () => boolean;
 	restart: () => void; // back to the first response, keeping paused/running
 	resume: () => void;
+	seek: (elapsedMs: number) => void; // to any point in the recording, keeping paused/running
+	startTs: number; // recording time at elapsed 0
 	virtualNow: () => number; // position in recording-time (ms epoch of the original night)
 };
 
@@ -38,6 +40,11 @@ export const makePlaybackClock = (
 		resume: () => {
 			if (anchor === null) anchor = now();
 		},
+		seek: (target) => {
+			bankedMs = Math.min(Math.max(target, 0), lastTs - firstTs);
+			if (anchor !== null) anchor = now();
+		},
+		startTs: firstTs,
 		virtualNow: () => firstTs + elapsedMs(),
 	};
 };

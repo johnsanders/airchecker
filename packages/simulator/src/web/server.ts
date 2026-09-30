@@ -23,6 +23,7 @@ import { airScheduleSchema, MAX_INTERVAL_SECONDS, MIN_INTERVAL_SECONDS } from '.
 
 export type WebServerConfig = {
 	airShow: AirShow;
+	now?: () => number;
 	playback: ApiPlayback;
 	recorder: ApiRecorder;
 	recordErrors: () => string[];
@@ -34,6 +35,9 @@ const API_SOURCES: readonly ApiSource[] = ['DDHQ', 'Ross'];
 const RESPONSES_PAGE = 200;
 const RESPONSES_PAGE_MAX = 1000;
 const WHOLE_NUMBER = /^\d+$/;
+// A monitoring checker asks the Chameleon mirror every 5 s and a stopped one asks nothing,
+// so a mirror request this recent means the checker is watching.
+const CHECKER_QUIET_MS = 15_000;
 
 const clientDistDir = (): string => join(dirname(fileURLToPath(import.meta.url)), 'client', 'dist');
 
@@ -63,6 +67,9 @@ const sendAnswer = (reply: FastifyReply, answer: MirrorAnswer): FastifyReply => 
 
 export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	const app = Fastify({ logger: false });
+	const now = config.now ?? Date.now;
+	let lastMirrorRequestAt = Number.NEGATIVE_INFINITY;
+	const checkerWatching = (): boolean => now() - lastMirrorRequestAt < CHECKER_QUIET_MS;
 
 	// --- Mirror ---------------------------------------------------------------
 
@@ -72,8 +79,10 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		token_type: 'Bearer',
 	}));
 	// A running simulated night serves the mirror; otherwise the recording playing back does.
-	const answer = (source: ApiSource, path: string): MirrorAnswer =>
-		config.airShow.mirror(source, path) ?? config.playback.answer(source, path);
+	const answer = (source: ApiSource, path: string): MirrorAnswer => {
+		lastMirrorRequestAt = now();
+		return config.airShow.mirror(source, path) ?? config.playback.answer(source, path);
+	};
 	app.get('/api/v4/*', (req, reply) => sendAnswer(reply, answer('DDHQ', req.url)));
 	app.get('/chameleon/*', (req, reply) => sendAnswer(reply, answer('Ross', req.url)));
 
@@ -124,6 +133,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 
 	const status = () => ({
 		air: config.airShow.status(),
+		checkerWatching: checkerWatching(),
 		liveResultErrors: config.airShow.liveResultErrors(),
 		playback: config.playback.status() ?? null,
 		recordErrors: config.recorder.status().recording === null ? [] : config.recordErrors(),
@@ -226,6 +236,20 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			return status();
 		}),
 	);
+
+	// Jumping would hand a watching checker a timeline that runs backwards or skips, so a
+	// seek waits until it has stopped monitoring.
+	app.post<{ Body: { elapsedMs?: unknown } | null }>('/api/api-playback/seek', (req, reply) => {
+		const elapsedMs = req.body?.elapsedMs;
+		if (typeof elapsedMs !== 'number' || !Number.isFinite(elapsedMs))
+			return reply.code(400).send({ error: 'elapsedMs must be a number' });
+		if (config.playback.status() === undefined)
+			return reply.code(409).send({ error: 'no API playback running' });
+		if (checkerWatching())
+			return reply.code(409).send({ error: 'stop monitoring in the checker before seeking' });
+		config.playback.seek(elapsedMs);
+		return status();
+	});
 
 	// --- Air feed -------------------------------------------------------------
 

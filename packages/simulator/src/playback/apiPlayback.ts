@@ -14,6 +14,7 @@ export type ApiPlayback = {
 	pause: () => void;
 	restart: () => void;
 	resume: () => void;
+	seek: (elapsedMs: number) => void;
 	// Throws for a name that isn't in the recordings listing.
 	start: (name: string) => void;
 	status: () => ApiPlaybackStatus | undefined;
@@ -33,6 +34,7 @@ export type ApiPlaybackStatus = {
 	ended: boolean;
 	name: string;
 	paused: boolean;
+	startTs: number; // recording time at elapsed 0, for labeling positions
 };
 
 export type MirrorAnswer =
@@ -86,6 +88,11 @@ export const makeApiPlayback = (config: ApiPlaybackConfig): ApiPlayback => {
 			playing.clock.resume();
 			config.airFeed.resume();
 		},
+		seek: (elapsedMs) => {
+			if (playing === undefined) return;
+			playing.clock.seek(elapsedMs);
+			config.airFeed.seek();
+		},
 		start: (name) => {
 			// Resolved only through the listing, so a name can never reach outside the directory.
 			const file = listApiRecordings(config.baseDir).find((summary) => summary.name === name)?.file;
@@ -116,6 +123,7 @@ export const makeApiPlayback = (config: ApiPlaybackConfig): ApiPlayback => {
 						ended: playing.clock.ended(),
 						name: playing.recording.meta.name,
 						paused: playing.clock.paused(),
+						startTs: playing.clock.startTs,
 					},
 		stop: () => {
 			if (playing === undefined) return;

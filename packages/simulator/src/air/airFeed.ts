@@ -8,6 +8,7 @@ import type { ApiRecording } from '../recording/apiRecording.js';
 export type AirFeed = {
 	pause: () => void;
 	resume: () => void;
+	seek: () => void; // the clock has jumped
 	start: (playback: PlaybackHandle) => void; // also on restart, with the clock back at zero
 	stop: () => void;
 };
