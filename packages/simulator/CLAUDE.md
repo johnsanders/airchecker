@@ -8,9 +8,8 @@ The simulator (formerly the sibling repo `elex_sim`) simulates election night fo
 
 ```bash
 npm test                 # this package only (npm test at the repo root runs both)
-npm run frontend:build   # once, and after client changes
-npm run server           # http://localhost:8788 (PORT to change)
-npm run frontend:dev     # hot-reload control page on :5174, proxied to :8788
+npm run server           # http://localhost:8788 (PORT to change): the mirrors, /air/ and the control page's API
+npm run frontend:dev     # the control page on :5174, proxied to :8788 (npm install in src/web/client first)
 ```
 
 ## Layout
@@ -18,7 +17,7 @@ npm run frontend:dev     # hot-reload control page on :5174, proxied to :8788
 ```
 src/
   main.ts           composition + listen
-  settings.ts       what the recorder polls (DDHQ query list, sample interval) and a night's airSource (invented or ddhqIntegration), in settings.json
+  settings.ts       what the recorder polls (DDHQ query list, sample interval) and how a night is rolled and paced (airSource, nightMinutes, faultPercent, airSchedule), in settings.json
   sources/          HttpJson over fetch, DDHQ OAuth (copied from the checker)
   recording/        API recording sqlite format, recorder (Record button), record loop (sample interval from settings, default 60 s), recording HTTP wrapper
   playback/         playback clock (1× only) + the mirror's answers

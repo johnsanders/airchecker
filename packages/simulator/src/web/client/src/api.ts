@@ -80,7 +80,9 @@ export interface PlaybackStatus {
 export interface Settings {
 	airSchedule: AirSchedule;
 	airSource: AirSource;
+	faultPercent: number;
 	intervalSeconds: number;
+	nightMinutes: number;
 	queries: string[];
 }
 

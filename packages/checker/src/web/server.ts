@@ -1,11 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 
-import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
 import Fastify from 'fastify';
-import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 import type { CandidateState, RaceObservation, SourceName } from '../reconcile/reconcile.js';
 import type { SessionFiles } from '../replay/sessionFiles.js';
@@ -20,9 +16,9 @@ import type { ChangeBus } from './changeBus.js';
 
 import { normalizeName } from '../reconcile/reconcile.js';
 
-// The live web view at localhost:8787. The React SPA (src/web/client) is served as
-// static files; everything else is a JSON API over injected handles — no source
-// logic lives here.
+// The live web view's JSON API and websocket on localhost:8787, over injected handles —
+// no source logic lives here. The React SPA (src/web/client) is only ever run on its
+// Vite dev server (:5173), which proxies here.
 
 export type LastFrameView = {
 	hash: string;
@@ -120,11 +116,6 @@ const airRead = (checked: CheckedRead) => {
 		) as Record<SourceName, null | number>,
 		templateId: air.templateId ?? null,
 	};
-};
-
-const clientDistDir = (): string => {
-	const here = dirname(fileURLToPath(import.meta.url));
-	return join(here, 'client', 'dist');
 };
 
 export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
@@ -345,25 +336,7 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		}
 	});
 
-	// --- Static SPA ----------------------------------------------------------
-
-	const distDir = clientDistDir();
-	if (existsSync(join(distDir, 'index.html'))) {
-		void app.register(fastifyStatic, { root: distDir });
-		// SPA fallback for any non-API route.
-		app.setNotFoundHandler((req, reply) => {
-			if (req.url.startsWith('/api/')) return reply.code(404).send({ error: 'not found' });
-			return reply.sendFile('index.html');
-		});
-	} else {
-		app.get('/', (_req, reply) =>
-			reply
-				.type('text/html')
-				.send(
-					'<h1>Eagle Eye</h1><p>Web UI not built. Run <code>npm run frontend:build</code>, then restart.</p>',
-				),
-		);
-	}
+	app.get('/', (req, reply) => reply.redirect(`http://${req.hostname}:5173/`));
 
 	return app;
 };

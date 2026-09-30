@@ -186,11 +186,10 @@ describe('web server', () => {
 		expect(body.lastFrame.observations[0]!.raceKey).toBe('TX-SEN');
 	});
 
-	it('serves a fallback page at / when the SPA is not built', async () => {
+	it('sends / to the web view on its dev server', async () => {
 		app = makeWebServer({ composition: makeComposition() });
-		const res = await app.inject({ method: 'GET', url: '/' });
-		expect(res.headers['content-type']).toContain('text/html');
-		expect(res.body).toContain('Eagle Eye');
+		const res = await app.inject({ headers: { host: 'localhost:8787' }, method: 'GET', url: '/' });
+		expect(res.headers.location).toBe('http://localhost:5173/');
 	});
 
 	it('serves alert history newest-first with a bounded limit', async () => {

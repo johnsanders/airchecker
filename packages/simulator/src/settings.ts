@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
 
 // Persisted, editable-from-the-web settings: what the recorder polls (the DDHQ query
-// list and sample interval) and what a simulated night's numbers come from.
+// list and sample interval) and how a simulated night is rolled and paced.
 // Kept in a small JSON file so they survive restarts.
 
 // How a simulated night paces its graphics (schedule.ts). The ticker moves to its next race
@@ -33,10 +33,18 @@ export const DEFAULT_AIR_SCHEDULE: AirSchedule = {
 	tickerSeconds: 8,
 };
 
+// What Start rolls a night with: how long it runs until all in, and the share of its
+// airings that put something wrong on air (faults.ts).
+export const MAX_NIGHT_MINUTES = 600;
+export const nightMinutesSchema = z.number().positive().max(MAX_NIGHT_MINUTES);
+export const faultPercentSchema = z.number().min(0).max(100);
+
 export type Settings = {
 	airSchedule: AirSchedule;
 	airSource: AirSource;
+	faultPercent: number;
 	intervalSeconds: number;
+	nightMinutes: number;
 	queries: string[];
 };
 
@@ -54,15 +62,20 @@ const settingsSchema = z.object({
 	airSchedule: airScheduleSchema.default(DEFAULT_AIR_SCHEDULE),
 	// Settings files from before airSource existed lack it.
 	airSource: z.enum(['ddhqIntegration', 'invented']).default('invented'),
+	// Settings files from before the night's length and faults were kept lack them.
+	faultPercent: faultPercentSchema.default(0),
 	// Settings files from before the interval was editable lack it.
 	intervalSeconds: z.number().int().min(MIN_INTERVAL_SECONDS).max(MAX_INTERVAL_SECONDS).default(60),
+	nightMinutes: nightMinutesSchema.default(30),
 	queries: z.array(z.string()),
 });
 
 const DEFAULTS: Settings = {
 	airSchedule: DEFAULT_AIR_SCHEDULE,
 	airSource: 'invented',
+	faultPercent: 0,
 	intervalSeconds: 60,
+	nightMinutes: 30,
 	queries: [],
 };
 

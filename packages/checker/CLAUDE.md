@@ -8,9 +8,8 @@ Eagle Eye is an observer for live election-night TV graphics. It reconciles thre
 
 ```bash
 npm test                  # this package only (npm test at the repo root runs both)
-npm run frontend:build    # once, and after client changes
-npm run backend           # live system + web view on :8787
-npm run frontend:dev      # hot-reload web view on :5173, proxied to :8787
+npm run backend           # live system + the web view's API on :8787
+npm run frontend:dev      # the web view on :5173, proxied to :8787 (npm install in src/web/client first)
 ```
 
 npm scripts are only for what a human types (`test`, `backend`, `frontend:*`, `chrome`); operator tasks like listing and pruning sessions live in the web view. Everything else runs directly from this directory: replay with `node --import tsx src/runtime/replayMain.ts <sessionId> [--serve] [--speed=N]`, and dev tools in `src/tools/`: `node --env-file-if-exists=../../.env --import tsx src/tools/<tool>.ts <args>` (the flag loads API keys from the root `.env`; harmless for tools that need none). Don't add scripts back for convenience.

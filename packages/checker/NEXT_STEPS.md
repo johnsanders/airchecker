@@ -85,7 +85,7 @@ npm test                                              # 286 tests, hermetic (no 
 npx tsc --noEmit && npx eslint .
 npm run backend                                          # full live system + web view (needs .env + VPN)
 npm run chrome                                        # the DirecTV Chrome the air capturer attaches to (CDP :9222)
-npm run frontend:build                                     # build the React SPA
+npm run frontend:dev                                       # the web view on :5173
 node --import tsx src/runtime/replayMain.ts <sessionId> [--serve] [--speed=N]    # replay a session; --serve plays it behind the web view
 node --env-file-if-exists=../../.env --import tsx src/tools/verifyExtraction.ts all 2 --recall-model <id>            # model comparison: exact rate per golden + measured $/hour; slash IDs go to OpenRouter
 node --env-file-if-exists=../../.env --import tsx src/tools/importVideo.ts <mp4> [fps]                   # dry-run the air pipeline over a recording → a session (needs key)

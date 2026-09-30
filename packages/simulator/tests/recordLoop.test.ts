@@ -57,7 +57,9 @@ describe('makeRecordLoop', () => {
 			getSettings: () => ({
 				airSchedule: DEFAULT_AIR_SCHEDULE,
 				airSource: 'invented',
+				faultPercent: 0,
 				intervalSeconds: 60,
+				nightMinutes: 30,
 				queries: ['state=TX', 'state=ZZ'],
 			}),
 			vendorHttp: makeRecordingHttp(upstream, 'Ross', recorder.record, () => 8),
@@ -96,7 +98,9 @@ describe('makeRecordLoop', () => {
 			getSettings: () => ({
 				airSchedule: DEFAULT_AIR_SCHEDULE,
 				airSource: 'invented',
+				faultPercent: 0,
 				intervalSeconds: 60,
+				nightMinutes: 30,
 				queries: ['state=TX'],
 			}),
 			vendorHttp: makeRecordingHttp(routedHttp({ [VENDOR]: {} }), 'Ross', (row) => rows.push(row)),

@@ -17,8 +17,6 @@ interface Props {
 	status: Status | undefined;
 }
 
-const DEFAULT_MINUTES = 30;
-
 const minutes = (ms: number): string =>
 	`${Math.floor(ms / 60_000)}m ${Math.floor((ms % 60_000) / 1000)}s`;
 
@@ -69,18 +67,18 @@ const airLine = (air: AirStatus | null, playing: boolean): string => {
 	return `${minutes(air.elapsedMs)} of ${minutes(air.durationMs)}${air.elapsedMs >= air.durationMs ? ' (all in)' : ''} · ${called}${faulty} · seed ${air.seed}`;
 };
 
-// Runs the simulated air feed at /air/: the ticker always up and an FS or L3 over it,
-// paced as set here, over a looping newscast, filled from a night of results — invented,
-// or, during a DDHQ testing window, pulled live from DDHQ's integration host. Start rolls
-// a new night (a restart is just another Start); the source and pacing at Start are what
-// that night uses, so changing them mid-night takes effect on the next one. A recording playing back (the
-// API recordings section) is on air too, and a night started here replaces it. A night can
-// put wrong graphics on air, for the checker to catch: the share of airings given here get
-// wrong votes, a wrong % in, old figures, a wrong ✓ or a misspelled name, while DDHQ and
-// Chameleon stay right.
+// Runs the simulated air feed at /air/: the ticker always up and an FS or L3 over it, paced
+// as set here, over a looping newscast, filled from a night of results — invented, or,
+// during a DDHQ testing window, pulled live from DDHQ's integration host. Start rolls a new
+// night (a restart is just another Start); the source and pacing at Start are what that
+// night uses, so changing them mid-night takes effect on the next one. All of it is saved
+// in settings.json as it's changed. A recording playing back (the API recordings section)
+// is on air too, and a night started here replaces it. A night can put wrong graphics on
+// air, for the checker to catch: the share of airings given here get wrong votes, a wrong %
+// in, old figures, a wrong ✓ or a misspelled name, while DDHQ and Chameleon stay right.
 const AirPanel: React.FC<Props> = (props) => {
-	const [durationMinutes, setDurationMinutes] = React.useState(String(DEFAULT_MINUTES));
-	const [faultPercent, setFaultPercent] = React.useState('0');
+	const [durationMinutes, setDurationMinutes] = React.useState('');
+	const [faultPercent, setFaultPercent] = React.useState('');
 	const [settings, setSettings] = React.useState<Settings | undefined>(undefined);
 	const [msg, setMsg] = React.useState('');
 	const [draft, setDraft] = React.useState<Record<keyof AirSchedule, string> | undefined>(
@@ -93,6 +91,8 @@ const AirPanel: React.FC<Props> = (props) => {
 		void api.getSettings().then((loaded) => {
 			setSettings(loaded);
 			setDraft(scheduleDraft(loaded.airSchedule));
+			setDurationMinutes(String(loaded.nightMinutes));
+			setFaultPercent(String(loaded.faultPercent));
 		});
 	}, []);
 
@@ -114,26 +114,26 @@ const AirPanel: React.FC<Props> = (props) => {
 	};
 
 	// Saved as each field is left; the server says what's out of range.
-	const saveSchedule = async (next: Record<keyof AirSchedule, string>): Promise<void> => {
+	const saveSettings = async (change: Partial<Settings>): Promise<void> => {
 		const latest = await api.getSettings();
 		try {
-			setSettings(
-				await api.setSettings({
-					...latest,
-					airSchedule: {
-						fsCount: Number(next.fsCount),
-						gapSeconds: Number(next.gapSeconds),
-						l3Count: Number(next.l3Count),
-						overlaySeconds: Number(next.overlaySeconds),
-						tickerSeconds: Number(next.tickerSeconds),
-					},
-				}),
-			);
+			setSettings(await api.setSettings({ ...latest, ...change }));
 			setMsg('');
 		} catch (error) {
 			setMsg(error instanceof Error ? error.message : 'failed');
 		}
 	};
+
+	const saveSchedule = (next: Record<keyof AirSchedule, string>): Promise<void> =>
+		saveSettings({
+			airSchedule: {
+				fsCount: Number(next.fsCount),
+				gapSeconds: Number(next.gapSeconds),
+				l3Count: Number(next.l3Count),
+				overlaySeconds: Number(next.overlaySeconds),
+				tickerSeconds: Number(next.tickerSeconds),
+			},
+		});
 
 	return (
 		<Box>
@@ -154,6 +154,7 @@ const AirPanel: React.FC<Props> = (props) => {
 				</ToggleButtonGroup>
 				<TextField
 					label="night length (min)"
+					onBlur={() => void saveSettings({ nightMinutes: Number(durationMinutes) })}
 					onChange={(event) => setDurationMinutes(event.target.value)}
 					size="small"
 					sx={{ width: 160 }}
@@ -162,6 +163,7 @@ const AirPanel: React.FC<Props> = (props) => {
 				/>
 				<TextField
 					label="graphics wrong (%)"
+					onBlur={() => void saveSettings({ faultPercent: Number(faultPercent) })}
 					onChange={(event) => setFaultPercent(event.target.value)}
 					size="small"
 					slotProps={{ htmlInput: { max: 100, min: 0 } }}

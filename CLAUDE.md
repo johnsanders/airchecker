@@ -10,7 +10,8 @@ Each package's CLAUDE.md has its architecture, layout and commands. This file co
 ## Quick start
 
 ```bash
-npm install          # at the root; installs both packages (the web clients install themselves via frontend:build)
+npm install          # at the root; installs both packages. Each web client (packages/*/src/web/client) is installed on its own: npm install there
+npm run dev          # both backends (:8787, :8788) and both Vite dev clients (:5173, :5174); Ctrl-C stops all four
 npm test             # both packages' suites, each run from its own directory
 npx tsc --noEmit     # one root tsconfig covers both packages
 npx eslint .         # one root config covers both packages

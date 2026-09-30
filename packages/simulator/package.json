@@ -5,7 +5,6 @@
 	"scripts": {
 		"test": "vitest run",
 		"server": "node --env-file-if-exists=../../.env --import tsx src/main.ts",
-		"frontend:build": "cd src/web/client && npm install && npm run build",
 		"frontend:dev": "cd src/web/client && npm run dev",
 		"render": "node render-ticker.mjs"
 	},

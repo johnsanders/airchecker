@@ -4,7 +4,7 @@ One page for the truck. Dev context lives in [`CLAUDE.md`](../CLAUDE.md); what w
 
 ## Before the night
 
-1. **Machine.** Working copy at `~/Developer/airchecker` (this package is `packages/checker`; run every command below from there), `npm install` done at the repo root, `npm run frontend:build` done (rebuild after any client change). `npm test` green.
+1. **Machine.** Working copy at `~/Developer/airchecker` (this package is `packages/checker`; run every command below from there), `npm install` done at the repo root, `npm install` done in `src/web/client`. `npm test` green.
 2. **`.env`** (gitignored, at the repo root) with `GEMINI_API_KEY` (air is read by Gemini 3.8 Flash direct from Google — a prepaid AI Studio project; keep its credits topped up, a depleted project answers 402, and `live` refuses to start without the key), `DDHQ_CLIENT_ID`, `DDHQ_CLIENT_SECRET`, `DDHQ_GRANT_TYPE`. Optional: `ANTHROPIC_API_KEY` and `OPENROUTER_API_KEY` (only for `verify` / `measure-call` trials of other models), `DDHQ_BASE_URL` (the production host; DDHQ's integration host `resultsapi-integration.decisiondeskhq.com` is picked with the Production / Integration toggle on the Setup tab in Live mode, saved in settings.sqlite, and takes effect on the next poll), `SIM_BASE_URL` (the simulator for Sim mode, default `http://localhost:8788`), `DDHQ_POLL_INTERVAL_MS` (default 60000), `CAPTURE_MODE` (`interval` | `manual`), `CAPTURE_INTERVAL_MS` (default 9000), `WEB_PORT` (default 8787).
 3. **VPN up** — the Chameleon playlist URL is reachable only on the corporate network. Without it the Ross source shows as failing and there is nothing to hold air against.
 4. **Disk.** Frames cost ~1 GB per broadcast hour at the 5 s cadence, session sqlites tens of MB per hour. The web view's **Recordings** panel shows free space (red below 10 GB) and each session's size, and **Prune** drops an old session's frame PNGs (its sqlite still replays and freezes). Check it right after launch.
@@ -14,8 +14,9 @@ One page for the truck. Dev context lives in [`CLAUDE.md`](../CLAUDE.md); what w
 
 ```bash
 npm run chrome            # a Chrome with CDP on :9222, opened on the stream player — log in, start playback
-npm run backend              # all three sources, recorder on, web view
-open http://localhost:8787
+npm run backend              # all three sources, recorder on, the web view's API
+npm run frontend:dev         # the web view
+open http://localhost:5173
 ```
 
 In the web view's "Air capture" panel pick the tab to grab (DirecTV is the only preset today), confirm the last-frame image shows real video (a black frame means DRM blocked the screenshot — switch tabs), and leave the cadence on interval.

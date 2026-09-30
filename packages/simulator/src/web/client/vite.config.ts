@@ -1,10 +1,9 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
-// Builds the SPA into ./dist, which Fastify serves as static files. The dev server
-// proxies /api to the running Fastify server (npm run server) for hot-reload dev.
+// The control page only ever runs on this dev server, which proxies /api to the running
+// Fastify server (npm run server).
 export default defineConfig({
-	build: { outDir: 'dist' },
 	plugins: [react()],
 	server: { port: 5174, proxy: { '/api': 'http://localhost:8788' }, strictPort: true },
 });

@@ -197,7 +197,13 @@ describe('mirror endpoints', () => {
 });
 
 const SCHEDULE = { fsCount: 1, gapSeconds: 5, l3Count: 3, overlaySeconds: 12, tickerSeconds: 6 };
-const VALID = { airSource: 'invented', intervalSeconds: 60, queries: [] };
+const VALID = {
+	airSource: 'invented',
+	faultPercent: 0,
+	intervalSeconds: 60,
+	nightMinutes: 30,
+	queries: [],
+};
 
 describe('control API', () => {
 	it('saves the recorder and air settings, trimmed, and rejects bad ones', async () => {
@@ -207,7 +213,9 @@ describe('control API', () => {
 			payload: {
 				airSchedule: SCHEDULE,
 				airSource: 'ddhqIntegration',
+				faultPercent: 12.5,
 				intervalSeconds: 15,
+				nightMinutes: 45,
 				queries: [' state=TX ', ''],
 			},
 			url: '/api/settings',
@@ -215,20 +223,26 @@ describe('control API', () => {
 		const expected = {
 			airSchedule: SCHEDULE,
 			airSource: 'ddhqIntegration',
+			faultPercent: 12.5,
 			intervalSeconds: 15,
+			nightMinutes: 45,
 			queries: ['state=TX'],
 		};
 		expect(saved.json()).toEqual(expected);
 		expect((await app.inject({ method: 'GET', url: '/api/settings' })).json()).toEqual(expected);
 		const statuses = await Promise.all(
 			[
-				{ airSource: 'made-up', intervalSeconds: 60, queries: [] },
-				{ airSource: 'invented', intervalSeconds: 1, queries: [] },
-				{ airSource: 'invented', intervalSeconds: 7.5, queries: [] },
-				{ airSource: 'invented', queries: [] },
+				{ ...VALID, airSource: 'made-up' },
+				{ ...VALID, intervalSeconds: 1 },
+				{ ...VALID, intervalSeconds: 7.5 },
+				{ ...VALID, intervalSeconds: undefined },
 				VALID,
 				{ ...VALID, airSchedule: { ...SCHEDULE, tickerSeconds: 1 } },
 				{ ...VALID, airSchedule: { ...SCHEDULE, fsCount: 1.5 } },
+				{ ...VALID, nightMinutes: 0 },
+				{ ...VALID, nightMinutes: 601 },
+				{ ...VALID, faultPercent: 101 },
+				{ ...VALID, faultPercent: undefined },
 			]
 				.map((payload) => ({ airSchedule: SCHEDULE, ...payload }))
 				.map(
@@ -236,7 +250,7 @@ describe('control API', () => {
 						(await app.inject({ method: 'POST', payload, url: '/api/settings' })).statusCode,
 				),
 		);
-		expect(statuses).toEqual([400, 400, 400, 400, 200, 400, 400]);
+		expect(statuses).toEqual([400, 400, 400, 400, 200, 400, 400, 400, 400, 400, 400]);
 	});
 
 	it('lists and browses recordings', async () => {

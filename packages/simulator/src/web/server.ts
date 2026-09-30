@@ -2,7 +2,6 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 
 import fastifyStatic from '@fastify/static';
 import Fastify from 'fastify';
-import { existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -12,7 +11,14 @@ import type { ApiRecorder } from '../recording/apiRecorder.js';
 import type { ApiResponseQuery, ApiSource } from '../recording/apiRecording.js';
 import type { AirSource, SettingsStore } from '../settings.js';
 
-import { airScheduleSchema, MAX_INTERVAL_SECONDS, MIN_INTERVAL_SECONDS } from '../settings.js';
+import {
+	airScheduleSchema,
+	faultPercentSchema,
+	MAX_INTERVAL_SECONDS,
+	MAX_NIGHT_MINUTES,
+	MIN_INTERVAL_SECONDS,
+	nightMinutesSchema,
+} from '../settings.js';
 
 // Two faces on one port. The control API (/api/settings, /api/status,
 // /api/api-recording*, /api/api-playback/*) drives the web view. The mirror
@@ -39,7 +45,8 @@ const WHOLE_NUMBER = /^\d+$/;
 // so a mirror request this recent means the checker is watching.
 const CHECKER_QUIET_MS = 15_000;
 
-const clientDistDir = (): string => join(dirname(fileURLToPath(import.meta.url)), 'client', 'dist');
+const NIGHT_MINUTES_RANGE = `must be more than 0 and at most ${MAX_NIGHT_MINUTES}`;
+const FAULT_PERCENT_ERROR = 'faultPercent must be from 0 to 100';
 
 const packageDir = (): string => join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -47,8 +54,6 @@ const packageDir = (): string => join(dirname(fileURLToPath(import.meta.url)), '
 // recordings) stays off the web.
 const AIR_FILES = new Set(['/', '/air.html', '/fullscreen.html', '/l3.html', '/ticker.html']);
 const AIR_DIRS = ['/fonts/', '/fullscreen-assets/', '/l3-assets/'];
-
-const MAX_AIR_MINUTES = 600;
 
 const failure = (error: unknown): { error: string } => ({
 	error: error instanceof Error ? error.message : String(error),
@@ -100,11 +105,15 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		Body: {
 			airSchedule?: unknown;
 			airSource?: unknown;
+			faultPercent?: unknown;
 			intervalSeconds?: unknown;
+			nightMinutes?: unknown;
 			queries?: unknown;
 		} | null;
 	}>('/api/settings', (req, reply) => {
 		const airSchedule = airScheduleSchema.safeParse(req.body?.airSchedule);
+		const faultPercent = faultPercentSchema.safeParse(req.body?.faultPercent);
+		const nightMinutes = nightMinutesSchema.safeParse(req.body?.nightMinutes);
 		const airSource = req.body?.airSource;
 		const intervalSeconds = req.body?.intervalSeconds;
 		const queries = req.body?.queries;
@@ -112,6 +121,9 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 			return reply.code(400).send({ error: `airSchedule: ${airSchedule.error.message}` });
 		if (!AIR_SOURCES.includes(airSource as AirSource))
 			return reply.code(400).send({ error: 'airSource must be invented or ddhqIntegration' });
+		if (!nightMinutes.success)
+			return reply.code(400).send({ error: `nightMinutes ${NIGHT_MINUTES_RANGE}` });
+		if (!faultPercent.success) return reply.code(400).send({ error: FAULT_PERCENT_ERROR });
 		if (
 			typeof intervalSeconds !== 'number' ||
 			!Number.isInteger(intervalSeconds) ||
@@ -126,7 +138,9 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		return config.settings.set({
 			airSchedule: airSchedule.data,
 			airSource: airSource as AirSource,
+			faultPercent: faultPercent.data,
 			intervalSeconds,
+			nightMinutes: nightMinutes.data,
 			queries: queries.map((query) => query.trim()).filter((query) => query.length > 0),
 		});
 	});
@@ -266,22 +280,15 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 	app.post<{ Body: { durationMinutes?: unknown; faultPercent?: unknown } | null }>(
 		'/api/air/start',
 		(req, reply) => {
-			const durationMinutes = req.body?.durationMinutes;
+			const durationMinutes = nightMinutesSchema.safeParse(req.body?.durationMinutes);
 			// The share of airings that put something wrong on air; none unless asked for.
-			const faultPercent = req.body?.faultPercent ?? 0;
-			if (
-				typeof durationMinutes !== 'number' ||
-				!(durationMinutes > 0) ||
-				durationMinutes > MAX_AIR_MINUTES
-			)
-				return reply
-					.code(400)
-					.send({ error: `durationMinutes must be more than 0 and at most ${MAX_AIR_MINUTES}` });
-			if (typeof faultPercent !== 'number' || !(faultPercent >= 0) || faultPercent > 100)
-				return reply.code(400).send({ error: 'faultPercent must be from 0 to 100' });
+			const faultPercent = faultPercentSchema.safeParse(req.body?.faultPercent ?? 0);
+			if (!durationMinutes.success)
+				return reply.code(400).send({ error: `durationMinutes ${NIGHT_MINUTES_RANGE}` });
+			if (!faultPercent.success) return reply.code(400).send({ error: FAULT_PERCENT_ERROR });
 			// One thing serves the mirror at a time.
 			if (config.playback.status() !== undefined) config.playback.stop();
-			config.airShow.start(durationMinutes * 60_000, faultPercent / 100);
+			config.airShow.start(durationMinutes.data * 60_000, faultPercent.data / 100);
 			return status();
 		},
 	);
@@ -307,24 +314,8 @@ export const makeWebServer = (config: WebServerConfig): FastifyInstance => {
 		root: join(packageDir(), 'recordings', 'air'),
 	});
 
-	// --- Static SPA -----------------------------------------------------------
-
-	const distDir = clientDistDir();
-	if (existsSync(join(distDir, 'index.html'))) {
-		void app.register(fastifyStatic, { root: distDir });
-		app.setNotFoundHandler((req, reply) => {
-			if (req.url.startsWith('/api/')) return reply.code(404).send({ error: 'not found' });
-			return reply.sendFile('index.html');
-		});
-	} else {
-		app.get('/', (_req, reply) =>
-			reply
-				.type('text/html')
-				.send(
-					'<h1>Simulator</h1><p>Web UI not built. Run <code>npm run frontend:build</code>, then restart.</p>',
-				),
-		);
-	}
+	// The control page is only ever run on its Vite dev server, which proxies /api here.
+	app.get('/', (req, reply) => reply.redirect(`http://${req.hostname}:5174/`));
 
 	return app;
 };
