@@ -36,7 +36,7 @@ const ObservationTable: React.FC<Props> = (props) => (
 					<TableRow
 						key={`${observation.observedAt} ${observation.source} ${observation.templateId ?? ''} ${observation.raceKey}`}
 					>
-						<TableCell sx={{ fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+						<TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
 							{clockTime(observation.observedAt)}
 						</TableCell>
 						<TableCell sx={{ whiteSpace: 'nowrap' }}>{sourceLabel(observation.source)}</TableCell>

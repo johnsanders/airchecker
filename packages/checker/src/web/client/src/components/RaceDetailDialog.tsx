@@ -16,10 +16,10 @@ interface Props {
 // only mounts while open so RaceDetail's live query starts fresh on each open and
 // tears down on close.
 const RaceDetailDialog: React.FC<Props> = (props) => (
-	<Dialog fullWidth={true} maxWidth="md" onClose={props.onClose} open={props.raceKey !== undefined}>
+	<Dialog fullWidth={true} maxWidth="lg" onClose={props.onClose} open={props.raceKey !== undefined}>
 		{props.raceKey !== undefined && (
 			<>
-				<DialogTitle sx={{ pr: 6, wordBreak: 'break-all' }}>
+				<DialogTitle sx={{ fontWeight: 700, pr: 6, wordBreak: 'break-all' }}>
 					{props.raceKey}
 					<IconButton
 						aria-label="close"
@@ -29,7 +29,7 @@ const RaceDetailDialog: React.FC<Props> = (props) => (
 						<CloseIcon />
 					</IconButton>
 				</DialogTitle>
-				<DialogContent dividers={true}>
+				<DialogContent dividers={true} sx={{ pt: 0 }}>
 					<RaceDetail raceKey={props.raceKey} />
 				</DialogContent>
 			</>

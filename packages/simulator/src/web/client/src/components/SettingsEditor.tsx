@@ -42,7 +42,7 @@ const SettingsEditor: React.FC = () => {
 	return (
 		<Box>
 			<Box sx={{ alignItems: 'center', display: 'flex', gap: 2, mb: 1.5 }}>
-				<Typography color="text.secondary" variant="caption">
+				<Typography color="text.secondary" variant="body2">
 					DDHQ queries, asked of its integration host (resultsapi-integration.decisiondeskhq.com)
 				</Typography>
 				<TextField
@@ -61,11 +61,15 @@ const SettingsEditor: React.FC = () => {
 				multiline={true}
 				onChange={(event) => setText(event.target.value)}
 				placeholder={'race_ids=123,456\nstate=TX&office_id=3'}
-				slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: 12 } } }}
+				slotProps={{
+					input: {
+						sx: { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13 },
+					},
+				}}
 				value={text}
 			/>
 			<Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mt: 1 }}>
-				<Button onClick={() => void save()} size="small" variant="outlined">
+				<Button onClick={() => void save()} size="small" variant="contained">
 					Save
 				</Button>
 				<Typography color="text.secondary" variant="caption">

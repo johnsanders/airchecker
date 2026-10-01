@@ -23,6 +23,8 @@ const RECORDING_REFRESH_MS = 10_000;
 // A <button> styled as a link doesn't inherit the surrounding text's font on its own.
 const INLINE_BUTTON = { font: 'inherit', verticalAlign: 'baseline' } as const;
 
+const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+
 const megabytes = (bytes: number): string => `${(bytes / 1024 ** 2).toFixed(1)} MB`;
 
 const clockTime = (ts: number): string =>
@@ -102,7 +104,7 @@ const RecordPanel: React.FC<Props> = (props) => {
 	return (
 		<Box>
 			{playback !== null && (
-				<Box sx={{ mb: 2 }}>
+				<Box sx={{ borderLeft: 3, borderLeftColor: 'success.main', mb: 2.5, pl: 1.5 }}>
 					<Stack alignItems="center" direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 0.5 }}>
 						<Button
 							onClick={() =>
@@ -169,7 +171,7 @@ const RecordPanel: React.FC<Props> = (props) => {
 					</Typography>
 					<Box
 						component="pre"
-						sx={{ fontFamily: 'monospace', fontSize: 12, m: 0, mt: 0.5, userSelect: 'all' }}
+						sx={{ fontFamily: MONO, fontSize: 12, m: 0, mt: 0.5, userSelect: 'all' }}
 					>
 						{playback.ddhqQueries.length === 0 ? '(none)' : playback.ddhqQueries.join('\n')}
 					</Box>
@@ -211,7 +213,7 @@ const RecordPanel: React.FC<Props> = (props) => {
 					{msg}
 				</Typography>
 			</Stack>
-			<Typography color="text.secondary" sx={{ display: 'block', mb: 1 }} variant="caption">
+			<Typography color="text.secondary" sx={{ display: 'block', mb: 1 }} variant="body2">
 				Records DDHQ's integration host and Chameleon, checking both every{' '}
 				{props.status?.recordIntervalSeconds ?? '…'} s. Production DDHQ is never recorded.
 			</Typography>
@@ -220,14 +222,29 @@ const RecordPanel: React.FC<Props> = (props) => {
 					{error}
 				</Typography>
 			))}
-			<Box sx={{ mt: 1.5 }}>
+			<Box sx={{ borderTop: 1, borderTopColor: 'divider', mt: 1.5 }}>
 				{recordings.map((summary) => (
-					<Box key={summary.file} sx={{ fontSize: 12, mb: 0.5 }}>
+					<Box
+						key={summary.file}
+						sx={{
+							'&:hover': { bgcolor: 'action.hover' },
+							alignItems: 'center',
+							borderBottom: 1,
+							borderColor: 'divider',
+							columnGap: 1.5,
+							display: 'flex',
+							flexWrap: 'wrap',
+							fontSize: 13,
+							mx: -1,
+							px: 1,
+							py: 0.75,
+						}}
+					>
 						<Button
 							disabled={recording?.name === summary.name}
 							onClick={() => void act(() => api.startApiPlayback(summary.name))}
 							size="small"
-							sx={{ minWidth: 0, mr: 1, px: 1, py: 0 }}
+							sx={{ minWidth: 0, px: 1.25, py: 0 }}
 							variant="outlined"
 						>
 							▶ Play
@@ -238,33 +255,41 @@ const RecordPanel: React.FC<Props> = (props) => {
 							sx={{ ...INLINE_BUTTON, fontWeight: 700 }}
 						>
 							{summary.name}
-						</Link>{' '}
-						· {new Date(summary.startedAt).toLocaleString()} · {summary.responseCount} responses
-						{summary.stoppedAt === null ? ' · in progress' : ''}
-						{playback?.name === summary.name ? ' · playing' : ''}
-						{recording?.name === summary.name ||
-						playback?.name === summary.name ? null : confirmingDelete === summary.name ? (
-							<>
-								{' · '}
-								<Link
-									color="error"
-									component="button"
-									onClick={() => void remove(summary.name)}
-									sx={{ ...INLINE_BUTTON, fontWeight: 700 }}
-								>
-									Delete recording
-								</Link>{' '}
-								<Link
-									component="button"
-									onClick={() => setConfirmingDelete(undefined)}
-									sx={INLINE_BUTTON}
-								>
-									Cancel
-								</Link>
-							</>
-						) : (
-							<>
-								{' · '}
+						</Link>
+						<Box component="span" sx={{ color: 'text.secondary' }}>
+							{new Date(summary.startedAt).toLocaleString()} · {summary.responseCount} responses
+						</Box>
+						{summary.stoppedAt === null && (
+							<Box component="span" sx={{ color: 'error.main', fontWeight: 600 }}>
+								in progress
+							</Box>
+						)}
+						{playback?.name === summary.name && (
+							<Box component="span" sx={{ color: 'success.main', fontWeight: 600 }}>
+								playing
+							</Box>
+						)}
+						<Box sx={{ display: 'flex', gap: 1.5, ml: 'auto' }}>
+							{recording?.name === summary.name ||
+							playback?.name === summary.name ? null : confirmingDelete === summary.name ? (
+								<>
+									<Link
+										color="error"
+										component="button"
+										onClick={() => void remove(summary.name)}
+										sx={{ ...INLINE_BUTTON, fontWeight: 700 }}
+									>
+										Delete recording
+									</Link>
+									<Link
+										component="button"
+										onClick={() => setConfirmingDelete(undefined)}
+										sx={INLINE_BUTTON}
+									>
+										Cancel
+									</Link>
+								</>
+							) : (
 								<Link
 									color="error"
 									component="button"
@@ -273,8 +298,8 @@ const RecordPanel: React.FC<Props> = (props) => {
 								>
 									Delete
 								</Link>
-							</>
-						)}
+							)}
+						</Box>
 					</Box>
 				))}
 			</Box>

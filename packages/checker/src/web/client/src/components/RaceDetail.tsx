@@ -14,11 +14,7 @@ interface Props {
 }
 
 const Heading: React.FC<{ children: React.ReactNode }> = (props) => (
-	<Typography
-		color="text.secondary"
-		sx={{ display: 'block', letterSpacing: '.06em', mt: 2 }}
-		variant="overline"
-	>
+	<Typography component="h3" sx={{ fontSize: 14, fontWeight: 700, mb: 1, mt: 2.5 }}>
 		{props.children}
 	</Typography>
 );

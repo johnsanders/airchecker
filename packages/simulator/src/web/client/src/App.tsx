@@ -17,16 +17,39 @@ import SettingsEditor from './components/SettingsEditor.js';
 const STATUS_REFRESH_MS = 1_000;
 
 const Section: React.FC<{ children: React.ReactNode; title: string }> = (props) => (
-	<Paper sx={{ mb: 2, p: 2 }}>
-		<Typography
-			color="text.secondary"
-			sx={{ display: 'block', letterSpacing: '.06em', mb: 1 }}
-			variant="overline"
-		>
+	<Paper sx={{ mb: 2, overflowX: 'auto', p: 2 }} variant="outlined">
+		<Typography component="h2" sx={{ fontSize: 16, fontWeight: 700, mb: 1.5 }}>
 			{props.title}
 		</Typography>
 		{props.children}
 	</Paper>
+);
+
+// A lit tally for what's live: red while recording, green while something is on air.
+const Tally: React.FC<{ color: string; label: string }> = (props) => (
+	<Box
+		sx={{
+			alignItems: 'center',
+			color: props.color,
+			display: 'flex',
+			fontSize: 13,
+			fontWeight: 700,
+			gap: 0.75,
+		}}
+	>
+		<Box
+			sx={{
+				'@keyframes tally': { '50%': { opacity: 0.35 } },
+				'@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+				animation: 'tally 2s ease-in-out infinite',
+				bgcolor: 'currentColor',
+				borderRadius: '50%',
+				height: 10,
+				width: 10,
+			}}
+		/>
+		{props.label}
+	</Box>
 );
 
 const App: React.FC = () => {
@@ -44,23 +67,37 @@ const App: React.FC = () => {
 
 	return (
 		<Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
-			<AppBar color="default" elevation={0} position="static">
-				<Toolbar variant="dense">
-					<Typography sx={{ fontWeight: 700 }}>Simulator</Typography>
-					<Typography color="text.secondary" sx={{ ml: 2 }} variant="caption">
+			<AppBar
+				elevation={0}
+				position="static"
+				sx={{
+					bgcolor: 'background.paper',
+					borderBottom: 1,
+					borderColor: 'divider',
+					color: 'text.primary',
+				}}
+			>
+				<Toolbar sx={{ flexWrap: 'wrap', gap: 1.5, minHeight: { xs: 56 }, px: { xs: 2 } }}>
+					<Typography
+						sx={{ fontSize: 18, fontStretch: '118%', fontWeight: 800, letterSpacing: '-.01em' }}
+					>
+						Simulator
+					</Typography>
+					<Typography color="text.secondary" variant="body2">
 						election API recorder + playback ·{' '}
 						{status === undefined || status.playback === null
 							? 'idle'
 							: `playing ${status.playback.name}`}
 					</Typography>
-					{status !== undefined && status.recording !== null && (
-						<Typography color="error" sx={{ fontWeight: 700, ml: 2 }} variant="caption">
-							● REC
-						</Typography>
-					)}
+					<Box sx={{ display: 'flex', gap: 2, ml: 'auto' }}>
+						{(status?.air ?? null) !== null && <Tally color="success.main" label="On air" />}
+						{status !== undefined && status.recording !== null && (
+							<Tally color="error.main" label="REC" />
+						)}
+					</Box>
 				</Toolbar>
 			</AppBar>
-			<Box sx={{ p: 2 }}>
+			<Box sx={{ maxWidth: 1400, p: 2 }}>
 				<Section title="Simulated air">
 					<AirPanel onChange={reload} status={status} />
 				</Section>

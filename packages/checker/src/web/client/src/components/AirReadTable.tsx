@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 
 import type { AirRead, SourceName } from '../api.js';
+import type { Severity } from '../format.js';
 
 import { sourceLabel } from '../api.js';
 import { clockTime, graphicLabel, pct, SEVERITY_COLOR, SEVERITY_ORDER } from '../format.js';
@@ -35,15 +36,18 @@ const SourceCell: React.FC<{ read: AirRead; source: SourceName }> = (props) => {
 			</Typography>
 		);
 	return (
-		<Box sx={{ fontVariantNumeric: 'tabular-nums' }}>
-			<Typography sx={LINE}>
+		// Air is what viewers saw, so it reads a step louder than the sources behind it.
+		<Box
+			sx={{ fontVariantNumeric: 'tabular-nums', fontWeight: props.source === 'air' ? 600 : 400 }}
+		>
+			<Typography sx={{ ...LINE, fontWeight: 'inherit' }}>
 				{props.source === 'air' && props.read.pctInIsMinimum ? '>' : ''}
 				{pct(pctIn)}%
 			</Typography>
 			{props.read.candidates.map((candidate) => {
 				const cell = candidate.cells[props.source];
 				return (
-					<Typography key={candidate.name} sx={LINE}>
+					<Typography key={candidate.name} sx={{ ...LINE, fontWeight: 'inherit' }}>
 						{cell === undefined
 							? '—'
 							: `${cell.votes.toLocaleString('en-US')} · ${pct(cell.pct)}%${cell.called ? ' ✓' : ''}`}
@@ -69,7 +73,7 @@ const Check: React.FC<{ read: AirRead }> = (props) => {
 							color={SEVERITY_COLOR[anomaly.severity]}
 							label={anomaly.type}
 							size="small"
-							sx={{ fontSize: 10, height: 18, mr: 1 }}
+							sx={{ fontSize: 11, height: 20, mr: 1 }}
 						/>
 						<Typography color="text.secondary" variant="caption">
 							{anomaly.detail}
@@ -97,12 +101,19 @@ const Check: React.FC<{ read: AirRead }> = (props) => {
 	);
 };
 
-const worstSeverityColor = (read: AirRead): string => {
-	const worst = [...read.anomalies].sort(
+const worstSeverity = (read: AirRead): Severity | undefined =>
+	[...read.anomalies].sort(
 		(left, right) => SEVERITY_ORDER[left.severity] - SEVERITY_ORDER[right.severity],
-	)[0];
-	return worst === undefined ? 'transparent' : `${SEVERITY_COLOR[worst.severity]}.main`;
+	)[0]?.severity;
+
+const SEVERITY_BAR: Record<Severity, string> = {
+	high: 'error.main',
+	low: 'text.disabled',
+	medium: 'warning.main',
 };
+
+const severityBar = (severity: Severity | undefined): string =>
+	severity === undefined ? 'transparent' : SEVERITY_BAR[severity];
 
 // Graphics read off the screen, newest first. Each row is a record of one read: the
 // graphic's numbers, the Ross state it was held against, what DDHQ was saying, and what
@@ -134,16 +145,19 @@ const AirReadTable: React.FC<Props> = (props) => {
 						hover={props.onSelect !== undefined}
 						key={`${read.raceKey} ${read.airedAt} ${read.templateId ?? ''}`}
 						onClick={() => props.onSelect?.(read.raceKey)}
-						sx={props.onSelect === undefined ? {} : { cursor: 'pointer' }}
+						sx={{
+							bgcolor: worstSeverity(read) === 'high' ? 'rgba(255, 90, 82, .06)' : 'transparent',
+							cursor: props.onSelect === undefined ? 'auto' : 'pointer',
+						}}
 					>
 						<TableCell
 							sx={{
 								borderLeft: '3px solid',
-								borderLeftColor: worstSeverityColor(read),
+								borderLeftColor: severityBar(worstSeverity(read)),
 								whiteSpace: 'nowrap',
 							}}
 						>
-							<Typography sx={{ ...LINE, fontFamily: 'monospace' }}>
+							<Typography sx={{ ...LINE, fontSize: 13, fontWeight: 600 }}>
 								{clockTime(read.airedAt)}
 							</Typography>
 							<Typography color="text.secondary" sx={LINE}>
@@ -151,7 +165,9 @@ const AirReadTable: React.FC<Props> = (props) => {
 							</Typography>
 						</TableCell>
 						<TableCell sx={{ maxWidth: 280 }}>
-							<Typography sx={{ fontSize: 13 }}>{read.heading}</Typography>
+							<Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: '20px' }}>
+								{read.heading}
+							</Typography>
 							{read.linked && (
 								<Typography
 									color="text.secondary"
@@ -166,7 +182,7 @@ const AirReadTable: React.FC<Props> = (props) => {
 									color="warning"
 									label="not linked"
 									size="small"
-									sx={{ fontSize: 10, height: 18 }}
+									sx={{ fontSize: 11, height: 20 }}
 								/>
 							)}
 						</TableCell>

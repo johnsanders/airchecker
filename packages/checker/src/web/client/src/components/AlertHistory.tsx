@@ -26,19 +26,23 @@ const AlertHistory: React.FC<Props> = (props) => {
 			</Typography>
 		);
 	return (
-		<Box sx={{ maxHeight: 360, overflowY: 'auto' }}>
+		<Box sx={{ maxHeight: 'calc(100vh - 240px)', minHeight: 120, overflowY: 'auto' }}>
 			{events.map((event) => (
 				<Box
 					key={`${event.ts}-${event.kind}-${event.type}-${event.raceKey}-${event.subject ?? ''}`}
 					onClick={() => props.onSelectRace(event.raceKey)}
 					sx={{
+						'&:hover': { bgcolor: 'action.hover' },
+						'&:last-of-type': { borderBottom: 0 },
 						alignItems: 'baseline',
 						borderBottom: '1px solid',
 						borderColor: 'divider',
 						cursor: 'pointer',
 						display: 'flex',
 						gap: 1,
-						py: 0.5,
+						mx: -1,
+						px: 1,
+						py: 0.75,
 					}}
 				>
 					<Typography
@@ -52,11 +56,11 @@ const AlertHistory: React.FC<Props> = (props) => {
 						color={event.kind === 'raised' ? SEVERITY_COLOR[event.severity] : 'default'}
 						label={event.kind}
 						size="small"
-						sx={{ fontSize: 10, height: 18, minWidth: 58 }}
+						sx={{ fontSize: 11, height: 20, minWidth: 60 }}
 						variant={event.kind === 'raised' ? 'filled' : 'outlined'}
 					/>
 					<Box sx={{ minWidth: 0 }}>
-						<Typography noWrap={true} sx={{ fontSize: 12 }}>
+						<Typography noWrap={true} sx={{ fontSize: 13, fontWeight: 600 }}>
 							{event.type}
 							{event.subject === undefined ? '' : ` · ${event.subject}`} — {event.raceKey}
 						</Typography>

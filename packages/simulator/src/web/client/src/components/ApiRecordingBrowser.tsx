@@ -39,6 +39,7 @@ interface RowProps {
 
 type SourceFilter = 'all' | ApiSource;
 
+const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const PAGE_SIZE = 200;
 // Rows land on the pollers' checks without a change nudge, so refresh while recording.
 const RECORDING_REFRESH_MS = 10_000;
@@ -58,7 +59,7 @@ const ApiRecordingBrowser: React.FC<Props> = (props) => (
 	<Dialog fullWidth={true} maxWidth="xl" onClose={props.onClose} open={props.name !== undefined}>
 		{props.name !== undefined && (
 			<>
-				<DialogTitle sx={{ pr: 6, wordBreak: 'break-all' }}>
+				<DialogTitle sx={{ fontWeight: 700, pr: 6, wordBreak: 'break-all' }}>
 					{props.name}
 					<IconButton
 						aria-label="close"
@@ -227,9 +228,7 @@ const RecordingBrowser: React.FC<{ inProgress: boolean; name: string }> = (props
 											{new Date(row.ts).toLocaleTimeString()}
 										</TableCell>
 										<TableCell>{row.source}</TableCell>
-										<TableCell
-											sx={{ fontFamily: 'monospace', fontSize: 12, overflowWrap: 'break-word' }}
-										>
+										<TableCell sx={{ fontFamily: MONO, fontSize: 12, overflowWrap: 'break-word' }}>
 											{row.path}
 										</TableCell>
 										<TableCell align="right">{row.error === null ? kb(row.bytes) : '—'}</TableCell>
@@ -339,14 +338,11 @@ const ResponseDetail: React.FC<RowProps> = (props) => (
 				</Link>
 			)}
 		</Stack>
-		<Typography sx={{ fontFamily: 'monospace', fontSize: 12, mb: 1, overflowWrap: 'anywhere' }}>
+		<Typography sx={{ fontFamily: MONO, fontSize: 12, mb: 1, overflowWrap: 'anywhere' }}>
 			{props.row.path}
 		</Typography>
 		{props.row.error !== null ? (
-			<Typography
-				color="error"
-				sx={{ fontFamily: 'monospace', fontSize: 12, whiteSpace: 'pre-wrap' }}
-			>
+			<Typography color="error" sx={{ fontFamily: MONO, fontSize: 12, whiteSpace: 'pre-wrap' }}>
 				{props.row.error}
 			</Typography>
 		) : props.row.bytes > PRETTY_MAX_BYTES ? (
@@ -397,7 +393,7 @@ const PrettyBody: React.FC<RowProps> = (props) => {
 			sx={{
 				bgcolor: 'action.hover',
 				borderRadius: 1,
-				fontFamily: 'monospace',
+				fontFamily: MONO,
 				fontSize: 12,
 				m: 0,
 				maxHeight: '60vh',

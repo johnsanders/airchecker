@@ -6,8 +6,9 @@ import React from 'react';
 import type { SessionStatus } from '../api.js';
 
 import { api } from '../api.js';
+import { COLORS } from '../theme.js';
 
-type Props = { status: null | SessionStatus };
+type Props = { onAmber: boolean; status: null | SessionStatus };
 
 // Monitoring on/off. Stop closes the session recording and halts DDHQ/Ross polling and
 // air capture; Start opens a new session. Stop asks twice since it's in the toolbar on
@@ -32,16 +33,41 @@ const MonitorControl: React.FC<Props> = (props) => {
 	if (props.status === null) return null;
 
 	return (
-		<Box sx={{ alignItems: 'center', display: 'flex', gap: 1, ml: 'auto' }}>
-			<Typography
-				color={props.status.running ? 'success.main' : 'text.secondary'}
-				sx={{ fontWeight: 700 }}
-				variant="caption"
+		<Box sx={{ alignItems: 'center', display: 'flex', gap: 1.5, ml: 'auto' }}>
+			<Box
+				sx={{
+					alignItems: 'center',
+					color: props.status.running ? (props.onAmber ? 'inherit' : 'success.main') : 'inherit',
+					display: 'flex',
+					fontSize: 13,
+					fontWeight: 700,
+					gap: 0.75,
+					opacity: props.status.running ? 1 : 0.7,
+				}}
 			>
-				{props.status.running ? '● Monitoring' : '○ Stopped'}
-			</Typography>
+				<Box
+					sx={{
+						'@keyframes tally': { '50%': { opacity: 0.35 } },
+						'@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+						animation: props.status.running ? 'tally 2s ease-in-out infinite' : 'none',
+						bgcolor: props.status.running ? 'currentColor' : 'transparent',
+						border: '2px solid currentColor',
+						borderRadius: '50%',
+						height: 10,
+						width: 10,
+					}}
+				/>
+				{props.status.running ? 'Monitoring' : 'Stopped'}
+			</Box>
 			{props.status.id !== null && (
-				<Typography color="text.secondary" sx={{ fontFamily: 'monospace' }} variant="caption">
+				<Typography
+					sx={{
+						display: { md: 'block', xs: 'none' },
+						fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+						fontSize: 12,
+						opacity: 0.7,
+					}}
+				>
 					{props.status.id}
 				</Typography>
 			)}
@@ -70,12 +96,18 @@ const MonitorControl: React.FC<Props> = (props) => {
 					>
 						Stop session
 					</Button>
-					<Button onClick={() => setConfirming(false)} size="small">
+					<Button color="inherit" onClick={() => setConfirming(false)} size="small">
 						Cancel
 					</Button>
 				</>
 			) : (
-				<Button color="error" onClick={() => setConfirming(true)} size="small">
+				<Button
+					color="error"
+					onClick={() => setConfirming(true)}
+					size="small"
+					sx={props.onAmber ? { color: COLORS.console } : {}}
+					variant="outlined"
+				>
 					Stop
 				</Button>
 			)}

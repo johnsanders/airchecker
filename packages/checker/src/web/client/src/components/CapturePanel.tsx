@@ -63,7 +63,7 @@ const CapturePanel: React.FC<Props> = (props) => {
 
 	return (
 		<Box>
-			<Stack alignItems="center" direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1.5 }}>
+			<Stack alignItems="center" direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 2 }}>
 				<Button disabled={busy} onClick={() => void capture()} variant="contained">
 					Capture now
 				</Button>
@@ -99,12 +99,16 @@ const CapturePanel: React.FC<Props> = (props) => {
 			</Stack>
 
 			{props.mode === 'sim' ? (
-				<Typography color="warning.main" sx={{ display: 'block', mb: 1.5 }} variant="body2">
+				<Typography
+					color="warning.main"
+					sx={{ borderLeft: 3, display: 'block', mb: 2, pl: 1.5 }}
+					variant="body2"
+				>
 					Sim mode: capturing the simulator's /air/ page, opened in the debug Chrome if it isn't
 					already.
 				</Typography>
 			) : (
-				<Stack alignItems="center" direction="row" spacing={1} sx={{ mb: 1.5 }}>
+				<Stack alignItems="center" direction="row" spacing={1} sx={{ mb: 2 }}>
 					<Typography color="text.secondary" variant="caption">
 						source tab:
 					</Typography>
@@ -146,13 +150,16 @@ const CapturePanel: React.FC<Props> = (props) => {
 						template(s) read
 					</Typography>
 					{props.lastFrame?.observations.map((o) => (
-						<Box key={`${o.templateId ?? '?'}|${o.raceKey}`} sx={{ fontSize: 12, mt: 1 }}>
+						<Box
+							key={`${o.templateId ?? '?'}|${o.raceKey}`}
+							sx={{ fontSize: 13, lineHeight: '20px', mt: 1.5 }}
+						>
 							<b>{o.templateId ?? '?'}</b> — {o.raceKey} · {pct(o.pctIn)}% in
 							{o.candidates.map((c) => (
-								<div key={c.key} style={{ color: '#9fb0d6' }}>
+								<Box color="text.secondary" key={c.key}>
 									{c.party} {c.name} — {pct(c.pct)}% / {c.votes.toLocaleString()}
 									{o.calledFor.includes(c.key) ? ' ✓' : ''}
-								</div>
+								</Box>
 							))}
 						</Box>
 					))}

@@ -108,7 +108,9 @@ const SessionsPanel: React.FC = () => {
 				<TableBody>
 					{[...sessions].reverse().map((session) => (
 						<TableRow key={session.id}>
-							<TableCell sx={{ fontFamily: 'monospace', fontSize: 12 }}>
+							<TableCell
+								sx={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12 }}
+							>
 								{session.id}
 								{session.current ? ' (recording)' : ''}
 							</TableCell>

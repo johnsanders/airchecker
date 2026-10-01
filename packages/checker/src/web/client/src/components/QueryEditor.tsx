@@ -51,13 +51,17 @@ const QueryEditor: React.FC<Props> = (props) => {
 	return (
 		<Box>
 			{props.mode === 'sim' && (
-				<Typography color="warning.main" sx={{ display: 'block', mb: 1.5 }} variant="body2">
+				<Typography
+					color="warning.main"
+					sx={{ borderLeft: 3, display: 'block', mb: 2, pl: 1.5 }}
+					variant="body2"
+				>
 					Sim mode: DDHQ is the simulator's mirror, polled for the races the simulator names. This
 					list and host are Live's, kept for when you switch back.
 				</Typography>
 			)}
 			{props.ddhqHost !== null && props.mode !== 'sim' && (
-				<Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mb: 1.5 }}>
+				<Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mb: 2 }}>
 					<Typography color="text.secondary" variant="caption">
 						DDHQ host:
 					</Typography>
@@ -80,11 +84,19 @@ const QueryEditor: React.FC<Props> = (props) => {
 				multiline
 				onChange={(e) => setText(e.target.value)}
 				placeholder={'race_ids=123,456\nstate=TX&office_id=3'}
-				slotProps={{ input: { sx: { fontFamily: 'monospace', fontSize: 12 } } }}
+				slotProps={{
+					input: {
+						sx: {
+							fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+							fontSize: 13,
+							maxWidth: 720,
+						},
+					},
+				}}
 				value={text}
 			/>
 			<Box sx={{ alignItems: 'center', display: 'flex', gap: 1, mt: 1 }}>
-				<Button onClick={() => void save()} size="small" variant="outlined">
+				<Button onClick={() => void save()} size="small" variant="contained">
 					Save queries
 				</Button>
 				<Typography color="text.secondary" variant="caption">

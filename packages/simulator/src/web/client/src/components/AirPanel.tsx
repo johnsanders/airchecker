@@ -67,6 +67,28 @@ const airLine = (air: AirStatus | null, playing: boolean): string => {
 	return `${minutes(air.elapsedMs)} of ${minutes(air.durationMs)}${air.elapsedMs >= air.durationMs ? ' (all in)' : ''} · ${called}${faulty} · seed ${air.seed}`;
 };
 
+const FieldGroup: React.FC<{ children: React.ReactNode; note?: string; title: string }> = (
+	props,
+) => (
+	<Box>
+		<Typography component="h3" sx={{ fontSize: 13, fontWeight: 700, mb: 1.25 }}>
+			{props.title}
+		</Typography>
+		<Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
+			{props.children}
+		</Stack>
+		{props.note !== undefined && (
+			<Typography
+				color="text.secondary"
+				sx={{ display: 'block', maxWidth: '70ch', mt: 0.75 }}
+				variant="caption"
+			>
+				{props.note}
+			</Typography>
+		)}
+	</Box>
+);
+
 // Runs the simulated air feed at /air/: the ticker always up and an FS or L3 over it, paced
 // as set here, over a looping newscast, filled from a night of results — invented, or,
 // during a DDHQ testing window, pulled live from DDHQ's integration host. Start rolls a new
@@ -137,7 +159,29 @@ const AirPanel: React.FC<Props> = (props) => {
 
 	return (
 		<Box>
-			<Stack alignItems="center" direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1 }}>
+			<Box
+				sx={{
+					borderLeft: 3,
+					borderLeftColor: air === null ? 'text.disabled' : 'success.main',
+					mb: 2,
+					pl: 1.5,
+				}}
+			>
+				<Typography sx={{ fontSize: 15, fontWeight: 600 }}>
+					{airLine(air, (props.status?.playback ?? null) !== null)}
+				</Typography>
+				{air !== null && (
+					<Typography color="text.secondary" variant="body2">
+						{upNextLine(air)}
+					</Typography>
+				)}
+				{props.status !== undefined && props.status.liveResultErrors.length > 0 && (
+					<Typography color="error" variant="body2">
+						DDHQ integration: {props.status.liveResultErrors.join('; ')}
+					</Typography>
+				)}
+			</Box>
+			<Stack alignItems="center" direction="row" sx={{ flexWrap: 'wrap', gap: 1, mb: 2.5 }}>
 				<ToggleButtonGroup
 					disabled={night}
 					exclusive={true}
@@ -152,25 +196,6 @@ const AirPanel: React.FC<Props> = (props) => {
 						DDHQ integration
 					</ToggleButton>
 				</ToggleButtonGroup>
-				<TextField
-					label="night length (min)"
-					onBlur={() => void saveSettings({ nightMinutes: Number(durationMinutes) })}
-					onChange={(event) => setDurationMinutes(event.target.value)}
-					size="small"
-					sx={{ width: 160 }}
-					type="number"
-					value={durationMinutes}
-				/>
-				<TextField
-					label="graphics wrong (%)"
-					onBlur={() => void saveSettings({ faultPercent: Number(faultPercent) })}
-					onChange={(event) => setFaultPercent(event.target.value)}
-					size="small"
-					slotProps={{ htmlInput: { max: 100, min: 0 } }}
-					sx={{ width: 160 }}
-					type="number"
-					value={faultPercent}
-				/>
 				<Button
 					onClick={() =>
 						void act(() => api.startAir(Number(durationMinutes), Number(faultPercent)))
@@ -187,45 +212,58 @@ const AirPanel: React.FC<Props> = (props) => {
 				<Button href="/air/" target="_blank" variant="outlined">
 					Watch live feed ↗
 				</Button>
-				<Typography variant="body2">
-					{airLine(air, (props.status?.playback ?? null) !== null)}
-				</Typography>
 				<Typography color="text.secondary" variant="caption">
 					{msg}
 				</Typography>
 			</Stack>
-			{draft !== undefined && (
-				<Stack alignItems="center" direction="row" spacing={1} sx={{ flexWrap: 'wrap', mb: 1 }}>
-					{SCHEDULE_FIELDS.map((field) => (
-						<TextField
-							key={field.key}
-							label={field.label}
-							onBlur={() => void saveSchedule(draft)}
-							onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })}
-							size="small"
-							slotProps={{ htmlInput: { min: 0 } }}
-							sx={{ width: field.width }}
-							type="number"
-							value={draft[field.key]}
-						/>
-					))}
-					<Typography color="text.secondary" variant="caption">
-						Pacing takes effect at the next Start (or the next play, pause or resume of a
-						recording). FS and L3 both 0 is the ticker alone.
-					</Typography>
-				</Stack>
-			)}
-			{air !== null && (
-				<Typography sx={{ display: 'block', mb: 1 }} variant="body2">
-					{upNextLine(air)}
-				</Typography>
-			)}
-			{props.status !== undefined && props.status.liveResultErrors.length > 0 && (
-				<Typography color="error" sx={{ display: 'block', mb: 1 }} variant="caption">
-					DDHQ integration: {props.status.liveResultErrors.join('; ')}
-				</Typography>
-			)}
-			<Typography color="text.secondary" sx={{ display: 'block' }} variant="caption">
+			<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 4, mb: 2 }}>
+				<FieldGroup title="This night">
+					<TextField
+						label="night length (min)"
+						onBlur={() => void saveSettings({ nightMinutes: Number(durationMinutes) })}
+						onChange={(event) => setDurationMinutes(event.target.value)}
+						size="small"
+						sx={{ width: 150 }}
+						type="number"
+						value={durationMinutes}
+					/>
+					<TextField
+						label="graphics wrong (%)"
+						onBlur={() => void saveSettings({ faultPercent: Number(faultPercent) })}
+						onChange={(event) => setFaultPercent(event.target.value)}
+						size="small"
+						slotProps={{ htmlInput: { max: 100, min: 0 } }}
+						sx={{ width: 150 }}
+						type="number"
+						value={faultPercent}
+					/>
+				</FieldGroup>
+				{draft !== undefined && (
+					<FieldGroup
+						note="Takes effect at the next Start (or the next play, pause or resume of a recording). FS and L3 both 0 is the ticker alone."
+						title="Pacing"
+					>
+						{SCHEDULE_FIELDS.map((field) => (
+							<TextField
+								key={field.key}
+								label={field.label}
+								onBlur={() => void saveSchedule(draft)}
+								onChange={(event) => setDraft({ ...draft, [field.key]: event.target.value })}
+								size="small"
+								slotProps={{ htmlInput: { min: 0 } }}
+								sx={{ width: field.width }}
+								type="number"
+								value={draft[field.key]}
+							/>
+						))}
+					</FieldGroup>
+				)}
+			</Box>
+			<Typography
+				color="text.secondary"
+				sx={{ display: 'block', maxWidth: '80ch' }}
+				variant="body2"
+			>
 				While a night runs, the DDHQ and Chameleon mirrors serve it too (starting one stops any
 				recording playback). Playing an API recording puts it on air instead: its take-list races,
 				with its recorded Chameleon numbers. Put the checker in Sim mode; it opens the feed (
