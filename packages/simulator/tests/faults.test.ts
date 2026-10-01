@@ -21,17 +21,18 @@ const slots = Array.from({ length: DURATION_MS / TICKER_SLOT_MS }, (_, slot) => 
 	(slot) => slot * TICKER_SLOT_MS + 1_000,
 );
 
-const tickers = (
-	night: typeof clean,
-	kind?: FaultKind,
-): { ms: number; ticker: OnAir['ticker'] }[] =>
+type Ticker = NonNullable<OnAir['ticker']>;
+
+// The slots with the ticker up: it's down until the first race has votes.
+const tickers = (night: typeof clean, kind?: FaultKind): { ms: number; ticker: Ticker }[] =>
 	slots
 		.map((ms) => ({ ms, ticker: onAirAt(night, ms).ticker }))
+		.filter((slot): slot is { ms: number; ticker: Ticker } => slot.ticker !== null)
 		.filter(({ ticker }) => kind === undefined || ticker.fault?.kind === kind);
 
 // What the race's graphic would show at that moment with nothing wrong.
-const truth = (night: typeof clean, ms: number): OnAir['ticker']['data'] =>
-	onAirAt({ ...night, faultRate: 0 }, ms).ticker.data;
+const truth = (night: typeof clean, ms: number): Ticker['data'] =>
+	onAirAt({ ...night, faultRate: 0 }, ms).ticker!.data;
 
 describe('a night with no faults', () => {
 	it('airs every graphic as the night has it', () =>
@@ -49,9 +50,10 @@ describe('a night with faults', () => {
 		));
 
 	it('puts something wrong on about the share of airings asked for', () => {
-		const wrong = tickers(half).filter(({ ticker }) => ticker.fault !== null).length;
-		expect(wrong / slots.length).toBeGreaterThan(0.35);
-		expect(wrong / slots.length).toBeLessThan(0.55);
+		const aired = tickers(half);
+		const wrong = aired.filter(({ ticker }) => ticker.fault !== null).length;
+		expect(wrong / aired.length).toBeGreaterThan(0.35);
+		expect(wrong / aired.length).toBeLessThan(0.55);
 	});
 
 	it('uses every kind of fault', () =>
@@ -67,7 +69,7 @@ describe('a night with faults', () => {
 	it('keeps an airing wrong the same way for as long as it is up', () =>
 		slots.forEach((ms) => {
 			const [atFirst, atLast] = [ms, ms + TICKER_SLOT_MS - 1_500].map(
-				(at) => onAirAt(faulty, at).ticker.fault?.kind,
+				(at) => onAirAt(faulty, at).ticker?.fault?.kind,
 			);
 			const staleCameOrWent = [atFirst, atLast].every(
 				(kind) => kind === 'stale' || kind === undefined,

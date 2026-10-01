@@ -68,7 +68,7 @@ export type AirShowStatus = {
 	recording: null | string; // the API recording on air, if that's what's on air
 	schedule: AirSchedule;
 	seed: number;
-	ticker: string; // the race on the ticker now
+	ticker: string; // the race on the ticker now, or that it's down
 };
 
 // atMs: when it comes up (next) or goes down (overlay), in epoch ms.
@@ -121,8 +121,8 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 			overlay === undefined
 				? null
 				: { atMs: running.startedAt + atMs, kind: overlay.kind, race: raceLabel(overlay.plan) };
-		const up = overlayAt(running.night, elapsedMs);
-		const next = nextOverlay(running.night, elapsedMs);
+		const up = overlayAt(running.night, elapsedMs, running.resolveResult);
+		const next = nextOverlay(running.night, elapsedMs, running.resolveResult);
 		const onAir = onAirAt(running.night, elapsedMs, running.resolveResult);
 		return {
 			called: running.night.plans.filter((plan) => {
@@ -141,9 +141,14 @@ export const makeAirShow = (config: AirShowConfig): AirShow => {
 			recording: running.recording,
 			schedule: running.night.schedule,
 			seed: running.night.seed,
-			ticker: raceLabel(
-				running.night.plans.find((plan) => plan.race.key === onAir.ticker.raceKey) as RacePlan,
-			),
+			ticker:
+				onAir.ticker === null
+					? 'down until the first results'
+					: raceLabel(
+							running.night.plans.find(
+								(plan) => plan.race.key === onAir.ticker?.raceKey,
+							) as RacePlan,
+						),
 		};
 	};
 

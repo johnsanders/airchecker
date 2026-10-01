@@ -284,13 +284,18 @@ describe('air feed', () => {
 			url: '/api/air/start',
 		});
 		expect(started.json()).toMatchObject({ air: { durationMs: 1_800_000, elapsedMs: 0, seed: 1 } });
-		setWall(60_000);
+		// The ticker is down, counting down, until the first race has votes on air.
+		const opening = (await app.inject({ method: 'GET', url: '/api/air/now' })).json();
+		expect(opening).toMatchObject({
+			onAir: { ticker: null, waiting: { firstResultsInMs: expect.any(Number) } },
+		});
+		setWall(20 * 60_000);
 		const now = (await app.inject({ method: 'GET', url: '/api/air/now' })).json<{
 			onAir: { ticker: { data: { state: string } } };
 		}>();
 		expect(now.onAir.ticker.data.state).toMatch(/^[A-Z]{2}(-\d+)?$/);
 		const status = (await app.inject({ method: 'GET', url: '/api/status' })).json();
-		expect(status).toMatchObject({ air: { elapsedMs: 60_000 } });
+		expect(status).toMatchObject({ air: { elapsedMs: 20 * 60_000 } });
 		await app.inject({ method: 'POST', url: '/api/air/stop' });
 		expect((await app.inject({ method: 'GET', url: '/api/status' })).json()).toMatchObject({
 			air: null,
@@ -300,8 +305,8 @@ describe('air feed', () => {
 			(await app.inject({ method: 'GET', url: `/api/air/aired?ts=${ts}` })).json<{
 				onAir: unknown;
 			}>().onAir;
-		expect(await aired(59_999)).toMatchObject({ ticker: { raceKey: expect.any(String) } });
-		expect(await aired(60_000)).toBeNull(); // stopped then
+		expect(await aired(20 * 60_000 - 1)).toMatchObject({ ticker: { raceKey: expect.any(String) } });
+		expect(await aired(20 * 60_000)).toBeNull(); // stopped then
 		expect((await app.inject({ method: 'GET', url: '/api/air/aired?ts=soon' })).statusCode).toBe(
 			400,
 		);

@@ -34,7 +34,7 @@
     visibility: hidden;
   }
 
-  #idle {
+  #idle, #waiting {
     position: absolute; left: 40px; top: 30px;
     color: rgba(255, 255, 255, .6);
     font: 600 28px -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
@@ -50,6 +50,7 @@
   </div>
   <iframe id="ticker" src="ticker.html"></iframe>
   <div id="idle">No night running. Start one on the simulator's control page.</div>
+  <div id="waiting"></div>
 </div>
 <script>
   const POLL_MS = 500;
@@ -84,10 +85,20 @@
   };
   const hide = target => { target.element.style.visibility = 'hidden'; };
 
+  const countdown = ms => {
+    const seconds = Math.ceil(ms / 1000);
+    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  };
+
   const apply = async onAir => {
     document.getElementById('idle').style.display = onAir === null ? '' : 'none';
+    const waiting = document.getElementById('waiting');
+    waiting.style.display = onAir?.waiting ? '' : 'none';
+    if (onAir?.waiting) waiting.textContent = onAir.waiting.firstResultsInMs === null
+      ? 'Waiting for the first results.'
+      : `First results in ${countdown(onAir.waiting.firstResultsInMs)}`;
     if (onAir === null) return frames.forEach(hide);
-    await show(frame('ticker'), onAir.ticker.data);
+    await (onAir.ticker === null ? hide(frame('ticker')) : show(frame('ticker'), onAir.ticker.data));
     await Promise.all(['l3', 'fs'].map(kind =>
       onAir.overlay?.kind === kind ? show(frame(kind), onAir.overlay.data) : hide(frame(kind))));
   };

@@ -82,7 +82,7 @@ const airedSchema = z.object({
 	onAir: z
 		.object({
 			overlay: shownSchema.extend({ kind: z.enum(['fs', 'l3']) }).nullable(),
-			ticker: shownSchema,
+			ticker: shownSchema.nullable(),
 		})
 		.nullable(),
 });
@@ -127,7 +127,7 @@ const shownByKind = (
 ): Record<Kind, Shown | undefined> => ({
 	fs: onAir?.overlay?.kind === 'fs' ? onAir.overlay : undefined,
 	l3: onAir?.overlay?.kind === 'l3' ? onAir.overlay : undefined,
-	ticker: onAir?.ticker,
+	ticker: onAir?.ticker ?? undefined,
 });
 
 const pctInMatches = (expected: string, observation: RaceObservation): boolean => {

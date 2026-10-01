@@ -94,15 +94,18 @@ describe('the sources agree', () => {
 	it('has the graphics show what Chameleon showed, AIR_LAG_MS − CHAMELEON_LAG_MS earlier', () =>
 		MINUTES.forEach((elapsedMs) => {
 			const onAir = onAirAt(night, elapsedMs + AIR_LAG_MS);
+			// Down until the first race has votes on air.
+			if (onAir.ticker === null) return;
+			const ticker = onAir.ticker;
 			const contest = chameleonPlaylist(
 				night,
 				elapsedMs + CHAMELEON_LAG_MS,
 				NOW,
 			).ElectionPlaylist.contest.find(
 				(candidate) =>
-					races.find((race) => race.key === onAir.ticker.raceKey)?.ddhq.raceId === candidate.id,
+					races.find((race) => race.key === ticker.raceKey)?.ddhq.raceId === candidate.id,
 			);
-			const shown = [onAir.ticker.data.cand1, onAir.ticker.data.cand2];
+			const shown = [ticker.data.cand1, ticker.data.cand2];
 			shown.forEach((graphicCandidate) => {
 				const choice = contest?.choice.find(
 					(candidate) => `${candidate.firstName}|${candidate.lastName}` === graphicCandidate.name,

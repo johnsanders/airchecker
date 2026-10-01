@@ -194,7 +194,7 @@ describe('makeAirShow feed (an API recording on air)', () => {
 		const airShow = makeAirShow({ now: () => wall, races, randomSeed: () => 7 });
 		const clock = makePlaybackClock(recording, () => wall);
 		airShow.feed.start({ clock, recording });
-		const ticker = () => airShow.onAir()?.ticker.data;
+		const ticker = () => airShow.onAir()?.ticker?.data;
 		return {
 			airShow,
 			clock,
@@ -209,7 +209,7 @@ describe('makeAirShow feed (an API recording on air)', () => {
 	it('airs the take-list races the recording carries, with the recorded numbers', () => {
 		const { airShow, setWall, ticker } = setup();
 		expect(airShow.status()).toMatchObject({ races: 1, recording: 'nov3' });
-		expect(airShow.onAir()?.ticker.raceKey).toBe(races[0]!.key);
+		expect(airShow.onAir()?.ticker?.raceKey).toBe(races[0]!.key);
 		// Wess is the Democrat, so he's on the left.
 		expect(ticker()).toMatchObject({
 			cand1: { name: 'Everett|Wess', votes: 400 },
@@ -269,15 +269,17 @@ describe('makeAirShow schedule', () => {
 		});
 		airShow.start(30 * 60_000);
 		schedule = { ...schedule, gapSeconds: 60 };
+		// 20¼ minutes in, when races have votes to put up: cycle 81 of 15 s, the first of a mix.
+		wall = 1_000_000 + 1_215_000;
 		expect(airShow.status()).toMatchObject({
-			next: { atMs: 1_005_000, kind: 'fs' },
+			next: { atMs: 2_220_000, kind: 'fs' },
 			overlay: null,
 			schedule: { gapSeconds: 5 },
 		});
-		wall = 1_007_000;
+		wall = 2_222_000;
 		expect(airShow.status()).toMatchObject({
-			next: { atMs: 1_020_000, kind: 'l3' },
-			overlay: { atMs: 1_015_000, kind: 'fs' },
+			next: { atMs: 2_235_000, kind: 'l3' },
+			overlay: { atMs: 2_230_000, kind: 'fs' },
 		});
 		expect(airShow.status()?.overlay?.race).toMatch(/^[A-Z]{2}(-\d+)? /);
 		airShow.start(30 * 60_000);
